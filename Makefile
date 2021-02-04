@@ -62,7 +62,7 @@ debug_os.bin : $(DEBUG_OBJECTS)
 	$(CC) -T linker.ld -o os.bin $(IMAGE_FLAGS) $(OBJECTS) -lgcc
 
 
-.PHONY : clean clean_release clean_debug
+.PHONY : clean
 clean :
 	-rm os.bin kernel.i kernel.s $(OBJECTS) os.iso
 	-rm -rf isodir/
