@@ -13,8 +13,9 @@ IMAGE_FLAGS := -ffreestanding -O3 -nostdlib
 DEBUG_FLAGS = -fverbose-asm -Og -save-temps -DDEBUG
 RELEASE_FLAGS = -O3 -DNDEBUG
 
-C_OBJECTS := $(patsubst %.c, %.o, $(wildcard *.c))
-OBJECTS := boot.o $(C_OBJECTS)
+#Do not replace these two occurrences of src/ with $(PATHS). It *will* break
+C_OBJECTS := $(patsubst %.c, %.o, $(shell find src/ -name '*.c'))
+OBJECTS := src/boot.o $(C_OBJECTS)
 
 ifdef RELEASE
 FLAGS := $(RELEASE_FLAGS)
@@ -36,14 +37,17 @@ run : build
 	qemu-system-i386 -cdrom os.iso
 
 
-boot.o :
-	$(AS) boot.s -o boot.o
+$(PATHS)boot.o :
+	$(AS) $(PATHS)boot.s -o $(PATHS)boot.o
 
 
-%.o: %.c
+$(PATHS)%.o: %.c
 	$(CC) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(FLAGS)
 
 os.bin : $(OBJECTS)
+	@echo "OBJECTS"
+	@echo "$(OBJECTS)"
+	@echo "OBJECTS"
 	$(CC) -T linker.ld -o os.bin $(IMAGE_FLAGS) $(OBJECTS) -lgcc
 
 
@@ -92,7 +96,7 @@ test: $(BUILD_PATHS) $(RESULTS)
 $(PATHR)%.txt: $(PATHB)%.$(TARGET_EXTENSION)
 	-./$< > $@ 2>&1
 
-$(PATHB)Test%.$(TARGET_EXTENSION): $(PATHO)Test%.o $(PATHO)%.o $(PATHU)Unity.o #$(PATHD)Test%.d
+$(PATHB)Test%.$(TARGET_EXTENSION): $(PATHO)Test%.o $(PATHO)%.o $(PATHU)unity.o #$(PATHD)Test%.d
 	$(LINK) -o $@ $^
 
 $(PATHO)%.o:: $(PATHT)%.c
