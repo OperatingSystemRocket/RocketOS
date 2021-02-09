@@ -1,6 +1,10 @@
-#must be an i686 gcc cross compiler
+ifdef TEST
+CC := gcc
+AS := as
+else
 CC := i686-elf-gcc
 AS := i686-elf-as
+endif
 
 #may decrease number of warning flags for KERNEL_CFLAGS in the future
 WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
@@ -8,6 +12,8 @@ WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
                   -Wredundant-decls -Wnested-externs -Winline -Wno-long-long
 KERNEL_FLAGS := -std=gnu17 -ffreestanding
+
+#Do not use these for tests
 IMAGE_FLAGS := -ffreestanding -O3 -nostdlib
 
 DEBUG_FLAGS := -fverbose-asm -Og -DDEBUG -save-temps=obj
@@ -29,6 +35,11 @@ PATHB := build/
 PATHD := build/depends/
 PATHO := build/objs/
 PATHR := build/results/
+PATHOT := build/tests/
+
+
+DEPEND := $(TEST_CC) -MM -MG -MF
+CFLAGS := -I. -I$(PATHU) -I$(PATHS) -DTEST
 
 
 ifdef RELEASE
@@ -50,11 +61,14 @@ build : create_directory_structure os.bin
 run : build
 	qemu-system-i386 -cdrom build/results/os.iso
 
+
 create_directory_structure :
 	$(MKDIR) $(PATHB)
 	$(MKDIR) $(PATHD)
 	$(MKDIR) $(PATHO)
 	$(MKDIR) $(PATHR)
+	$(MKDIR) $(PATHOT)
+
 
 build/objs/boot.o :
 	$(AS) src/boot.s -o build/objs/boot.o
@@ -67,10 +81,54 @@ os.bin : $(OBJECTS)
 	$(CC) -T linker.ld -o build/results/os.bin $(IMAGE_FLAGS) $(OBJECTS) -lgcc
 
 
+TEST_C := $(wildcard test/*.c)
+TEST_OBJECTS := $(patsubst %.c, %.o, $(shell find test/ -name '*.c'))
+TEST_C_WITHOUT_TEST_NAMES := $(subst test/,build/objs/,$(subst Test-,,$(TEST_C)))
+TEST_C_WITHOUT_TEST_OBJ := $(patsubst %.c,%.o,$(TEST_C_WITHOUT_TEST_NAMES))
+TEST_C_OBJECTS_NAME := $(subst test/,,$(TEST_OBJECTS))
+TEST_C_OBJECTS_OUT := $(subst test/,build/tests/,$(TEST_OBJECTS))
+TEST_C_OBJECT_EXECUTABLES := $(subst build/objs/,,$(patsubst %.c,%.out,$(TEST_C_WITHOUT_TEST_NAMES)))
+
+
+test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(TEST_C_WITHOUT_TEST_OBJ) vga_driver.out
+	@echo "TEST_C_OBJECT_EXECUTABLES"
+	@echo $(TEST_C_OBJECT_EXECUTABLES)
+	@echo "TEST_C_OBJECT_EXECUTABLES"
+	@echo "-----------------------\nIGNORES:\n-----------------------"
+	@echo `grep -s IGNORE $(PATHOT)*.txt`
+	@echo "-----------------------\nFAILURES:\n-----------------------"
+	@echo `grep -s FAIL $(PATHOT)*.txt`
+	@echo "\nDONE"
+
+
+
+
+
+$(PATHD)%.o : Unity/src/%.c
+	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(DEBUG_FLAGS)
+
+
+$(PATHOT)%.o : test/%.c
+	@echo "Building test"
+	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(DEBUG_FLAGS)
+
+
+%.out : $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(TEST_C_WITHOUT_TEST_OBJ)
+	@echo "Linking"
+	$(CC) $(PATHOT)Test-$(patsubst %.out,%.o,$@) $(PATHO)$(patsubst %.out,%.o,$@) $(PATHD)unity.o -o $@ -ffreestanding -O3 -lgcc
+
+
+
+.PHONY: build
+.PHONY: run
+
+.PHONY: test
 
 .PHONY: clean
 clean :
 	-rm -rf isodir/
+	-rm -f $(PATHD)*
 	-rm -f $(PATHO)*
 	-rm -f $(PATHR)*
+	-rm -f $(PATHOT)*
 	-rm warnings.txt
