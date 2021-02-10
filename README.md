@@ -23,6 +23,7 @@ This is a list of the software you will need to use and develop this software.
 
 * Be using a Unix system that supports bash
 
+
 * A gcc compatible cross compiler capable of emitting flat elf binaries for i686 (do not use x86_64). 
   
     If you do not know how to do this, this is a good guide on how:
@@ -39,6 +40,8 @@ This is a list of the software you will need to use and develop this software.
 
 * You need a system install of grub for the utilities `grub-mkrescue` and if developing the software, you also need `grub-file`. If using a standard Ubuntu install, these should already be installed.
 
+  If it isn't installed, type `sudo apt install grub-pc-bin`
+
 
 * A copy of `build-essential` for utilities such as `make`.
 
@@ -49,7 +52,8 @@ This is a list of the software you will need to use and develop this software.
 
 * If planning on running the operating system in a VM, you must install `qemu` with the command:
 
-  `sudo apt install qemu`
+  `sudo apt install qemu qemu-system-i386`
+
 
 * For developers only: Install `clang-tidy` and `clang-format`.
 
