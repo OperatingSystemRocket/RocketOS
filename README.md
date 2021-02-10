@@ -65,7 +65,7 @@ This guide assumes basic familiarity with a Unix Terminal and a Unix operating s
 
 1. Clone this repository with the following command:
 
-    `git clone https://github.com/OperatingSystemRocket/RocketOS`
+    `git clone --recurse-submodules https://github.com/OperatingSystemRocket/RocketOS`
   
 2. Enter the new directory
 
