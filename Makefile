@@ -25,7 +25,7 @@ C_OBJECTS_NAME := $(subst src/,,$(C_OBJECTS))
 C_OBJECTS_OUT := $(subst src/,build/objs/,$(C_OBJECTS))
 OBJECTS := build/objs/boot.o $(C_OBJECTS_OUT)
 
-OBJECTS_WITHOUT_MAIN := $(subst src/kernel.c,,$(C_OBJECTS_OUT))
+OBJECTS_WITHOUT_MAIN := $(subst build/objs/kernel.o,,$(C_OBJECTS_OUT))
 
 MKDIR := mkdir -p
 
@@ -92,7 +92,7 @@ TEST_C_OBJECT_EXECUTABLES := $(subst build/objs/,,$(patsubst %.c,%.out,$(TEST_C_
 TEXT_FILES := $(PATHOT)$(patsubst %.out,%.txt,$(TEST_C_OBJECT_EXECUTABLES))
 
 
-test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(TEST_C_WITHOUT_TEST_OBJ) $(TEST_C_OBJECT_EXECUTABLES)
+test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES)
 	@echo "\n"
 	cat $(TEXT_FILES)
 	@echo "\n"
@@ -111,9 +111,9 @@ $(PATHOT)%.o : test/%.c
 	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(DEBUG_FLAGS)
 
 
-%.out : $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(TEST_C_WITHOUT_TEST_OBJ)
-	$(CC) $(PATHO)$(patsubst %.out,%.o,$@) $(PATHD)unity.o $(PATHOT)Test-$(patsubst %.out,%.o,$@) -o $(PATHOT)$@ -ffreestanding -O3 -lgcc
-	./$(PATHOT)$@ > $(PATHOT)$(patsubst %.out,%.txt,$@) 2>&1
+%.out : $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN)
+	$(CC) $(OBJECTS_WITHOUT_MAIN) $(PATHD)unity.o $(PATHOT)Test-$(patsubst %.out,%.o,$@) -o $(PATHOT)$@ -ffreestanding -O3 -lgcc
+	-./$(PATHOT)$@ > $(PATHOT)$(patsubst %.out,%.txt,$@)
 
 
 
