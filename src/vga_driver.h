@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-size_t strlen(const char* str);
+#include "cstring.h"
 
 void terminal_initialize(void);
 

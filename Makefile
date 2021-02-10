@@ -20,11 +20,12 @@ DEBUG_FLAGS := -fverbose-asm -Og -DDEBUG -save-temps=obj
 RELEASE_FLAGS := -O3 -DNDEBUG
 
 #Do not replace these two occurrences of src/ with $(PATHS). It *will* break
-C_OBJECTS := $(patsubst %.c, %.o, $(shell find src/ -name '*.c'))
-C_OBJECTS_NAME := $(subst src/, , $(C_OBJECTS))
-C_OBJECTS_OUT := $(subst src/, build/objs/, $(C_OBJECTS))
+C_OBJECTS := $(patsubst %.c,%.o,$(shell find src/ -name '*.c'))
+C_OBJECTS_NAME := $(subst src/,,$(C_OBJECTS))
+C_OBJECTS_OUT := $(subst src/,build/objs/,$(C_OBJECTS))
 OBJECTS := build/objs/boot.o $(C_OBJECTS_OUT)
 
+OBJECTS_WITHOUT_MAIN := $(subst src/kernel.c,,$(C_OBJECTS_OUT))
 
 MKDIR := mkdir -p
 
@@ -88,20 +89,18 @@ TEST_C_WITHOUT_TEST_OBJ := $(patsubst %.c,%.o,$(TEST_C_WITHOUT_TEST_NAMES))
 TEST_C_OBJECTS_NAME := $(subst test/,,$(TEST_OBJECTS))
 TEST_C_OBJECTS_OUT := $(subst test/,build/tests/,$(TEST_OBJECTS))
 TEST_C_OBJECT_EXECUTABLES := $(subst build/objs/,,$(patsubst %.c,%.out,$(TEST_C_WITHOUT_TEST_NAMES)))
+TEXT_FILES := $(PATHOT)$(patsubst %.out,%.txt,$(TEST_C_OBJECT_EXECUTABLES))
 
 
-test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(TEST_C_WITHOUT_TEST_OBJ) vga_driver.out
-	@echo "TEST_C_OBJECT_EXECUTABLES"
-	@echo $(TEST_C_OBJECT_EXECUTABLES)
-	@echo "TEST_C_OBJECT_EXECUTABLES"
-	@echo "-----------------------\nIGNORES:\n-----------------------"
+test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(TEST_C_WITHOUT_TEST_OBJ) $(TEST_C_OBJECT_EXECUTABLES)
+	@echo "\n"
+	cat $(TEXT_FILES)
+	@echo "\n"
+	@echo "\n-----------------------\nIGNORES:\n-----------------------"
 	@echo `grep -s IGNORE $(PATHOT)*.txt`
 	@echo "-----------------------\nFAILURES:\n-----------------------"
 	@echo `grep -s FAIL $(PATHOT)*.txt`
 	@echo "\nDONE"
-
-
-
 
 
 $(PATHD)%.o : Unity/src/%.c
@@ -109,13 +108,12 @@ $(PATHD)%.o : Unity/src/%.c
 
 
 $(PATHOT)%.o : test/%.c
-	@echo "Building test"
 	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(DEBUG_FLAGS)
 
 
 %.out : $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(TEST_C_WITHOUT_TEST_OBJ)
-	@echo "Linking"
-	$(CC) $(PATHOT)Test-$(patsubst %.out,%.o,$@) $(PATHO)$(patsubst %.out,%.o,$@) $(PATHD)unity.o -o $@ -ffreestanding -O3 -lgcc
+	$(CC) $(PATHO)$(patsubst %.out,%.o,$@) $(PATHD)unity.o $(PATHOT)Test-$(patsubst %.out,%.o,$@) -o $(PATHOT)$@ -ffreestanding -O3 -lgcc
+	./$(PATHOT)$@ > $(PATHOT)$(patsubst %.out,%.txt,$@) 2>&1
 
 
 
