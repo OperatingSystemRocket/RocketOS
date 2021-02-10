@@ -69,7 +69,7 @@ This guide assumes basic familiarity with a Unix Terminal and a Unix operating s
   
 2. Enter the new directory
 
-    `cd OperatingSystemRocket/`
+    `cd RocketOS/`
 
 #### Running it in a VM
 
