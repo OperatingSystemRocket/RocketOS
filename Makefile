@@ -92,6 +92,7 @@ TEST_C_OBJECT_EXECUTABLES := $(subst build/objs/,,$(patsubst %.c,%.out,$(TEST_C_
 TEXT_FILES := $(PATHOT)$(patsubst %.out,%.txt,$(TEST_C_OBJECT_EXECUTABLES))
 
 
+
 test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES)
 	@echo "\n"
 	cat $(TEXT_FILES)
@@ -101,6 +102,7 @@ test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS
 	@echo "-----------------------\nFAILURES:\n-----------------------"
 	@echo `grep -s FAIL $(PATHOT)*.txt`
 	@echo "\nDONE"
+	!(grep -s FAIL $(PATHOT)*.txt)
 
 
 $(PATHD)%.o : Unity/src/%.c
