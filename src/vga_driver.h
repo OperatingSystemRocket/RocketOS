@@ -6,7 +6,7 @@
 
 #include "cstring.h"
 
-void terminal_initialize(void);
+void terminal_initialize(volatile uint16_t *terminal_buffer_address);
 
 void terminal_setcolor(uint8_t color);
 
