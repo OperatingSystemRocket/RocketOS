@@ -102,7 +102,7 @@ test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS
 	@echo "-----------------------\nFAILURES:\n-----------------------"
 	@echo `grep -s FAIL $(PATHOT)*.txt`
 	@echo "\nDONE"
-	!(grep -s FAIL $(PATHOT)*.txt)
+	! grep -s FAIL $(PATHOT)*.txt
 
 
 $(PATHD)%.o : Unity/src/%.c
