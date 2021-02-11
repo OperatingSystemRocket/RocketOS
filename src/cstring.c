@@ -8,7 +8,7 @@ size_t cstrlen(const char *const str)
     return len;
 }
 
-int cstrcmp(const char *lhs, const char *rhs) {
+int cstrcmp(const char *const lhs, const char *const rhs) {
 	size_t index = 0;
 	while (lhs[index]) {
 		if (lhs[index] == rhs[index]) {
