@@ -1,4 +1,9 @@
-# RocketOS
+# <p align="center"> RocketOS </p>
+
+<p align="center">
+    <a href="https://buildkite.com/rocketos/automated-tests" alt="Build Status">
+        <img src="https://badge.buildkite.com/6222e91b75681e950db4ae85010b626b4637c880a14a6539fc.svg" /></a>
+</p>
 
 
 <details open="open">
