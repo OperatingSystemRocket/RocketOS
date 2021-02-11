@@ -20,6 +20,7 @@ DEBUG_FLAGS := -fverbose-asm -Og -DDEBUG -save-temps=obj
 RELEASE_FLAGS := -O3 -DNDEBUG
 
 #Do not replace these two occurrences of src/ with $(PATHS). It *will* break
+C_NAMES := $(shell find src/ -name '*.c')
 C_OBJECTS := $(patsubst %.c,%.o,$(shell find src/ -name '*.c'))
 C_OBJECTS_NAME := $(subst src/,,$(C_OBJECTS))
 C_OBJECTS_OUT := $(subst src/,build/objs/,$(C_OBJECTS))
@@ -50,13 +51,17 @@ FLAGS := $(DEBUG_FLAGS)
 endif
 
 
+all : build
+
+
 #creates bootable image
-build : create_directory_structure os.bin
+build : create_directory_structure run_static_analyzers os.bin
 	./is_multiboot.sh
 	mkdir -p isodir/boot/grub
 	cp build/results/os.bin isodir/boot/os.bin
 	cp grub.cfg isodir/boot/grub/grub.cfg
 	grub-mkrescue -o build/results/os.iso isodir
+
 
 #debug is default
 run : build
@@ -93,7 +98,7 @@ TEXT_FILES := $(PATHOT)$(patsubst %.out,%.txt,$(TEST_C_OBJECT_EXECUTABLES))
 
 
 
-test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES)
+test: create_directory_structure run_static_analyzers $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES)
 	@echo "\n"
 	cat $(TEXT_FILES)
 	@echo "\n"
@@ -118,11 +123,18 @@ $(PATHOT)%.o : test/%.c
 	-./$(PATHOT)$@ > $(PATHOT)$(patsubst %.out,%.txt,$@)
 
 
+run_static_analyzers :
+	clang-tidy $(C_NAMES) $(TEST_C) | tee warnings.txt
+	clang-format $(C_NAMES) $(TEST_C) --dry-run | tee warnings.txt -a
 
+
+.PHONY: all
 .PHONY: build
 .PHONY: run
 
 .PHONY: test
+
+.PHONY: run_static_analyzers
 
 .PHONY: clean
 clean :
