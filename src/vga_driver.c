@@ -66,6 +66,13 @@ void terminal_putentryat(const char c, const uint8_t color, const size_t x, cons
 
 void terminal_putchar(const char c)
 {
+	if (c == '\n') {
+		if(++terminal_row == VGA_HEIGHT) {
+			terminal_row == 0;
+		}
+		terminal_column = 0;
+		return;
+	}
     terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
     if (++terminal_column == VGA_WIDTH) {
         terminal_column = 0;
