@@ -19,4 +19,5 @@ int cstrcmp(const char *const lhs, const char *const rhs) {
 			return 1;
 		}
 	}
+	return 0;
 }
