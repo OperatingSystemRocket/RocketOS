@@ -98,12 +98,10 @@ This guide assumes basic familiarity with a Unix Terminal and a Unix operating s
 
 1. Follow the two steps in <a href="#Setup">Setup</a>
 
-2. To run the static analysis checks as well as the code format checks, type:
+2. To only run the static analysis checks as well as the code format checks, type:
 
-    `./run_static_analyzers.sh`
-   
-    If this doesn't work, make sure that the bash file is set to be executable with `chmod`
-   
+    `make run_static_analyzers`
+
 3. To a debug build, type:
 
     `make build`
