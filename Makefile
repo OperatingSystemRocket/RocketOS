@@ -93,8 +93,9 @@ TEST_C_WITHOUT_TEST_NAMES := $(subst test/,build/objs/,$(subst Test-,,$(TEST_C))
 TEST_C_WITHOUT_TEST_OBJ := $(patsubst %.c,%.o,$(TEST_C_WITHOUT_TEST_NAMES))
 TEST_C_OBJECTS_NAME := $(subst test/,,$(TEST_OBJECTS))
 TEST_C_OBJECTS_OUT := $(subst test/,build/tests/,$(TEST_OBJECTS))
-TEST_C_OBJECT_EXECUTABLES := $(subst build/objs/,,$(patsubst %.c,%.out,$(TEST_C_WITHOUT_TEST_NAMES)))
-TEXT_FILES := $(PATHOT)$(patsubst %.out,%.txt,$(TEST_C_OBJECT_EXECUTABLES))
+TEST_C_OBJECT_EXECUTABLES_WITH_PATH := $(patsubst %.c,%.out,$(TEST_C_WITHOUT_TEST_NAMES))
+TEST_C_OBJECT_EXECUTABLES := $(subst build/objs/,,$(TEST_C_OBJECT_EXECUTABLES_WITH_PATH))
+TEXT_FILES := $(subst build/objs/,$(PATHOT),$(patsubst %.out,%.txt,$(TEST_C_OBJECT_EXECUTABLES_WITH_PATH)))
 
 
 

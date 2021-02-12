@@ -16,6 +16,10 @@ void test_cstrcmp(void) {
     TEST_ASSERT_LESS_THAN_INT32(0, cstrcmp("a", "b"));
     TEST_ASSERT_GREATER_THAN_INT32(0, cstrcmp("b", "a"));
     TEST_ASSERT_EQUAL_INT(0, cstrcmp("b", "b"));
+
+    TEST_ASSERT_EQUAL_INT(0, cstrcmp("sdfgs", "sdfgs"));
+    TEST_ASSERT_LESS_THAN_INT32(0, cstrcmp("lkjjio", "lkjkio"));
+    TEST_ASSERT_GREATER_THAN_INT32(0, cstrcmp("sbgsd", "sbgjd"));
 }
 
 int main(void)
