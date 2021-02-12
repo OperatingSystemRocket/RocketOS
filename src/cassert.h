@@ -1,7 +1,10 @@
 #pragma once
 
-#define assert(x)   do { \
-                        if(!x) { \
-                            //raise error
-                        } \
-                    } while(0)
+#include "vga_driver.h"
+
+#define assert(x, failure)   do { \
+                                if(!x) {  \
+                                        \
+                                    return failure; \
+                                } \
+                            } while(0)
