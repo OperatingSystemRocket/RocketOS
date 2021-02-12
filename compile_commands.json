@@ -1,12 +1,12 @@
 [
  {
-  "directory": "/home/link/bare_bones",
+  "directory": "/home/link/RocketOS",
   "arguments": [
    "i686-elf-gcc",
    "-c",
-   "kernel.c",
+   "src/kernel.c",
    "-o",
-   "kernel.o",
+   "src/kernel.o",
    "-std=gnu17",
    "-ffreestanding",
    "-Wall",
