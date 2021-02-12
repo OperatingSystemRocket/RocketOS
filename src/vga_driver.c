@@ -69,7 +69,7 @@ void terminal_putchar(const char c)
 {
 	if (c == '\n') {
 		if(++terminal_row == VGA_HEIGHT) {
-			terminal_row == 0;
+			terminal_row = 0;
 		}
 		terminal_column = 0;
 		return;
