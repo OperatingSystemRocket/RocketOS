@@ -26,7 +26,11 @@ enum vga_color {
     VGA_COLOR_WHITE = 15,
 };
 
-void terminal_initialize(volatile uint16_t *terminal_buffer_address);
+//should be used for actual code
+void terminal_initialize(void);
+
+//dependency injection for writing tests for the vga driver
+void terminal_initialize_test(volatile uint16_t *terminal_buffer_address);
 
 void terminal_setcolor(enum vga_color color);
 
@@ -34,8 +38,8 @@ void terminal_putentryat(char c, enum vga_color color, size_t x, size_t y);
 
 void terminal_putchar(char c);
 
-void terminal_write(const char *data, size_t size);
+void terminal_write(const char* data, size_t size);
 
-void terminal_writestring(const char *data);
+void terminal_writestring(const char* data);
 
-void terminal_write_color(const char *text, enum vga_color color);
+void terminal_write_color(const char* text, enum vga_color color);

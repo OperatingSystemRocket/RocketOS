@@ -1,12 +1,11 @@
 #include "vga_driver.h"
 
-static inline uint8_t vga_entry_color(const enum vga_color fg, const enum vga_color bg)
-{
+
+static inline uint8_t vga_entry_color(const enum vga_color fg, const enum vga_color bg) {
     return fg | bg << 4;
 }
 
-static inline uint16_t vga_entry(const unsigned char uc, const enum vga_color color)
-{
+static inline uint16_t vga_entry(const unsigned char uc, const enum vga_color color) {
     return (uint16_t) uc | (uint16_t) color << 8;
 }
 
@@ -14,14 +13,18 @@ static inline uint16_t vga_entry(const unsigned char uc, const enum vga_color co
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 
-size_t terminal_row;
-size_t terminal_column;
-enum vga_color terminal_color;
-volatile uint16_t *terminal_buffer;
+
+static size_t terminal_row;
+static size_t terminal_column;
+static enum vga_color terminal_color;
+static volatile uint16_t* terminal_buffer;
 
 
-void terminal_initialize(volatile uint16_t *terminal_buffer_address)
-{
+void terminal_initialize(void) {
+    terminal_initialize_test((uint16_t*)0xB8000);
+}
+
+void terminal_initialize_test(volatile uint16_t *const terminal_buffer_address) {
     terminal_row = 0;
     terminal_column = 0;
     terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
@@ -34,19 +37,16 @@ void terminal_initialize(volatile uint16_t *terminal_buffer_address)
     }
 }
 
-void terminal_setcolor(const enum vga_color color)
-{
+void terminal_setcolor(const enum vga_color color) {
     terminal_color = color;
 }
 
-void terminal_putentryat(const char c, const enum vga_color color, const size_t x, const size_t y)
-{
+void terminal_putentryat(const char c, const enum vga_color color, const size_t x, const size_t y) {
     const size_t index = y * VGA_WIDTH + x;
     terminal_buffer[index] = vga_entry(c, color);
 }
 
-void terminal_putchar(const char c)
-{
+void terminal_putchar(const char c) {
 	if (c == '\n') {
 		if(++terminal_row == VGA_HEIGHT) {
 			terminal_row = 0;
@@ -62,20 +62,17 @@ void terminal_putchar(const char c)
     }
 }
 
-void terminal_write(const char *const data, const size_t size)
-{
+void terminal_write(const char *const data, const size_t size) {
     for (size_t i = 0; i < size; i++) {
         terminal_putchar(data[i]);
     }
 }
 
-void terminal_writestring(const char *const data)
-{
+void terminal_writestring(const char *const data) {
     terminal_write(data, cstrlen(data));
 }
 
-void terminal_write_color(const char *const text, const enum vga_color color)
-{
+void terminal_write_color(const char *const text, const enum vga_color color) {
     const enum vga_color old_color = terminal_color;
     terminal_setcolor(color);
     terminal_write(text, cstrlen(text));

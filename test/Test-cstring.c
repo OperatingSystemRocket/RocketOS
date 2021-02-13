@@ -22,8 +22,7 @@ void test_cstrcmp(void) {
     TEST_ASSERT_GREATER_THAN_INT32(0, cstrcmp("sbgsd", "sbgjd"));
 }
 
-int main(void)
-{
+int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_cstrlen);
     RUN_TEST(test_cstrcmp);
