@@ -2,11 +2,11 @@
 
 
 static inline uint8_t vga_entry_color(const enum vga_color fg, const enum vga_color bg) {
-    return fg | bg << 4;
+    return fg | bg << 4u;
 }
 
-static inline uint16_t vga_entry(const unsigned char uc, const enum vga_color color) {
-    return (uint16_t) uc | (uint16_t) color << 8;
+static inline uint16_t vga_entry(const char uc, const enum vga_color color) {
+    return (uint16_t) uc | (uint16_t) color << 8u;
 }
 
 
@@ -24,17 +24,27 @@ void terminal_initialize(void) {
     terminal_initialize_test((uint16_t*)0xB8000);
 }
 
-void terminal_initialize_test(volatile uint16_t *const terminal_buffer_address) {
+void terminal_initialize_test(uint16_t *const terminal_buffer_address) {
+    terminal_resetcolor();
+    terminal_buffer = terminal_buffer_address;
+
+    terminal_clear();
+}
+
+void terminal_clear(void) {
     terminal_row = 0;
     terminal_column = 0;
-    terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
-    terminal_buffer = terminal_buffer_address;
+
     for (size_t y = 0; y < VGA_HEIGHT; y++) {
         for (size_t x = 0; x < VGA_WIDTH; x++) {
             const size_t index = y * VGA_WIDTH + x;
             terminal_buffer[index] = vga_entry(' ', terminal_color);
         }
     }
+}
+
+void terminal_resetcolor(void) {
+    terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 }
 
 void terminal_setcolor(const enum vga_color color) {
@@ -62,19 +72,23 @@ void terminal_putchar(const char c) {
     }
 }
 
-void terminal_write(const char *const data, const size_t size) {
+void terminal_write(const char *const text, const size_t size) {
     for (size_t i = 0; i < size; i++) {
-        terminal_putchar(data[i]);
+        terminal_putchar(text[i]);
     }
 }
 
-void terminal_writestring(const char *const data) {
-    terminal_write(data, cstrlen(data));
+void terminal_writestring(const char *const text) {
+    terminal_write(text, cstrlen(text));
 }
 
-void terminal_write_color(const char *const text, const enum vga_color color) {
+void terminal_writestring_color(const char *const text, const enum vga_color color) {
+    terminal_write_color(text, cstrlen(text), color);
+}
+
+void terminal_write_color(const char *const text, const size_t size, const enum vga_color color) {
     const enum vga_color old_color = terminal_color;
     terminal_setcolor(color);
-    terminal_write(text, cstrlen(text));
+    terminal_write(text, size);
     terminal_setcolor(old_color);
 }

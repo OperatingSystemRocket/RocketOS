@@ -9,8 +9,8 @@ endif
 #may decrease number of warning flags for KERNEL_CFLAGS in the future
 WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Wstrict-prototypes -Wcast-qual -Wconversion -Wunreachable-code \
-                  -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
-                  -Wredundant-decls -Wnested-externs -Winline -Wno-long-long
+                  -Wwrite-strings -Wredundant-decls -Wnested-externs \
+                  -Winline -Wno-long-long
 KERNEL_FLAGS := -std=gnu17 -ffreestanding
 
 #Do not use these for tests
@@ -55,7 +55,7 @@ all : build
 
 
 #creates bootable image
-build : create_directory_structure run_static_analyzers os.bin
+build : create_directory_structure os.bin run_static_analyzers
 	./is_multiboot.sh
 	mkdir -p isodir/boot/grub
 	cp build/results/os.bin isodir/boot/os.bin
@@ -99,7 +99,7 @@ TEXT_FILES := $(subst build/objs/,$(PATHOT),$(patsubst %.out,%.txt,$(TEST_C_OBJE
 
 
 
-test: create_directory_structure run_static_analyzers $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES)
+test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES) run_static_analyzers
 	@echo "\n"
 	cat $(TEXT_FILES)
 	@echo "\n"
@@ -121,12 +121,12 @@ $(PATHOT)%.o : test/%.c
 
 %.out : $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN)
 	$(CC) $(OBJECTS_WITHOUT_MAIN) $(PATHD)unity.o $(PATHOT)Test-$(patsubst %.out,%.o,$@) -o $(PATHOT)$@ -ffreestanding -O3 -lgcc
-	-./$(PATHOT)$@ > $(PATHOT)$(patsubst %.out,%.txt,$@)
+	./$(PATHOT)$@ > $(PATHOT)$(patsubst %.out,%.txt,$@)
 
 
 run_static_analyzers :
-	clang-tidy $(C_NAMES) $(TEST_C) | tee warnings.txt
-	clang-format $(C_NAMES) $(TEST_C) --dry-run | tee warnings.txt -a
+	-clang-tidy $(C_NAMES) $(TEST_C)
+	-clang-format $(C_NAMES) $(TEST_C) --dry-run
 
 
 .PHONY: all
@@ -144,4 +144,3 @@ clean :
 	-rm -f $(PATHO)*
 	-rm -f $(PATHR)*
 	-rm -f $(PATHOT)*
-	-rm warnings.txt
