@@ -43,12 +43,12 @@ void terminal_clear(void) {
     }
 }
 
-void terminal_resetcolor(void) {
-    terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
-}
-
 void terminal_setcolor(const enum vga_color color) {
     terminal_color = color;
+}
+
+void terminal_resetcolor(void) {
+    terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 }
 
 void terminal_putentryat(const char c, const enum vga_color color, const size_t x, const size_t y) {
@@ -83,13 +83,13 @@ void terminal_writestring(const char *const text) {
     terminal_write(text, cstrlen(text));
 }
 
-void terminal_writestring_color(const char *const text, const enum vga_color color) {
-    terminal_write_color(text, cstrlen(text), color);
-}
-
 void terminal_write_color(const char *const text, const size_t size, const enum vga_color color) {
     const enum vga_color old_color = terminal_color;
     terminal_setcolor(color);
     terminal_write(text, size);
     terminal_setcolor(old_color);
+}
+
+void terminal_writestring_color(const char *const text, const enum vga_color color) {
+    terminal_write_color(text, cstrlen(text), color);
 }
