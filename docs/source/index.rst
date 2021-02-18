@@ -1,4 +1,4 @@
-Welcome to RocketOS's Documentation Test!
+Welcome to RocketOS's Documentation!
 ==========================================
 
 .. toctree::
@@ -9,9 +9,4 @@ Welcome to RocketOS's Documentation Test!
 
 
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
