@@ -8,7 +8,8 @@ cassert
 This module has four macros and is header only.
 The four macros are as follows:
 
-1. cassert(x, return_code)
+cassert(x, return_code)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This macro should be used
 in non-void functions
@@ -42,7 +43,8 @@ for assertions that don't need custom error messages.
 
 |br|
 
-2. cassert_void(x)
+cassert_void(x)
+^^^^^^^^^^^^^^^^^^^
 
 This macro should be used
 in void functions
@@ -70,7 +72,8 @@ for assertions that don't need custom error messages.
 
 |br|
 
-3. cassert_message(x, message, return_code)
+cassert_message(x, message, return_code)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This macro should be used
 in non-void functions
@@ -104,7 +107,8 @@ for assertions that need custom error messages.
 
 |br|
 
-4. cassert_message_void(x, message)
+cassert_message_void(x, message)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This macro should be used
 in void functions
