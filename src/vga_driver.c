@@ -95,12 +95,12 @@ void terminal_writestring_color(const char *const text, const enum vga_color col
 }
 
 void terminal_scroll(void) {
-	for(int y = 0; y < VGA_HEIGHT - 1; y++) {
-		for(int x = 0; x < VGA_WIDTH; x++) {
+	for(size_t y = 0; y < VGA_HEIGHT - 1; y++) {
+		for(size_t x = 0; x < VGA_WIDTH; x++) {
 			terminal_buffer[y * VGA_WIDTH + x] = terminal_buffer[(y + 1) * VGA_WIDTH + x];
 		}
 	}
-	for(int x = 0; x < VGA_WIDTH; x++) {
+	for(size_t x = 0; x < VGA_WIDTH; x++) {
 		terminal_putentryat(' ', terminal_color, x, VGA_HEIGHT - 1);
 	}
 	terminal_row = VGA_HEIGHT - 1;
