@@ -5,7 +5,7 @@ Welcome to RocketOS's Documentation Test!
    :maxdepth: 2
    :caption: Pages:
 
-   test
+   cassert
 
 
 
