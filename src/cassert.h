@@ -6,25 +6,25 @@
 
 //@note clion keep breaking the indentation on these macros, don't bother reformatting them manually
 
-#define cassert(x, return_code)  do { \
+#define cassert(cond, return_code)  do { \
                                     if(!(x)) { \
                                         terminal_writestring_color("Condition Failed: ", VGA_COLOR_RED); \
-                                        terminal_writestring_color(#x, VGA_COLOR_RED);                   \
+                                        terminal_writestring_color(#cond, VGA_COLOR_RED);                   \
                                         terminal_writestring_color("\n", VGA_COLOR_RED); \
                                         return return_code; \
                                     } \
                                 } while(0)
 
-#define cassert_void(x)  do { \
+#define cassert_void(cond)  do { \
                             if(!(x)) { \
                                 terminal_writestring_color("Condition Failed: ", VGA_COLOR_RED); \
-                                terminal_writestring_color(#x, VGA_COLOR_RED);                   \
+                                terminal_writestring_color(#cond, VGA_COLOR_RED);                   \
                                 terminal_writestring_color("\n", VGA_COLOR_RED); \
                                 return; \
                             } \
                         } while(0)
 
-#define cassert_message(x, message, return_code)  do { \
+#define cassert_message(cond, message, return_code)  do { \
                                                     if(!(x)) { \
                                                         terminal_writestring_color(message, VGA_COLOR_RED); \
                                                         terminal_writestring_color("\n", VGA_COLOR_RED); \
@@ -32,7 +32,7 @@
                                                     } \
                                                 } while(0)
 
-#define cassert_message_void(x, message)  do { \
+#define cassert_message_void(cond, message)  do { \
                             if(!(x)) { \
                                 terminal_writestring_color(message, VGA_COLOR_RED); \
                                 terminal_writestring_color("\n", VGA_COLOR_RED); \
