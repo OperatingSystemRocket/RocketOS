@@ -49,3 +49,5 @@ void terminal_writestring(const char* text);
 void terminal_write_color(const char *const text, const size_t size, const enum vga_color color);
 
 void terminal_writestring_color(const char *const text, const enum vga_color color);
+
+void terminal_scroll(void);

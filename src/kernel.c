@@ -17,4 +17,8 @@ void kernel_main(void) {
     terminal_setcolor(VGA_COLOR_CYAN);
 
     terminal_writestring("This\nis\ndifficult to read\n");
+
+	for(char i = 0; i < 50; i++) {
+		terminal_writestring("Test\n");
+	}
 }
