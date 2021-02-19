@@ -25,7 +25,7 @@ int cstrcmp(const char *const lhs, const char *const rhs) {
 	return 0;
 }
 
-void cint_to_string(ssize_t input, char *const string_ret, const size_t ret_size) {
+void cint_to_string(int64_t input, char *const string_ret, const size_t ret_size) {
     size_t index = 0u;
     if(0u < ret_size && input < 0u) {
         string_ret[index++] = '-';
