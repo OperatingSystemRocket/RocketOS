@@ -269,6 +269,29 @@ void test_terminal_write_color(void) {
     free(parsed_string);
 }
 
+void test_terminal_scroll(void) {
+	size_t offset = 0u;
+
+	terminal_write("1\n", VGA_COLOR_RED, offset);
+	offset += strlen("1\n");
+	terminal_write("2\n", VGA_COLOR_RED, offset);
+	offset += strlen("2\n");
+	terminal_write("3\n", VGA_COLOR_RED, offset);
+	offset += strlen("3\n");
+	terminal_write("4\n", VGA_COLOR_RED, offset);
+	offset += strlen("4\n");
+	terminal_write("5\n", VGA_COLOR_RED, offset);
+	offset += strlen("5\n");
+	for(size_t i = 0; i < 21; i++) {
+		terminal_write("\n", VGA_COLOR_RED, offset);
+		offset += strlen("\n");
+	}
+    TEST_ASSERT_EQUAL_CHAR((uint16_t) '2' | (uint16_t) VGA_COLOR_RED << 8u, buffer[0u*80u + 0u]);
+    TEST_ASSERT_EQUAL_CHAR((uint16_t) '3' | (uint16_t) VGA_COLOR_RED << 8u, buffer[1u*80u + 0u]);
+    TEST_ASSERT_EQUAL_CHAR((uint16_t) '4' | (uint16_t) VGA_COLOR_RED << 8u, buffer[2u*80u + 0u]);
+    TEST_ASSERT_EQUAL_CHAR((uint16_t) '5' | (uint16_t) VGA_COLOR_RED << 8u, buffer[3u*80u + 0u]);
+    TEST_ASSERT_EQUAL_CHAR((uint16_t) ' ' | (uint16_t) VGA_COLOR_RED << 8u, buffer[4u*80u + 0u]);
+}
 
 int main(void) {
     UNITY_BEGIN();
@@ -281,6 +304,7 @@ int main(void) {
     RUN_TEST(test_terminal_writestring);
     RUN_TEST(test_terminal_write_color);
     RUN_TEST(test_terminal_writestring_color);
+	RUN_TEST(test_terminal_scroll);
     UNITY_END();
     return 0;
 }
