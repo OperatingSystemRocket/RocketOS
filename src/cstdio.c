@@ -19,6 +19,7 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     return 1;
                 case 's':
                     terminal_writestring(va_arg(*variadic_args, char*));
+                    *index += 1u;
                     return 2;
                 case 'd':
                 case 'i':
