@@ -92,7 +92,7 @@ int cprintf(const char *const format, ...) {
     //const uint32_t value = va_arg(pargs, int32_t);
 
     for(uint32_t i = 0u; i < cstrlen(format); ++i) {
-
+        conversion_specifier(format, cstrlen(format), i, &pargs);
     }
 
     va_end(pargs);
