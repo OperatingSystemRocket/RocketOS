@@ -270,27 +270,19 @@ void test_terminal_write_color(void) {
 }
 
 void test_terminal_scroll(void) {
-	size_t offset = 0u;
+    //should fill up buffer without scrolling it (25 80 character rows are available using vga buffer)
+    for(int32_t i = 0; i < 25; ++i) {
+        terminal_writestring("this is a test of scrolling\n");
+    }
 
-	terminal_write("1\n", VGA_COLOR_RED, offset);
-	offset += strlen("1\n");
-	terminal_write("2\n", VGA_COLOR_RED, offset);
-	offset += strlen("2\n");
-	terminal_write("3\n", VGA_COLOR_RED, offset);
-	offset += strlen("3\n");
-	terminal_write("4\n", VGA_COLOR_RED, offset);
-	offset += strlen("4\n");
-	terminal_write("5\n", VGA_COLOR_RED, offset);
-	offset += strlen("5\n");
-	for(size_t i = 0; i < 21; i++) {
-		terminal_write("\n", VGA_COLOR_RED, offset);
-		offset += strlen("\n");
-	}
-    TEST_ASSERT_EQUAL_CHAR((uint16_t) '2' | (uint16_t) VGA_COLOR_RED << 8u, buffer[0u*80u + 0u]);
-    TEST_ASSERT_EQUAL_CHAR((uint16_t) '3' | (uint16_t) VGA_COLOR_RED << 8u, buffer[1u*80u + 0u]);
-    TEST_ASSERT_EQUAL_CHAR((uint16_t) '4' | (uint16_t) VGA_COLOR_RED << 8u, buffer[2u*80u + 0u]);
-    TEST_ASSERT_EQUAL_CHAR((uint16_t) '5' | (uint16_t) VGA_COLOR_RED << 8u, buffer[3u*80u + 0u]);
-    TEST_ASSERT_EQUAL_CHAR((uint16_t) ' ' | (uint16_t) VGA_COLOR_RED << 8u, buffer[4u*80u + 0u]);
+    size_t offset = 0u;
+    char *const parsed_string = parse_util("this is a test of scrolling\n", 0u);
+    TEST_ASSERT_EQUAL_INT(80u, strlen(parsed_string));
+    for(int32_t i = 0; i < 25; ++i) {
+        terminal_writing_common_util(parsed_string, 80u, VGA_COLOR_RED, offset);
+        offset += 80u;
+    }
+    free(parsed_string);
 }
 
 int main(void) {
@@ -304,7 +296,7 @@ int main(void) {
     RUN_TEST(test_terminal_writestring);
     RUN_TEST(test_terminal_write_color);
     RUN_TEST(test_terminal_writestring_color);
-	RUN_TEST(test_terminal_scroll);
+    RUN_TEST(test_terminal_scroll);
     UNITY_END();
     return 0;
 }
