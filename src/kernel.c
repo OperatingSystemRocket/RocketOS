@@ -30,5 +30,6 @@ void kernel_main(void) {
     //}
     //terminal_writestring("this is a test of scrolling\n");
 
-    cprintf("%c %i", 'c', 5);
+    cprintf("Hello %c %i\n", 'c', 5);
+    terminal_writestring("this is a test of scrolling\n");
 }

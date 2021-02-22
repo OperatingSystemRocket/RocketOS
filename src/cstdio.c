@@ -1,20 +1,21 @@
 #include "cstdio.h"
 
 //For now just cover the none cases. Deal with length modifiers later
-static int32_t conversion_specifier(const char *const format, const size_t format_size, const size_t index, va_list* variadic_args) {
-    cassert(index < format_size, -1);
+static int32_t conversion_specifier(const char *const format, const size_t format_size, size_t *const index, va_list* variadic_args) {
+    cassert((*index) < format_size, -1);
 
-    if(format[index] == '%') {
-        if((index+1) < format_size) {
+    if(format[*index] == '%') {
+        if(((*index)+1) < format_size) {
             //max amount of digits I will allow is 127 (since null terminator is last byte of number)
             //wack switch case rules
             char str[128];
             int64_t number;
 
-            switch (format[index + 1]) {
+            switch (format[(*index) + 1]) {
                 case 'c':
                     //for some reason (maybe integer promotion), cppreference says to retrieve the character via as an int
                     terminal_putchar(va_arg(*variadic_args, int));
+                    *index += 1u;
                     return 1;
                 case 's':
                     terminal_writestring(va_arg(*variadic_args, char*));
@@ -24,6 +25,7 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     number = va_arg(*variadic_args, int);
                     cint_to_string(number, str, 128);
                     terminal_writestring(str);
+                    *index += 1u;
                     return 3;
                 case 'o':
                     return 4;
@@ -50,6 +52,8 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     return 12;
             }
         }
+    } else {
+        terminal_putchar(format[*index]);
     }
     return 0;
 }
@@ -92,7 +96,7 @@ int cprintf(const char *const format, ...) {
     //const uint32_t value = va_arg(pargs, int32_t);
 
     for(uint32_t i = 0u; i < cstrlen(format); ++i) {
-        conversion_specifier(format, cstrlen(format), i, &pargs);
+        conversion_specifier(format, cstrlen(format), &i, &pargs);
     }
 
     va_end(pargs);
