@@ -42,6 +42,8 @@ void terminal_putentryat(char c, enum vga_color color, size_t x, size_t y);
 
 void terminal_putchar(char c);
 
+void terminal_putchar_color(char c, enum vga_color color);
+
 void terminal_write(const char* text, size_t size);
 
 void terminal_writestring(const char* text);
