@@ -18,8 +18,8 @@ static size_t terminal_row;
 static size_t terminal_column;
 static enum vga_color terminal_color;
 static volatile uint16_t* terminal_buffer;
-static volatile uint16_t* terminal_upward_history;
-static volatile uint16_t* terminal_downward_history;
+static volatile uint16_t terminal_upward_history[VGA_WIDTH * VGA_HEIGHT];
+static volatile uint16_t terminal_downward_history[VGA_WIDTH * VGA_HEIGHT];
 static size_t terminal_upward_history_size;
 static size_t terminal_downward_history_size;
 
@@ -46,8 +46,6 @@ void terminal_clear(void) {
             terminal_buffer[index] = vga_entry(' ', terminal_color);
         }
     }
-    terminal_upward_history = 0;
-    terminal_downward_history = 0;
 }
 
 void terminal_setcolor(const enum vga_color color) {
@@ -116,7 +114,7 @@ void terminal_scroll_down(void) {
 	    }
     } else {
         for(size_t x = terminal_downward_history_size - 1; x > 0; x--) {
-            terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x] = terminal_downward_history[terminal_downward_history_size--];
+            terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x] = terminal_downward_history[--terminal_downward_history_size];
         }
     }
 	terminal_row = VGA_HEIGHT - 1;
@@ -124,7 +122,7 @@ void terminal_scroll_down(void) {
 }
 
 void terminal_scroll_up(void) {
-    if(terminal_upward_history == 0) return;
+    if(terminal_upward_history_size == 0) return;
     for(size_t x = 0; x < VGA_WIDTH; x++) {
         terminal_downward_history[terminal_downward_history_size++] = terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x];
     }
@@ -133,8 +131,8 @@ void terminal_scroll_up(void) {
 			terminal_buffer[y * VGA_WIDTH + x] = terminal_buffer[(y - 1) * VGA_WIDTH + x];
 		}
 	}
-    for(size_t x = terminal_upward_history_size; x > 0; x--) {
-        terminal_buffer[x] = terminal_downward_history[terminal_downward_history_size--];
+    for(size_t x = 1; x < VGA_WIDTH + 1; x++) {
+        terminal_buffer[VGA_WIDTH - x] = terminal_upward_history[--terminal_downward_history_size];
     }
 	terminal_row = VGA_HEIGHT - 1;
 	terminal_column = 0;
