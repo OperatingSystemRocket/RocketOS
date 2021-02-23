@@ -8,4 +8,7 @@ void kernel_main(void) {
 
     kprintf("Hello %c %i %s\n", 'c', 5, "Hello String");
     terminal_writestring("this is a test of scrolling\n");
+    terminal_scroll_up();
+    terminal_scroll_down();
+    terminal_scroll_up();
 }
