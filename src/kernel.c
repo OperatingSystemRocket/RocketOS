@@ -13,5 +13,5 @@ void kernel_main(void) {
     terminal_putchar('t');
     terminal_putchar('\n');
 
-    kassert_message_void(1==2, "kernel_message_void test");
+    kassert_void(1==2);
 }

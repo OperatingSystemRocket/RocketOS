@@ -5,7 +5,7 @@ Welcome to RocketOS's Documentation!
    :maxdepth: 2
    :caption: Pages:
 
-   cassert
+   kassert
 
 
 
