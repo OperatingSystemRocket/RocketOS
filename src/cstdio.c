@@ -1,5 +1,7 @@
 #include "cstdio.h"
 
+
+
 //For now just cover the none cases. Deal with length modifiers later
 static int32_t conversion_specifier(const char *const format, const size_t format_size, size_t *const index, va_list* variadic_args) {
     cassert((*index) < format_size, -1);
@@ -7,7 +9,7 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
     if(format[*index] == '%') {
         if(((*index)+1) < format_size) {
             //max amount of digits I will allow is 127 (since null terminator is last byte of number)
-            //wack switch case rules
+            //wack switch case rules described here: https://stackoverflow.com/questions/3757445/switch-case-declaration-with-initialization-declaration-and-then-assignment
             char str[128];
             int64_t number;
 
@@ -59,42 +61,10 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
     return 0;
 }
 
-/*
-static int32_t length_modifier(const char *const format, const size_t format_size, const size_t index, va_list* variadic_args) {
-    cassert(index < format_size, -1);
-
-    switch(format[index]) {
-        case 'h':
-            if((index+1) < format_size && format[index+1] == 'h') {
-                return 1;
-            } else {
-                return 2;
-            }
-        case 'l':
-            if((index+1) < format_size && format[index+1] == 'l') {
-                return 3;
-            } else {
-                return 4;
-            }
-        case 'j':
-            return 5;
-        case 'z':
-            return 6;
-        case 't':
-            return 7;
-        case 'L':
-            return 8;
-    }
-    return 0;
-}
-*/
-
 int cprintf(const char *const format, ...) {
     va_list pargs;
 
     va_start(pargs, format);
-
-    //const uint32_t value = va_arg(pargs, int32_t);
 
     for(uint32_t i = 0u; i < cstrlen(format); ++i) {
         conversion_specifier(format, cstrlen(format), &i, &pargs);
@@ -102,5 +72,5 @@ int cprintf(const char *const format, ...) {
 
     va_end(pargs);
 
-
+    return 0; //@todo implement return value
 }

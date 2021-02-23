@@ -21,7 +21,7 @@ static volatile uint16_t* terminal_buffer;
 
 
 void terminal_initialize(void) {
-    terminal_initialize_test((uint16_t*)0xB8000);
+    terminal_initialize_test((uint16_t*)0xB8000u);
 }
 
 void terminal_initialize_test(uint16_t *const terminal_buffer_address) {
@@ -32,11 +32,11 @@ void terminal_initialize_test(uint16_t *const terminal_buffer_address) {
 }
 
 void terminal_clear(void) {
-    terminal_row = 0;
-    terminal_column = 0;
+    terminal_row = 0u;
+    terminal_column = 0u;
 
-    for (size_t y = 0; y < VGA_HEIGHT; y++) {
-        for (size_t x = 0; x < VGA_WIDTH; x++) {
+    for (size_t y = 0u; y < VGA_HEIGHT; y++) {
+        for (size_t x = 0u; x < VGA_WIDTH; x++) {
             const size_t index = y * VGA_WIDTH + x;
             terminal_buffer[index] = vga_entry(' ', terminal_color);
         }
@@ -95,14 +95,14 @@ void terminal_writestring_color(const char *const text, const enum vga_color col
 }
 
 void terminal_scroll(void) {
-	for(size_t y = 0; y < VGA_HEIGHT - 1; y++) {
-		for(size_t x = 0; x < VGA_WIDTH; x++) {
-			terminal_buffer[y * VGA_WIDTH + x] = terminal_buffer[(y + 1) * VGA_WIDTH + x];
+	for(size_t y = 0u; y < VGA_HEIGHT - 1; y++) {
+		for(size_t x = 0u; x < VGA_WIDTH; x++) {
+			terminal_buffer[y * VGA_WIDTH + x] = terminal_buffer[(y + 1u) * VGA_WIDTH + x];
 		}
 	}
-	for(size_t x = 0; x < VGA_WIDTH; x++) {
+	for(size_t x = 0u; x < VGA_WIDTH; x++) {
 		terminal_putentryat(' ', terminal_color, x, VGA_HEIGHT - 1);
 	}
 	terminal_row = VGA_HEIGHT - 1;
-	terminal_column = 0;
+	terminal_column = 0u;
 }

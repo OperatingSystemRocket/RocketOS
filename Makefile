@@ -6,7 +6,6 @@ CC := i686-elf-gcc
 AS := i686-elf-as
 endif
 
-#may decrease number of warning flags for KERNEL_CFLAGS in the future
 WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Wstrict-prototypes -Wcast-qual -Wconversion -Wunreachable-code \
                   -Wwrite-strings -Wredundant-decls -Wnested-externs \
