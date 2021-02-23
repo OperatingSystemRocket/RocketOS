@@ -1,7 +1,7 @@
-#include "cstring.h"
+#include "kstring.h"
 
-size_t cstrlen(const char *const str) {
-    cassert(str != NULL, 0);
+size_t kstrlen(const char *const str) {
+    kassert(str != NULL, 0);
 
     size_t len = 0;
     while (str[len])
@@ -9,10 +9,10 @@ size_t cstrlen(const char *const str) {
     return len;
 }
 
-int cstrcmp(const char *const lhs, const char *const rhs) {
-    cassert(lhs != NULL && rhs != NULL, 0);
+int32_t kstrcmp(const char *const lhs, const char *const rhs) {
+    kassert(lhs != NULL && rhs != NULL, 0);
 
-	size_t index = 0;
+	size_t index = 0u;
 	while (lhs[index]) {
 		if (lhs[index] == rhs[index]) {
 			index++;
@@ -25,7 +25,7 @@ int cstrcmp(const char *const lhs, const char *const rhs) {
 	return 0;
 }
 
-void cint_to_string(int64_t input, char *const string_ret, const size_t ret_size) {
+void kint_to_string(int64_t input, char *const string_ret, const size_t ret_size) {
     size_t index = 0u;
     if(0u < ret_size && input < 0u) {
         string_ret[index++] = '-';

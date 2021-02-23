@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 
-#include "cassert.h"
+#include "kassert.h"
 #include "vga_driver.h"
-#include "cstring.h"
+#include "kstring.h"
 
-int cprintf(const char *format, ...);
+int kprintf(const char *format, ...);

@@ -1,10 +1,10 @@
-#include "cstdio.h"
+#include "kstdio.h"
 
 
 
 //For now just cover the none cases. Deal with length modifiers later
-static int32_t conversion_specifier(const char *const format, const size_t format_size, size_t *const index, va_list* variadic_args) {
-    cassert((*index) < format_size, -1);
+static int32_t conversion_specifier(const char *const format, const size_t format_size, uint32_t *const index, va_list* variadic_args) {
+    kassert((*index) < format_size, -1);
 
     if(format[*index] == '%') {
         if(((*index)+1) < format_size) {
@@ -26,7 +26,7 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                 case 'd':
                 case 'i':
                     number = va_arg(*variadic_args, int);
-                    cint_to_string(number, str, 128);
+                    kint_to_string(number, str, 128);
                     terminal_writestring(str);
                     *index += 1u;
                     return 3;
@@ -61,13 +61,14 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
     return 0;
 }
 
-int cprintf(const char *const format, ...) {
+int kprintf(const char *const format, ...) {
     va_list pargs;
 
     va_start(pargs, format);
 
-    for(uint32_t i = 0u; i < cstrlen(format); ++i) {
-        conversion_specifier(format, cstrlen(format), &i, &pargs);
+    const size_t format_len = kstrlen(format);
+    for(uint32_t i = 0u; i < format_len; ++i) {
+        conversion_specifier(format, format_len, &i, &pargs);
     }
 
     va_end(pargs);
