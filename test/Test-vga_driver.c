@@ -4,8 +4,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <stdio.h>
-
 
 #define VGA_BUFFER_SIZE 80*25
 
