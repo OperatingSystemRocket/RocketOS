@@ -2,6 +2,7 @@
 
 #include "vga_driver.h"
 #include "cassert.h"
+#include "cstdio.h"
 
 
 void kernel_main(void) {
@@ -18,9 +19,17 @@ void kernel_main(void) {
         terminal_writestring("Test\n");
     }*/
 
-    terminal_writestring("Test\n");
-    for(int32_t i = 0; i < 23; ++i) {
-        terminal_writestring("this is a test of scrolling\n");
-    }
-    terminal_writestring("Testing this buckaroo\n");
+    //terminal_writestring("Test\n");
+    //for(int32_t i = 0; i < 23; ++i) {
+    //    terminal_writestring("this is a test of scrolling\n");
+    //}
+    //terminal_writestring("Testing this buckaroo\n");
+
+    //for(int32_t i = 0; i < 24; ++i) {
+    //    terminal_writestring("this is a test of scrolling\n");
+    //}
+    //terminal_writestring("this is a test of scrolling\n");
+
+    cprintf("Hello %c %i %s\n", 'c', 5, "Hello String");
+    terminal_writestring("this is a test of scrolling\n");
 }
