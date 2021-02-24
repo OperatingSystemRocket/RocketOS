@@ -269,20 +269,51 @@ void test_terminal_write_color(void) {
     free(parsed_string);
 }
 
-void test_terminal_scroll(void) {
+void test_terminal_scrolling(void) {
     //should fill up buffer without scrolling it (25 80 character rows are available using vga buffer)
-    for(int32_t i = 0; i < 25; ++i) {
+    terminal_writestring("Top line\n");
+    for(int32_t i = 0; i < 23; ++i) {
         terminal_writestring("this is a test of scrolling\n");
     }
+    terminal_writestring("Bottom line");
 
     size_t offset = 0u;
-    char *const parsed_string = parse_util("this is a test of scrolling\n", 0u);
-    TEST_ASSERT_EQUAL_INT(80u, strlen(parsed_string));
-    for(int32_t i = 0; i < 25; ++i) {
-        terminal_writing_common_util(parsed_string, 80u, VGA_COLOR_RED, offset);
-        offset += 80u;
-    }
-    free(parsed_string);
+    char *const parsed_string_top = parse_util("Top line\n", 0u);
+    char *const parsed_string_bottom = parse_util("Bottom line", 0u);
+    TEST_ASSERT_EQUAL_INT(80u, strlen(parsed_string_top));
+
+    // check bottom and top are correct
+    terminal_writing_common_util(parsed_string_top, strlen(parsed_string_top), VGA_COLOR_RED, offset);
+    offset = 80u * 24u; // start of last line
+    terminal_writing_common_util(parsed_string_bottom, strlen(parsed_string_bottom), VGA_COLOR_RED, offset);
+
+    //shouldn't scroll up if no history
+    terminal_scroll_up();
+    offset = 0u;
+    terminal_writing_common_util(parsed_string_top, strlen(parsed_string_top), VGA_COLOR_RED, offset);
+    offset = 80u * 24u; // start of last line
+    terminal_writing_common_util(parsed_string_bottom, strlen(parsed_string_bottom), VGA_COLOR_RED, offset);
+
+    //test scrolling down
+    terminal_writestring("\nNew bottom");
+    char *const parsed_string_second = parse_util("this is a test of scrolling\n", 0u);
+    char *const parsed_string_new = parse_util("\nNew bottom", 0u);
+    offset = 0u;
+    terminal_writing_common_util(parsed_string_second, strlen(parsed_string_second), VGA_COLOR_RED, offset);
+    offset = 80u * 23u + strlen(parsed_string_bottom); // start of last line
+    terminal_writing_common_util(parsed_string_new, strlen(parsed_string_new), VGA_COLOR_RED, offset);
+
+    //test scrolling up
+    terminal_scroll_up();
+    offset = 0u;
+    terminal_writing_common_util(parsed_string_top, strlen(parsed_string_top), VGA_COLOR_RED, offset);
+    offset = 80u * 24u; // start of last line
+    terminal_writing_common_util(parsed_string_bottom, strlen(parsed_string_bottom), VGA_COLOR_RED, offset);
+
+    free(parsed_string_top);
+    free(parsed_string_second);
+    free(parsed_string_bottom);
+    free(parsed_string_new);
 }
 
 int main(void) {
@@ -296,7 +327,7 @@ int main(void) {
     RUN_TEST(test_terminal_writestring);
     RUN_TEST(test_terminal_write_color);
     RUN_TEST(test_terminal_writestring_color);
-    RUN_TEST(test_terminal_scroll);
+    RUN_TEST(test_terminal_scrolling);
     UNITY_END();
     return 0;
 }
