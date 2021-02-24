@@ -31,14 +31,14 @@ void kint_to_string(int64_t input, char *const string_ret, const size_t ret_size
         string_ret[index++] = '-';
         input *= -1;
     }
-    while(input) {
+    do {
         size_t current_input = input % 10u;
         input /= 10u;
         const char current_char = current_input + 48u;
         if(index < ret_size) {
             string_ret[index++] = current_char;
         }
-    }
+    } while(input);
     if(index < ret_size) {
         string_ret[index] = '\0';
     }

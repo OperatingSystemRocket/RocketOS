@@ -6,7 +6,4 @@ Welcome to RocketOS's Documentation!
    :caption: Pages:
 
    kassert
-
-
-
-
+   kerrno
