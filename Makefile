@@ -25,6 +25,9 @@ C_OBJECTS_NAME := $(subst src/,,$(C_OBJECTS))
 C_OBJECTS_OUT := $(subst src/,build/objs/,$(C_OBJECTS))
 OBJECTS := build/objs/boot.o $(C_OBJECTS_OUT)
 
+OBJECTS := build/objs/irqHandler.o $(C_OBJECTS_OUT)
+
+
 OBJECTS_WITHOUT_MAIN := $(subst build/objs/kernel.o,,$(C_OBJECTS_OUT))
 
 MKDIR := mkdir -p
@@ -77,6 +80,10 @@ create_directory_structure :
 
 build/objs/boot.o :
 	$(AS) src/boot.s -o build/objs/boot.o
+
+build/objs/irqHandler.o :
+	$(AS) src/irqHandler.s -o build/objs/irqHandler.o
+
 
 
 build/objs/%.o: src/%.c

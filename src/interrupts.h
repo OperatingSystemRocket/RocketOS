@@ -1,8 +1,15 @@
-//
-// Created by dexter on 2/22/21.
-//
+#pragma once
+#include <stdint.h>
 
-#ifndef ROCKETOS_INTERRUPTS_H
-#define ROCKETOS_INTERRUPTS_H
+static inline void outb(uint16_t port, uint8_t val);
 
-#endif //ROCKETOS_INTERRUPTS_H
+struct IDT_entry{
+    unsigned short int offset_lowerbits;
+    unsigned short int selector;
+    unsigned char zero;
+    unsigned char type_attr;
+    unsigned short int offset_higherbits;
+};
+
+struct IDT_entry IDT[256]; // make static?
+

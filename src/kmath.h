@@ -1,8 +1,13 @@
-//
-// Created by dexter on 2/24/21.
-//
+#pragma once
+#include "stdint.h"
 
-#ifndef ROCKETOS_KMATH_H
-#define ROCKETOS_KMATH_H
+int8_t ksignbit(int8_t val);
 
-#endif //ROCKETOS_KMATH_H
+int8_t alg_sign_abs(int8_t val);
+
+int64_t max(int64_t x, int64_t y);
+
+
+int8_t algebraic_sign(int8_t val); // NOTE: not in ISO C, but this sign function probably behaves closer to your expectations. Also it makes implementing abs a bit easier
+
+uint32_t kabs(int64_t val);
