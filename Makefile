@@ -21,8 +21,11 @@ RELEASE_FLAGS := -O3 -DNDEBUG
 #Do not replace these two occurrences of src/ with $(PATHS). It *will* break
 C_NAMES := $(shell find src/ -name '*.c')
 C_OBJECTS := $(patsubst %.c,%.o,$(shell find src/ -name '*.c'))
-C_OBJECTS_NAME := $(subst src/,,$(C_OBJECTS))
-C_OBJECTS_OUT := $(subst src/,build/objs/,$(C_OBJECTS))
+C_OBJECTS_NAME := $(notdir $(C_OBJECTS))
+C_OBJECTS_WITH_DIR := $(subst ./,,$(subst src/,,$(C_OBJECTS)))
+C_DIR := $(addprefix build/objs/,$(subst ./,,$(dir $(C_OBJECTS_WITH_DIR))))
+C_DIR_WITH_STAR := $(addsuffix *,$(C_DIR))
+C_OBJECTS_OUT := $(addprefix build/objs/,$(C_OBJECTS_WITH_DIR))
 OBJECTS := build/objs/boot.o $(C_OBJECTS_OUT)
 
 OBJECTS_WITHOUT_MAIN := $(subst build/objs/kernel.o,,$(C_OBJECTS_OUT))
@@ -73,6 +76,8 @@ create_directory_structure :
 	$(MKDIR) $(PATHO)
 	$(MKDIR) $(PATHR)
 	$(MKDIR) $(PATHOT)
+	echo $(C_DIR_WITH_STAR)
+	$(MKDIR) $(C_DIR)
 
 
 build/objs/boot.o :
@@ -143,3 +148,4 @@ clean :
 	-rm -f $(PATHO)*
 	-rm -f $(PATHR)*
 	-rm -f $(PATHOT)*
+	#-rm -f $(C_DIR_WITH_STAR)

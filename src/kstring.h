@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "kassert.h"
+#include "foo/kassert.h"
 
 size_t kstrlen(const char* str);
 
