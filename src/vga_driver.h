@@ -34,6 +34,8 @@ void terminal_initialize_test(uint16_t *terminal_buffer_address);
 
 void terminal_clear(void);
 
+void terminal_scroll_clear(void);
+
 void terminal_setcolor(enum vga_color color);
 
 void terminal_resetcolor(void);
