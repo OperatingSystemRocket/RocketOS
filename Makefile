@@ -148,4 +148,4 @@ clean :
 	-rm -f $(PATHO)*
 	-rm -f $(PATHR)*
 	-rm -f $(PATHOT)*
-	#-rm -f $(C_DIR_WITH_STAR)
+	-rm -f $(C_DIR_WITH_STAR)
