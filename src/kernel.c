@@ -1,5 +1,6 @@
 #include "kstdio.h"
 #include "kmath.h"
+#include "interrupts.h"
 
 
 void kernel_main(void) {
@@ -16,7 +17,10 @@ void kernel_main(void) {
     terminal_putchar('\n');
 
 
-    kprintf("%i\n", algebraic_sign(0));
+    idt_init();
+
+
+    kprintf("%i\n", ksign(0));
 
     kprintf("%i\n", ksignbit(1));
     kprintf("%i\n", ksignbit(2));
@@ -25,10 +29,4 @@ void kernel_main(void) {
     kprintf("%i\n", ksignbit(3));
 
     kprintf("%i\n", ksignbit(13));
-
-
-
-
-    kassert_void(1==2);
-
 }
