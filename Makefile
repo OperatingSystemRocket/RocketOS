@@ -23,9 +23,7 @@ C_NAMES := $(shell find src/ -name '*.c')
 C_OBJECTS := $(patsubst %.c,%.o,$(shell find src/ -name '*.c'))
 C_OBJECTS_NAME := $(subst src/,,$(C_OBJECTS))
 C_OBJECTS_OUT := $(subst src/,build/objs/,$(C_OBJECTS))
-OBJECTS := build/objs/boot.o $(C_OBJECTS_OUT)
-
-OBJECTS := build/objs/irqHandler.o $(C_OBJECTS_OUT)
+OBJECTS := build/objs/boot.o build/objs/irqHandler.o $(C_OBJECTS_OUT)
 
 
 OBJECTS_WITHOUT_MAIN := $(subst build/objs/kernel.o,,$(C_OBJECTS_OUT))
@@ -57,7 +55,7 @@ all : build
 
 
 #creates bootable image
-build : create_directory_structure os.bin run_static_analyzers
+build : create_directory_structure os.bin
 	./is_multiboot.sh
 	mkdir -p isodir/boot/grub
 	cp build/results/os.bin isodir/boot/os.bin
@@ -105,7 +103,7 @@ TEXT_FILES := $(subst build/objs/,$(PATHOT),$(patsubst %.out,%.txt,$(TEST_C_OBJE
 
 
 
-test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES) run_static_analyzers
+test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES)
 	@echo "\n"
 	cat $(TEXT_FILES)
 	@echo "\n"

@@ -3,6 +3,7 @@
 
 
 void kernel_main(void) {
+
     terminal_initialize();
 
     kprintf("Hello %c %i %s\n", 'c', 5, "Hello String");
@@ -15,23 +16,19 @@ void kernel_main(void) {
     terminal_putchar('\n');
 
 
-    kprintf("%i", algebraic_sign(0));
-    terminal_putchar('\n');
-    kprintf("%i", ksignbit(1));
-    terminal_putchar('\n');
-    kprintf("%i", ksignbit(2));
-    terminal_putchar('\n');
-    kprintf("%i", ksignbit(-3));
-    terminal_putchar('\n');
+    kprintf("%i\n", algebraic_sign(0));
 
-    kprintf("%i", ksignbit(3));
-    terminal_putchar('\n');
+    kprintf("%i\n", ksignbit(1));
+    kprintf("%i\n", ksignbit(2));
+    kprintf("%i\n", ksignbit(-3));
 
-    kprintf("%i", ksignbit(13));
-    terminal_putchar('\n');
+    kprintf("%i\n", ksignbit(3));
+
+    kprintf("%i\n", ksignbit(13));
 
 
 
 
     kassert_void(1==2);
+
 }
