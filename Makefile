@@ -32,16 +32,22 @@ PATHOT := build/tests/
 
 
 #Do not replace these two occurrences of src/ with $(PATHS). It *will* break
+AS_NAMES := $(shell find src/ -name '*.s')
+AS_NAME_WITH_DIR := $(subst src/,build/objs/,$(AS_NAMES))
+AS_OBJS_WITH_DIR := $(patsubst %.s,%.o,$(AS_NAME_WITH_DIR))
+AS_OBJS_DIR := $(subst ./,,$(dir $(AS_OBJS_WITH_DIR)))
+AS_OBJS_DIR_WITH_STAR := $(addsuffix *,$(AS_OBJS_DIR))
+
 C_NAMES := $(shell find src/ -name '*.c')
 H_FILES_DIR := $(dir $(shell find src/ -name '*.h'))
 H_FILES_INCLUDE := $(addprefix -I,$(H_FILES_DIR))
-C_OBJECTS := $(patsubst %.c,%.o,$(shell find src/ -name '*.c'))
+C_OBJECTS := $(patsubst %.c,%.o,$(C_NAMES))
 C_OBJECTS_NAME := $(notdir $(C_OBJECTS))
 C_OBJECTS_WITH_DIR := $(subst ./,,$(subst src/,,$(C_OBJECTS)))
 C_DIR := $(addprefix build/objs/,$(subst ./,,$(dir $(C_OBJECTS_WITH_DIR))))
 C_DIR_WITH_STAR := $(addsuffix *,$(C_DIR))
 C_OBJECTS_OUT := $(addprefix build/objs/,$(C_OBJECTS_WITH_DIR))
-OBJECTS := build/objs/boot.o $(C_OBJECTS_OUT)
+OBJECTS := $(AS_OBJS_WITH_DIR) $(C_OBJECTS_OUT)
 
 OBJECTS_WITHOUT_MAIN := $(subst build/objs/kernel.o,,$(C_OBJECTS_OUT))
 
@@ -93,11 +99,12 @@ create_directory_structure :
 	$(MKDIR) $(PATHR)
 	$(MKDIR) $(PATHOT)
 	$(MKDIR) $(C_DIR)
+	$(MKDIR) $(AS_OBJS_DIR)
 	$(MKDIR) $(TEST_DIR)
 
 
-build/objs/boot.o :
-	$(AS) src/boot.s -o build/objs/boot.o
+build/objs/%.o : src/%.s
+	$(AS) $(subst build/objs,src/,$^) -o $@
 
 
 build/objs/%.o: src/%.c
@@ -153,4 +160,5 @@ clean :
 	-rm -f $(PATHR)*
 	-rm -f $(PATHOT)*
 	-rm -f $(C_DIR_WITH_STAR)
+	-rm -f $(AS_OBJS_DIR_WITH_STAR)
 	-rm -rf build/
