@@ -49,7 +49,7 @@ C_DIR_WITH_STAR := $(addsuffix *,$(C_DIR))
 C_OBJECTS_OUT := $(addprefix build/objs/,$(C_OBJECTS_WITH_DIR))
 OBJECTS := $(AS_OBJS_WITH_DIR) $(C_OBJECTS_OUT)
 
-OBJECTS_WITHOUT_MAIN := $(subst build/objs/kernel.o,,$(C_OBJECTS_OUT))
+OBJECTS_WITHOUT_MAIN := $(subst build/objs/boot/kernel.o,,$(C_OBJECTS_OUT))
 
 
 TEST_C := $(shell find test/ -name '*.c')

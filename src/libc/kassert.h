@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kstdio.h"
-#include "vga_driver.h"
+#include "../drivers/vga_driver.h"
 
 //@todo disable asserts when NDEBUG is defined so that no release runtime performance penalty is kept for asserts
 

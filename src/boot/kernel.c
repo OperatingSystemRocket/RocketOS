@@ -1,4 +1,4 @@
-#include "kstdio.h"
+#include "../libc/kstdio.h"
 
 
 void kernel_main(void) {
