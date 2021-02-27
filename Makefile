@@ -47,6 +47,7 @@ OBJECTS_WITHOUT_MAIN := $(subst build/objs/kernel.o,,$(C_OBJECTS_OUT))
 
 
 TEST_C := $(shell find test/ -name '*.c')
+TEST_DIR := $(addprefix $(PATHOT),$(subst test/,,$(subst ./,,$(dir $(TEST_C)))))
 TEST_OBJECTS := $(patsubst %.c, %.o, $(TEST_C))
 TEST_C_WITHOUT_TEST_NAMES := $(subst test/,build/objs/,$(subst Test-,,$(TEST_C)))
 TEST_C_WITHOUT_TEST_OBJ := $(patsubst %.c,%.o,$(TEST_C_WITHOUT_TEST_NAMES))
@@ -92,6 +93,7 @@ create_directory_structure :
 	$(MKDIR) $(PATHR)
 	$(MKDIR) $(PATHOT)
 	$(MKDIR) $(C_DIR)
+	$(MKDIR) $(TEST_DIR)
 
 
 build/objs/boot.o :
