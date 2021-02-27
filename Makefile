@@ -20,6 +20,8 @@ RELEASE_FLAGS := -O3 -DNDEBUG
 
 #Do not replace these two occurrences of src/ with $(PATHS). It *will* break
 C_NAMES := $(shell find src/ -name '*.c')
+H_FILES_DIR := $(dir $(shell find src/ -name '*.h'))
+H_FILES_INCLUDE := $(addprefix -I,$(H_FILES_DIR))
 C_OBJECTS := $(patsubst %.c,%.o,$(shell find src/ -name '*.c'))
 C_OBJECTS_NAME := $(notdir $(C_OBJECTS))
 C_OBJECTS_WITH_DIR := $(subst ./,,$(subst src/,,$(C_OBJECTS)))
@@ -43,7 +45,7 @@ PATHOT := build/tests/
 
 
 DEPEND := $(TEST_CC) -MM -MG -MF
-CFLAGS := -I. -I$(PATHU) -I$(PATHS) -DTEST
+CFLAGS := -I. -I$(PATHU) $(H_FILES_INCLUDE) -DTEST
 
 
 ifdef RELEASE
@@ -76,7 +78,6 @@ create_directory_structure :
 	$(MKDIR) $(PATHO)
 	$(MKDIR) $(PATHR)
 	$(MKDIR) $(PATHOT)
-	echo $(C_DIR_WITH_STAR)
 	$(MKDIR) $(C_DIR)
 
 
@@ -149,3 +150,4 @@ clean :
 	-rm -f $(PATHR)*
 	-rm -f $(PATHOT)*
 	-rm -f $(C_DIR_WITH_STAR)
+	-rm -rf build/
