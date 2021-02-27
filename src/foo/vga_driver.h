@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../kstring.h"
+#include "kstring.h"
 
 /* Hardware text mode color constants. */
 enum vga_color {

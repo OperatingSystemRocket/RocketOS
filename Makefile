@@ -18,6 +18,19 @@ IMAGE_FLAGS := -ffreestanding -O3 -nostdlib
 DEBUG_FLAGS := -fverbose-asm -Og -DDEBUG -save-temps=obj
 RELEASE_FLAGS := -O3 -DNDEBUG
 
+
+MKDIR := mkdir -p
+
+PATHU := Unity/src/
+PATHS := src/
+PATHT := test/
+PATHB := build/
+PATHD := build/depends/
+PATHO := build/objs/
+PATHR := build/results/
+PATHOT := build/tests/
+
+
 #Do not replace these two occurrences of src/ with $(PATHS). It *will* break
 C_NAMES := $(shell find src/ -name '*.c')
 H_FILES_DIR := $(dir $(shell find src/ -name '*.h'))
@@ -32,16 +45,16 @@ OBJECTS := build/objs/boot.o $(C_OBJECTS_OUT)
 
 OBJECTS_WITHOUT_MAIN := $(subst build/objs/kernel.o,,$(C_OBJECTS_OUT))
 
-MKDIR := mkdir -p
 
-PATHU := Unity/src/
-PATHS := src/
-PATHT := test/
-PATHB := build/
-PATHD := build/depends/
-PATHO := build/objs/
-PATHR := build/results/
-PATHOT := build/tests/
+TEST_C := $(shell find test/ -name '*.c')
+TEST_OBJECTS := $(patsubst %.c, %.o, $(TEST_C))
+TEST_C_WITHOUT_TEST_NAMES := $(subst test/,build/objs/,$(subst Test-,,$(TEST_C)))
+TEST_C_WITHOUT_TEST_OBJ := $(patsubst %.c,%.o,$(TEST_C_WITHOUT_TEST_NAMES))
+TEST_C_OBJECTS_NAME := $(subst test/,,$(TEST_OBJECTS))
+TEST_C_OBJECTS_OUT := $(subst test/,build/tests/,$(TEST_OBJECTS))
+TEST_C_OBJECT_EXECUTABLES_WITH_PATH := $(patsubst %.c,%.out,$(TEST_C_WITHOUT_TEST_NAMES))
+TEST_C_OBJECT_EXECUTABLES := $(subst build/objs/,,$(TEST_C_OBJECT_EXECUTABLES_WITH_PATH))
+TEXT_FILES := $(subst build/objs/,$(PATHOT),$(patsubst %.out,%.txt,$(TEST_C_OBJECT_EXECUTABLES_WITH_PATH)))
 
 
 DEPEND := $(TEST_CC) -MM -MG -MF
@@ -86,22 +99,10 @@ build/objs/boot.o :
 
 
 build/objs/%.o: src/%.c
-	$(CC) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(FLAGS)
+	$(CC) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(FLAGS) -I. $(H_FILES_INCLUDE)
 
 os.bin : $(OBJECTS)
 	$(CC) -T linker.ld -o build/results/os.bin $(IMAGE_FLAGS) $(OBJECTS) -lgcc
-
-
-TEST_C := $(wildcard test/*.c)
-TEST_OBJECTS := $(patsubst %.c, %.o, $(shell find test/ -name '*.c'))
-TEST_C_WITHOUT_TEST_NAMES := $(subst test/,build/objs/,$(subst Test-,,$(TEST_C)))
-TEST_C_WITHOUT_TEST_OBJ := $(patsubst %.c,%.o,$(TEST_C_WITHOUT_TEST_NAMES))
-TEST_C_OBJECTS_NAME := $(subst test/,,$(TEST_OBJECTS))
-TEST_C_OBJECTS_OUT := $(subst test/,build/tests/,$(TEST_OBJECTS))
-TEST_C_OBJECT_EXECUTABLES_WITH_PATH := $(patsubst %.c,%.out,$(TEST_C_WITHOUT_TEST_NAMES))
-TEST_C_OBJECT_EXECUTABLES := $(subst build/objs/,,$(TEST_C_OBJECT_EXECUTABLES_WITH_PATH))
-TEXT_FILES := $(subst build/objs/,$(PATHOT),$(patsubst %.out,%.txt,$(TEST_C_OBJECT_EXECUTABLES_WITH_PATH)))
-
 
 
 test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES) run_static_analyzers
@@ -125,7 +126,7 @@ $(PATHOT)%.o : test/%.c
 
 
 %.out : $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN)
-	$(CC) $(OBJECTS_WITHOUT_MAIN) $(PATHD)unity.o $(PATHOT)Test-$(patsubst %.out,%.o,$@) -o $(PATHOT)$@ -ffreestanding -O3 -lgcc
+	$(CC) $(OBJECTS_WITHOUT_MAIN) $(PATHD)unity.o $(PATHOT)$(dir $(patsubst %.out,%.o,$@))Test-$(notdir $(patsubst %.out,%.o,$@)) -o $(PATHOT)$@ -ffreestanding -O3 -lgcc
 	./$(PATHOT)$@ > $(PATHOT)$(patsubst %.out,%.txt,$@)
 
 
