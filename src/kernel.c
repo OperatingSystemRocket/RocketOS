@@ -16,15 +16,17 @@ void kernel_main(void) {
     terminal_putchar('\n');
 
 
-    kprintf("%i\n", algebraic_sign(0));
+    kprintf("%i\n", ksign(0));
 
-    kprintf("%i\n", ksignbit(1));
-    kprintf("%i\n", ksignbit(2));
-    kprintf("%i\n", ksignbit(-3));
+    kprintf("%i\n", ksign(1));
+    kprintf("%i\n", ksign(2));
+    kprintf("%i\n", ksign(-3));
 
-    kprintf("%i\n", ksignbit(3));
+    kprintf("%i\n", ksign(3));
 
-    kprintf("%i\n", ksignbit(13));
+    kprintf("%i\n", kmax(13,15));
+    kprintf("%i\n", kmin(13,15));
+
 
 
 

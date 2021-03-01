@@ -23,34 +23,9 @@
     <list default="true" id="6916a902-d71d-4ed5-b927-f7b088bb9c6e" name="Default Changelist" comment="">
       <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/interrupts.i" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/interrupts.s" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/kernel.i" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/kernel.s" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/kerrno.i" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/kerrno.s" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/kmath.i" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/kmath.s" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/kstdio.i" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/kstdio.s" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/kstring.i" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/kstring.s" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/vga_driver.i" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/objs/vga_driver.s" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/results/os.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/results/os.iso" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/isodir/boot/grub/grub.cfg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/isodir/boot/os.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/warnings.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/boot.s" beforeDir="false" afterPath="$PROJECT_DIR$/src/boot.s" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/interrupts.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/interrupts.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/interrupts.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/interrupts.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/irqHandler.s" beforeDir="false" afterPath="$PROJECT_DIR$/src/irqHandler.s" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/kernel.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/kernel.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/kmath.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/kmath.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/kmath.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/kmath.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Test-kmath.c" beforeDir="false" afterPath="$PROJECT_DIR$/test/Test-kmath.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,11 +94,6 @@
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="GradleAppRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.cpp.gradle.execution.GradleNativeBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <list>
       <item itemvalue="Makefile Application.all" />
       <item itemvalue="Makefile Application.build" />
@@ -154,7 +124,8 @@
       <workItem from="1614203874451" duration="1476000" />
       <workItem from="1614205631070" duration="8862000" />
       <workItem from="1614230202908" duration="981000" />
-      <workItem from="1614273508859" duration="971000" />
+      <workItem from="1614273508859" duration="1672000" />
+      <workItem from="1614360497789" duration="511000" />
     </task>
     <servers />
   </component>
