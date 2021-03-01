@@ -21,10 +21,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6916a902-d71d-4ed5-b927-f7b088bb9c6e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/boot.s" beforeDir="false" afterPath="$PROJECT_DIR$/src/boot.s" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/interrupts.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/interrupts.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/interrupts.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/interrupts.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/kernel.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/kernel.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/kmath.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/kmath.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/kmath.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/kmath.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -126,6 +127,7 @@
       <workItem from="1614230202908" duration="981000" />
       <workItem from="1614273508859" duration="1672000" />
       <workItem from="1614360497789" duration="511000" />
+      <workItem from="1614619644212" duration="1195000" />
     </task>
     <servers />
   </component>

@@ -1,5 +1,6 @@
 #include "kstdio.h"
 #include "kmath.h"
+#include "interrupts.h"
 
 
 void kernel_main(void) {
@@ -14,6 +15,9 @@ void kernel_main(void) {
     terminal_putchar_color('c', VGA_COLOR_CYAN);
     terminal_putchar('t');
     terminal_putchar('\n');
+
+
+    idt_init();
 
 
     kprintf("%i\n", ksign(0));
@@ -33,4 +37,5 @@ void kernel_main(void) {
 
     kassert_void(1==2);
 
+    kprintf("%i\n", ksignbit(13));
 }
