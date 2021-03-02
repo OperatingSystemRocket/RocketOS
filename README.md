@@ -1,13 +1,7 @@
 # <p align="center"> RocketOS </p>
 
-<p align="center">
-    <a href="https://buildkite.com/rocketos/automated-tests" alt="Build Status">
-        <img src="https://badge.buildkite.com/6222e91b75681e950db4ae85010b626b4637c880a14a6539fc.svg" />
-    </a>
-    <a href='https://rocketos.readthedocs.io/en/latest/?badge=latest'>
-        <img src='https://readthedocs.org/projects/rocketos/badge/?version=latest' alt='Documentation Status' />
-    </a>
-</p>
+[![C/C++ CI](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/c-cpp.yml)
+[![Docs](https://readthedocs.org/projects/rocketos/badge/?version=latest)](https://rocketos.readthedocs.io/en/latest/?badge=latest)
 
 
 <details open="open">
