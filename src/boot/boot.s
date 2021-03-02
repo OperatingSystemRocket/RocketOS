@@ -64,7 +64,44 @@ _start:
 	C++ features such as global constructors and exceptions will require
 	runtime support to work as well.
 	*/
- 
+
+	jmp load_gdt
+    #global descriptor table
+    gdt:
+
+    gdt_null:
+        .quad 0
+
+    gdt_code:
+        .word 0xFFFF
+        .word 0
+
+        .byte 0
+        .byte 0b10011010
+        .byte 0b11001111
+        .byte 0
+
+    gdt_data:
+        .word 0xFFFF
+        .word 0
+
+        .byte 0
+        .byte 0b10010010
+        .byte 0b11001111
+        .byte 0
+
+    gdt_end:
+
+    gdt_desc:
+        .word gdt_end - gdt - 1
+        .long gdt
+
+    #load gdt
+    load_gdt:
+        cli  #disable interrupts
+        lgdt gdt_desc(,1)  #load GDT
+        sti  #enable interrupts
+
 	/*
 	Enter the high-level kernel. The ABI requires the stack is 16-byte
 	aligned at the time of the call instruction (which afterwards pushes
@@ -73,6 +110,8 @@ _start:
 	stack since (pushed 0 bytes so far), so the alignment has thus been
 	preserved and the call is well defined.
 	*/
+
+
 	call kernel_main
  
 	/*

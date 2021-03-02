@@ -49,7 +49,7 @@ C_DIR_WITH_STAR := $(addsuffix *,$(C_DIR))
 C_OBJECTS_OUT := $(addprefix build/objs/,$(C_OBJECTS_WITH_DIR))
 OBJECTS := $(AS_OBJS_WITH_DIR) $(C_OBJECTS_OUT)
 
-OBJECTS_WITHOUT_MAIN := $(subst build/objs/boot/kernel.o,,$(C_OBJECTS_OUT))
+OBJECTS_WITHOUT_MAIN := $(subst build/objs/boot/boot.o,,$(subst build/objs/boot/kernel.o,,$(C_OBJECTS_OUT)))
 
 
 TEST_C := $(shell find test/ -name '*.c')
@@ -79,7 +79,7 @@ all : build
 
 
 #creates bootable image
-build : create_directory_structure os.bin run_static_analyzers
+build : create_directory_structure os.bin
 	./is_multiboot.sh
 	mkdir -p isodir/boot/grub
 	cp build/results/os.bin isodir/boot/os.bin
@@ -104,7 +104,11 @@ create_directory_structure :
 
 
 build/objs/%.o : src/%.s
+	@echo $(AS_OBJS_WITH_DIR)
+	@echo $(C_OBJECTS_OUT)
 	$(AS) $(subst build/objs,src/,$^) -o $@
+
+
 
 
 build/objs/%.o: src/%.c
