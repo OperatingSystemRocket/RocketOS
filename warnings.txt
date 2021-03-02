@@ -1,6 +1,0 @@
-/home/dexter/RocketOS/Repo/RocketOS/test/Test-cstring.c:1:10: error: 'unity.h' file not found [clang-diagnostic-error]
-#include "unity.h"
-         ^
-/home/dexter/RocketOS/Repo/RocketOS/test/Test-vga_driver.c:1:10: error: 'unity.h' file not found [clang-diagnostic-error]
-#include "unity.h"
-         ^

@@ -49,7 +49,7 @@ C_DIR_WITH_STAR := $(addsuffix *,$(C_DIR))
 C_OBJECTS_OUT := $(addprefix build/objs/,$(C_OBJECTS_WITH_DIR))
 OBJECTS := $(AS_OBJS_WITH_DIR) $(C_OBJECTS_OUT)
 
-OBJECTS_WITHOUT_MAIN := $(subst build/objs/boot/boot.o,,$(subst build/objs/boot/kernel.o,,$(OBJECTS)))
+OBJECTS_WITHOUT_MAIN := $(subst build/objs/boot/boot.o,,$(subst build/objs/boot/kernel.o,,$(C_OBJECTS_OUT)))
 
 
 TEST_C := $(shell find test/ -name '*.c')
@@ -104,10 +104,10 @@ create_directory_structure :
 
 
 build/objs/%.o : src/%.s
+	@echo $(AS_OBJS_WITH_DIR)
+	@echo $(C_OBJECTS_OUT)
 	$(AS) $(subst build/objs,src/,$^) -o $@
 
-build/objs/irqHandler.o :
-	$(AS) src/irqHandler.s -o build/objs/irqHandler.o
 
 
 
