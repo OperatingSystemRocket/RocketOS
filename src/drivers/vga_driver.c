@@ -46,6 +46,18 @@ void terminal_clear(void) {
             terminal_buffer[index] = vga_entry(' ', terminal_color);
         }
     }
+
+    terminal_upward_history_size = 0;
+    terminal_downward_history_size = 0;
+}
+
+void terminal_scroll_clear(void) {
+    for(int i = 0; i < 25; i++) {
+        terminal_writestring("\n");
+    }
+
+    terminal_row = 0u;
+    terminal_column = 0u;
 }
 
 void terminal_setcolor(const enum vga_color color) {

@@ -65,4 +65,3 @@
 #define EILSEQ		42	/* Illegal byte sequence */
 
 extern int errno;
-

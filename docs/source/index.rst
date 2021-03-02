@@ -5,8 +5,8 @@ Welcome to RocketOS's Documentation!
    :maxdepth: 2
    :caption: Pages:
 
-   kassert
-
-
-
-
+   docs_source/libc/kassert
+   docs_source/libc/kerrno
+   docs_source/libc/kstdio
+   docs_source/libc/kstring
+   docs_source/drivers/vga_driver
