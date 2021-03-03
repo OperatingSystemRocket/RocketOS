@@ -65,7 +65,7 @@ TEXT_FILES := $(subst build/objs/,$(PATHOT),$(patsubst %.out,%.txt,$(TEST_C_OBJE
 
 
 DEPEND := $(TEST_CC) -MM -MG -MF
-CFLAGS := -I. -I$(PATHU) $(H_FILES_INCLUDE) -DTEST
+CFLAGS := -I. -Itest/ -I$(PATHU) $(H_FILES_INCLUDE) -DTEST
 
 
 ifdef RELEASE
