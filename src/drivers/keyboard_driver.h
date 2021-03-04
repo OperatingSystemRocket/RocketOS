@@ -1,4 +1,5 @@
-#include "keyboard_map.h"
+#pragma once
 #include "vga_driver.h"
+#include "keyboard_map.h"
 
-void process_keystroke(unsigned char status, char keycode);
+void process_keystroke(char keycode);
