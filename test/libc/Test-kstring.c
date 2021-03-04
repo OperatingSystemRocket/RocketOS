@@ -53,7 +53,7 @@ void test_kint_to_string(void) {
 }
 
 
-void kernel_main(void) {
+int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_cstrlen);
     RUN_TEST(test_cstrcmp);

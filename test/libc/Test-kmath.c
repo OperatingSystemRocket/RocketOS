@@ -5,7 +5,7 @@ void setUp(void){}
 void tearDown(void){}
 
 
-void kernel_main(void) {
+int main(void) {
     UNITY_BEGIN();
     UNITY_END();
     return 0;

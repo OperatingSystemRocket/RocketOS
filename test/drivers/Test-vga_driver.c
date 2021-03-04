@@ -331,7 +331,7 @@ void test_terminal_scrolling(void) {
     terminal_writing_common_util(parsed_string_bottom, parsed_string_bottom_size, VGA_COLOR_RED, offset);
 }
 
-void kernel_main(void) {
+int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_terminal_clear);
     RUN_TEST(test_terminal_setcolor);
