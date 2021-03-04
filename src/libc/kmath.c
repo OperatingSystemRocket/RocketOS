@@ -13,11 +13,11 @@ int8_t ksign(const int8_t val) {
     return (kabs(val) > 0) ? 1 : -1;
 }
 
-int64_t kmin(int64_t x, int64_t y) {
+int64_t kmin(const int64_t x, const int64_t y) {
     return (x < y) ? x : y;
 }
 
-int64_t kmax(int64_t x, int64_t y) {
+int64_t kmax(const int64_t x, const int64_t y) {
     return (x > y) ? x : y;
 }
 
