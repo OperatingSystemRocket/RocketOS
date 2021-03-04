@@ -1,15 +1,11 @@
 #include "unity.h"
 #include "kstring.h"
 
-#include <string.h>
-#include <stdint.h>
 
-#include <stdio.h>
-
-uint16_t buffer[2048];
+uint16_t buffer[2048u];
 
 void setUp(void) {
-    terminal_initialize_test(&buffer[0]); //so that printing doesn't seg fault
+    terminal_initialize_test(buffer); //so that printing doesn't seg fault
 }
 void tearDown(void) {}
 
@@ -17,7 +13,7 @@ void tearDown(void) {}
 void kint_to_string_util(const char *const expected_text, const int32_t number) {
     char str[128u];
     kint_to_string(number, str, 128u);
-    const size_t size_of_str = strlen(expected_text);
+    const size_t size_of_str = kstrlen(expected_text);
     TEST_ASSERT_EQUAL_MEMORY(expected_text, str, size_of_str);
 }
 

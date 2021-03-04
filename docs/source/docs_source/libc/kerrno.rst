@@ -19,6 +19,6 @@ for examples of use.
 Differences from the C standard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The C standard defines that ``errno`` must be a macro.
+The C11 standard defines that ``errno`` must be a macro.
 In our implementation,
 we just make ``errno`` an ``extern int``.

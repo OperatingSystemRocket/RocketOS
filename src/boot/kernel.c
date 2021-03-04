@@ -4,7 +4,6 @@
 
 
 void kernel_main(void) {
-
     terminal_initialize();
 
     kprintf("Hello %c %i %s\n", 'c', 5, "Hello String");
