@@ -30,7 +30,7 @@ enum vga_color {
 void terminal_initialize(void);
 
 //dependency injection for writing tests for the vga driver or writing tests for code that has asserts/logging
-void terminal_initialize_test(uint16_t *terminal_buffer_address);
+void terminal_initialize_test(uint16_t* terminal_buffer_address);
 
 void terminal_clear(void);
 
@@ -50,9 +50,9 @@ void terminal_write(const char* text, size_t size);
 
 void terminal_writestring(const char* text);
 
-void terminal_write_color(const char *const text, const size_t size, const enum vga_color color);
+void terminal_write_color(const char* text, size_t size, enum vga_color color);
 
-void terminal_writestring_color(const char *const text, const enum vga_color color);
+void terminal_writestring_color(const char* text, enum vga_color color);
 
 void terminal_scroll_down(void);
 

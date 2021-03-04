@@ -68,6 +68,7 @@ DEPEND := $(TEST_CC) -MM -MG -MF
 CFLAGS := -I. -Itest/ -I$(PATHU) $(H_FILES_INCLUDE) -DTEST
 
 
+#debug is default
 ifdef RELEASE
 FLAGS := $(RELEASE_FLAGS)
 else
@@ -87,7 +88,6 @@ build : create_directory_structure os.bin
 	grub-mkrescue -o build/results/os.iso isodir
 
 
-#debug is default
 run : build
 	qemu-system-i386 -cdrom build/results/os.iso
 
