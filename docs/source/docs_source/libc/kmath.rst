@@ -25,7 +25,7 @@ Returns the aforementioned mathematical sign of the argument ``val``.
 ``uint32_t kabs(int64_t val)``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Returns the absolute value of the argument `val`.
+Returns the absolute value of the argument ``val``.
 
 |br|
 
