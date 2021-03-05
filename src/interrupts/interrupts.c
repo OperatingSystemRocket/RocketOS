@@ -21,16 +21,23 @@ static inline void outb(uint16_t port, uint8_t val) {
     * %1 expands to %dx because  port  is a uint16_t.  %w1 could be used if we had the port number a wider C type */
 }
 
-static char inb(uint16_t port) {
-    char result = -1;
-    asm volatile ( "inb %1, %0" : : "a"(result), "Nd"(port) );
-    return result;
+static inline uint8_t inb(uint16_t port)
+{
+    uint8_t ret;
+    asm volatile ( "inb %1, %0"
+    : "=a"(ret)
+    : "Nd"(port) );
+    return ret;
 }
 
 
 static struct IDT_entry IDT[256];
 
 void irq0_handler(void) {
+    outb(0x20, 0x20); //EOI
+}
+
+void irq1_handler(void) {
     unsigned char status;
     char keycode;
 
@@ -43,15 +50,6 @@ void irq0_handler(void) {
         if(keycode < 0) return;
         process_keystroke(keycode);
     }
-}
-
-void irq1_handler(void) {
-    terminal_putchar('a');
-
-    unsigned char status = inb(0x64);
-    char keycode = inb(0x60);
-
-    outb(0x20, 0x20); //EOI
 }
 
 void irq2_handler(void) {

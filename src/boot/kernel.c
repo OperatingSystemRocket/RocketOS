@@ -11,9 +11,5 @@ void kernel_main(void) {
 
     idt_init();
 
-    irq1_handler();
-
-    //while(1) {
-    //    asm volatile("hlt");
-    //}
+    while(1);
 }
