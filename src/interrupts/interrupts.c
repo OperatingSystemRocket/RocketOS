@@ -27,6 +27,7 @@ static char inb(uint16_t port) {
     return result;
 }
 
+
 static struct IDT_entry IDT[256];
 
 void irq0_handler(void) {
@@ -45,6 +46,11 @@ void irq0_handler(void) {
 }
 
 void irq1_handler(void) {
+    terminal_putchar('a');
+
+    unsigned char status = inb(0x64);
+    char keycode = inb(0x60);
+
     outb(0x20, 0x20); //EOI
 }
 
@@ -150,6 +156,9 @@ void idt_init(void) {
     unsigned long idt_address;
     unsigned long idt_ptr[2];
 
+
+
+
     // remapping the PIC
     outb(0x20, 0x11);
     outb(0xA0, 0x11);
@@ -161,6 +170,14 @@ void idt_init(void) {
     outb(0xA1, 0x01);
     outb(0x21, 0x0);
     outb(0xA1, 0x0);
+
+    // disables all interrupts:
+    outb(0x21,0xfd);
+    outb(0xa1,0xff);
+
+
+
+
 
     irq0_address = (unsigned long)irq0;
     IDT[32].offset_lowerbits = irq0_address & 0xffff;

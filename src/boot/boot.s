@@ -113,6 +113,8 @@ _start:
 
 
 	call kernel_main
+
+	#int $1
  
 	/*
 	If the system has nothing more to do, put the computer into an

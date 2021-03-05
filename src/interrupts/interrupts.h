@@ -1,5 +1,8 @@
 #pragma once
+
 #include <stdint.h>
+
+#include "vga_driver.h"
 #include "keyboard_driver.h"
 
 
@@ -12,3 +15,7 @@ struct IDT_entry{
     unsigned char type_attr;
     unsigned short int offset_higherbits;
 };
+
+void irq0_handler(void);
+
+void irq1_handler(void);
