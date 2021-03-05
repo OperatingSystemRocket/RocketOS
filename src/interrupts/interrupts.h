@@ -14,7 +14,7 @@ struct IDT_entry{
     unsigned char zero;
     unsigned char type_attr;
     unsigned short int offset_higherbits;
-};
+} __attribute__((packed));
 
 void irq0_handler(void);
 
