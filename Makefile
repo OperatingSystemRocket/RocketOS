@@ -10,7 +10,7 @@ WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Wstrict-prototypes -Wcast-qual -Wconversion -Wunreachable-code \
                   -Wwrite-strings -Wredundant-decls -Wnested-externs \
                   -Winline -Wno-long-long -Wpedantic
-KERNEL_FLAGS := -std=gnu17 -ffreestanding
+KERNEL_FLAGS := -std=gnu17 -ffreestanding -mgeneral-regs-only
 
 #Do not use these for tests
 IMAGE_FLAGS := -ffreestanding -O3 -nostdlib

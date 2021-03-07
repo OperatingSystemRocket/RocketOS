@@ -6,6 +6,8 @@
 *.ko
 *.obj
 *.elf
+*.i
+build/
 
 # Linker output
 *.ilk
@@ -36,6 +38,10 @@
 *.x86_64
 *.hex
 
+*.bin
+*.iso
+isodir/
+
 # Debug files
 *.dSYM/
 *.su
@@ -50,3 +56,13 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Documentation output
+*.html
+*.pdf
+
+# Editor configs
+.idea/
+.vscode/
+*.json
+*.xml
