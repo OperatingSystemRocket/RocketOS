@@ -51,6 +51,22 @@ static uint8_t pic2_mask = 0xff;
 #define KERNEL_CODE_SEGMENT_OFFSET 0x08
 #define INTERRUPT_GATE 0x8e
 
+struct interrupt_frame {
+  uintptr_t ip;
+  uintptr_t cs;
+  uintptr_t flags;
+  uintptr_t sp;
+  uintptr_t ss;
+};
+
+struct IDT_entry{
+    uint16_t offset_lowerbits;
+    uint16_t selector;
+    uint8_t zero;
+    uint8_t type_attr;
+    uint16_t offset_higherbits;
+};
+
 struct IDT_entry idt[256];
 static unsigned long idt_address;
 static unsigned long idt_ptr[2];
@@ -95,22 +111,6 @@ void pic_init(void) {
   outb(PIC2_DATA, pic2_mask);
   pic_irq_enable(2);
 }
-
-struct interrupt_frame {
-  uintptr_t ip;
-  uintptr_t cs;
-  uintptr_t flags;
-  uintptr_t sp;
-  uintptr_t ss;
-};
-
-struct IDT_entry{
-    uint16_t offset_lowerbits;
-    uint16_t selector;
-    uint8_t zero;
-    uint8_t type_attr;
-    uint16_t offset_higherbits;
-};
 
 __attribute__((interrupt)) static void isr0(struct interrupt_frame* frame) {
     terminal_writestring("Division By Zero\n");
