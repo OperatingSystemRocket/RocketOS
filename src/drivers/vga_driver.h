@@ -74,6 +74,4 @@ void terminal_cursor_down(void);
 
 void terminal_backspace(void);
 
-void terminal_cursor_blink(const bool off);
-
 void terminal_updatecursor(void);

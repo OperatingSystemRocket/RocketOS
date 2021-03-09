@@ -215,7 +215,6 @@ void pic_send_eoi(const uint8_t no) {
 }
 
 __attribute__((interrupt)) static void timer_irq(struct interrupt_frame* frame) {
-    terminal_cursor_blink(false);
     pic_send_eoi(1);
 }
 

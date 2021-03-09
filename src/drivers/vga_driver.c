@@ -76,11 +76,11 @@ void terminal_putentryat(const char c, const enum vga_color color, const size_t 
 
 void terminal_putchar(const char c) {
 	if (c == '\n') {
-        terminal_cursor_blink(true);
 		if(++terminal_row == VGA_HEIGHT) {
 			terminal_scroll_down();
 		}
 		terminal_column = 0;
+        terminal_updatecursor();
 		return;
 	}
     terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
@@ -172,52 +172,40 @@ void terminal_scroll_up(void) {
 }
 
 void terminal_cursor_up(void) {
-    if(cursor_on) terminal_cursor_blink(true);
     if(--terminal_row < 0) {
         terminal_row = 0;
     }
+    terminal_updatecursor();
 }
 
 void terminal_cursor_left(void) {
-    if(cursor_on) terminal_cursor_blink(true);
     if(--terminal_column < 0) {
         terminal_column = 0;
     }
+    terminal_updatecursor();
 }
 
 void terminal_cursor_right(void) {
-    if(cursor_on) terminal_cursor_blink(true);
     if(++terminal_column > 79) {
         terminal_column = 79;
     }
+    terminal_updatecursor();
 }
 
 void terminal_cursor_down(void) {
-    if(cursor_on) terminal_cursor_blink(true);
     if(++terminal_row > 24) {
         terminal_row = 24;
     }
+    terminal_updatecursor();
 }
 
 void terminal_backspace(void) {
-    if(cursor_on) terminal_cursor_blink(true);
     if(--terminal_column < 0) {
         terminal_column = 0;
     } else {
         terminal_swapchar(' ');
     }
-}
-
-void terminal_cursor_blink(const bool off) {
-    if(off) {
-        terminal_swapchar_color((char)terminal_buffer[terminal_row * 80 + terminal_column], terminal_color);
-        cursor_on = false;
-    } else {
-        enum vga_color old_color = terminal_color;
-        enum vga_color swap_fg = terminal_color >> 4u;
-        terminal_swapchar_color((char)terminal_buffer[terminal_row * 80 + terminal_column], vga_entry_color(swap_fg, terminal_color));
-        cursor_on = true;
-    }
+    terminal_updatecursor();
 }
 
 void terminal_updatecursor(void) {
