@@ -120,54 +120,80 @@ void pic_init(void) {
 
 __attribute__((interrupt)) static void isr0(struct interrupt_frame *const frame) {
     terminal_writestring("Division By Zero\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr1(struct interrupt_frame *const frame) {
     terminal_writestring("Debug\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr2(struct interrupt_frame *const frame) {
     terminal_writestring("Non Maskable Interrupt\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr3(struct interrupt_frame *const frame) {
     terminal_writestring("Breakpoint\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr4(struct interrupt_frame *const frame) {
     terminal_writestring("Into Detected Overflow\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr5(struct interrupt_frame *const frame) {
     terminal_writestring("Out of Bounds\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr6(struct interrupt_frame *const frame) {
     terminal_writestring("Invalid Opcode\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr7(struct interrupt_frame *const frame) {
     terminal_writestring("No Coprocessor\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr8(struct interrupt_frame *const frame) {
     terminal_writestring("Double Fault\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr9(struct interrupt_frame *const frame) {
     terminal_writestring("Coprocessor Segment Overrun\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr10(struct interrupt_frame *const frame) {
     terminal_writestring("Bad TSS\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr11(struct interrupt_frame *const frame) {
     terminal_writestring("Segment Not Present\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr12(struct interrupt_frame *const frame) {
     terminal_writestring("Stack Fault\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr13(struct interrupt_frame *const frame) {
@@ -184,26 +210,38 @@ __attribute__((interrupt)) static void isr13(struct interrupt_frame *const frame
 
 __attribute__((interrupt)) static void isr14(struct interrupt_frame *const frame) {
     terminal_writestring("Page Fault\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr15(struct interrupt_frame *const frame) {
     terminal_writestring("Unknown Interrupt\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr16(struct interrupt_frame *const frame) {
     terminal_writestring("Coprocessor Fault\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr17(struct interrupt_frame *const frame) {
     terminal_writestring("Alignment Check\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr18(struct interrupt_frame *const frame) {
     terminal_writestring("Machine Check\n");
+
+    asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr_reserved(struct interrupt_frame *const frame) {
     terminal_writestring("Reserved\n");
+
+    asm("hlt");
 }
 
 
