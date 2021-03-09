@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+#include "hardware_io.h"
 #include "kstdio.h"
 #include "vga_driver.h"
 #include "keyboard_driver.h"

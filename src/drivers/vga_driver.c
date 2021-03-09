@@ -90,6 +90,7 @@ void terminal_putchar(const char c) {
 			terminal_scroll_down();
         }
     }
+    terminal_updatecursor();
 }
 
 void terminal_putchar_color(const char c, const enum vga_color color) {
@@ -217,4 +218,12 @@ void terminal_cursor_blink(const bool off) {
         terminal_swapchar_color((char)terminal_buffer[terminal_row * 80 + terminal_column], vga_entry_color(swap_fg, terminal_color));
         cursor_on = true;
     }
+}
+
+void terminal_updatecursor(void) {
+	const size_t pos = terminal_row * VGA_WIDTH + terminal_column;
+	outb(0x3D4, 14);
+	outb(0x3D5, pos >> 8u);
+	outb(0x3D4, 15);
+	outb(0x3D5, pos);
 }

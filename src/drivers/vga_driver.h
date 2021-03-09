@@ -4,7 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../libc/kstring.h"
+#include "kstring.h"
+#include "hardware_io.h"
+
 
 /* Hardware text mode color constants. */
 enum vga_color {
@@ -73,3 +75,5 @@ void terminal_cursor_down(void);
 void terminal_backspace(void);
 
 void terminal_cursor_blink(const bool off);
+
+void terminal_updatecursor(void);
