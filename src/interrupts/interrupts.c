@@ -1,18 +1,5 @@
 #include "interrupts.h"
 
-/*   /// from a different article, but they might be useful
-read_port:
-    mov edx, [esp + 4]
-    in al, dx
-    ret
-
-write_port:
-    mov   edx, [esp + 4]
-    mov   al, [esp + 4 + 4]
-    out   dx, al
-    ret
-*/
-
 static inline void outb(const uint16_t port, const uint8_t val) {
     asm volatile("outb %0, %1" : : "a"(val), "Nd"(port));
     /*There's an outb %al, $imm8  encoding, for compile-time constant port numbers
@@ -22,13 +9,7 @@ static inline void outb(const uint16_t port, const uint8_t val) {
     * %1 expands to %dx because  port  is a uint16_t.  %w1 could be used if we
     * had the port number a wider C type */
 }
-/*
-static inline char inb(const uint16_t port) {
-    char result = -1;
-    asm volatile("inb %1, %0" : : "a"(result), "Nd"(port));
-    return result;
-}
-*/
+
 static inline uint8_t inb(const uint16_t port) {
 	uint8_t ret;
     asm volatile ( "inb %1, %0" : "=a"(ret) : "Nd"(port) );
