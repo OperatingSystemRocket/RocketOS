@@ -14,14 +14,9 @@ void kernel_main(void) {
     kprintf("Hello %c %i %s\n", 'c', 5, "Hello String");
     terminal_writestring("this is a test of scrolling\n");
 
+    enable_timer();
     enable_keyboard();
-
-    terminal_putchar('c');
-
-
-    //volatile int32_t n = 0;
-    //volatile int32_t y = 3;
-    //volatile int32_t r = y/n;
 
     for(volatile uint32_t i = 0u; ; ++i);
 }
+

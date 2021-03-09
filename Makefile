@@ -1,9 +1,9 @@
 ifdef TEST
 CC := gcc
-AS := as
+AS := nasm
 else
 CC := i686-elf-gcc
-AS := i686-elf-as
+AS := nasm -felf32
 endif
 
 WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
@@ -166,3 +166,4 @@ clean :
 	-rm -f $(C_DIR_WITH_STAR)
 	-rm -f $(AS_OBJS_DIR_WITH_STAR)
 	-rm -rf build/
+

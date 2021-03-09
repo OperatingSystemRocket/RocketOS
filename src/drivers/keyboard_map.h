@@ -1,3 +1,5 @@
 #pragma once
+#include <stdbool.h>
 
-extern unsigned char keyboard_map[128];
+extern bool caps_lock;
+extern char keyboard_map[128];

@@ -214,46 +214,22 @@ void pic_send_eoi(const uint8_t no) {
 	outb(PIC1_COMMAND, PIC_EOI);
 }
 
-unsigned char keyboard_get_key_from_scancode(unsigned char scancode) {
-    return keyboard_map[scancode];
+__attribute__((interrupt)) static void timer_irq(struct interrupt_frame* frame) {
+    terminal_cursor_blink(false);
+    pic_send_eoi(1);
 }
 
 __attribute__((interrupt)) static void keyboard_irq(struct interrupt_frame* frame) {
     unsigned char scancode = inb(0x60);
-/*
-    bool special = true;
 
-    switch (scancode) {
-        case 72:
-            terminal_row--;
-            break;
-        case 75:
-            terminal_column--;
-            break;
-        case 77:
-            terminal_column++;
-            break;
-        case 80:
-            terminal_row++;
-            break;
-        default:
-            special = false;
-    }
-*/
-    //terminal_putchar('a');
-
-
-    //bug: this if statement triggers on every key
     if (scancode & 128u) {
         // This is a release scancode, just ignore it
         pic_send_eoi(1);
         return;
     }
 
-    terminal_putchar('a');
+    process_keystroke(scancode);
 
-    //if (!special) terminal_putchar(keyboard_get_key_from_scancode(scancode));
-    //terminal_updatecursor();
 	pic_send_eoi(1);
 }
 
@@ -268,6 +244,11 @@ void idt_init(void) {
                         "sti\n\t"
                         :
                         : "m"(idt_ptr));
+}
+
+void enable_timer(void) {
+    pic_irq_enable(0);
+    idt_register_handler(32, (uint32_t)timer_irq);
 }
 
 void enable_keyboard(void) {

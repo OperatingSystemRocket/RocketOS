@@ -46,6 +46,10 @@ void terminal_putchar(char c);
 
 void terminal_putchar_color(char c, enum vga_color color);
 
+void terminal_swapchar(const char c);
+
+void terminal_swapchar_color(const char c, const enum vga_color color);
+
 void terminal_write(const char* text, size_t size);
 
 void terminal_writestring(const char* text);
@@ -57,3 +61,15 @@ void terminal_writestring_color(const char* text, enum vga_color color);
 void terminal_scroll_down(void);
 
 void terminal_scroll_up(void);
+
+void terminal_cursor_up(void);
+
+void terminal_cursor_left(void);
+
+void terminal_cursor_right(void);
+
+void terminal_cursor_down(void);
+
+void terminal_backspace(void);
+
+void terminal_cursor_blink(const bool off);
