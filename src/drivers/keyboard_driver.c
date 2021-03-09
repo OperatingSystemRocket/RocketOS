@@ -1,6 +1,7 @@
 #include "keyboard_driver.h"
 
 void process_keystroke(char keycode) {
+    char final;
     switch(keycode) {
         case 14:
            //backspace
@@ -36,7 +37,6 @@ void process_keystroke(char keycode) {
            terminal_cursor_down();
            break;
         default:
-           char final;
             if(caps_lock) {
                 final = keyboard_map[keycode] - 32;
             } else {
