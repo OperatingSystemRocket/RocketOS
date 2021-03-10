@@ -5,7 +5,7 @@ kmath
 
   <br/>
 
-This header currently contains 5 functions, (to be expanded):
+This header currently contains 6 functions, (to be expanded):
 
 ``int8_t ksignbit(int8_t val)``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -41,3 +41,10 @@ Returns whichever argument has the lowest value.
 
 Returns whichever argument has the highest value.
 
+
+|br|
+
+``int64_t kmod(int64_t x, int64_t y)``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Returns the remainder of ''x / y''
