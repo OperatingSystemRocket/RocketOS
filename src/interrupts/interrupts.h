@@ -7,6 +7,7 @@
 #include "vga_driver.h"
 #include "keyboard_driver.h"
 #include "keyboard_map.h"
+#include "time.h"
 
 
 void pic_init(void);

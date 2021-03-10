@@ -21,3 +21,6 @@ int64_t kmax(const int64_t x, const int64_t y) {
     return (x > y) ? x : y;
 }
 
+int64_t kmod(int64_t x, int64_t y) {
+    return x - (y * (x/y));
+}

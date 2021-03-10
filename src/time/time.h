@@ -1,8 +1,24 @@
-//
-// Created by dexter on 3/10/21.
-//
+#pragma once
+#include <stdint.h>
+#include <kmath.h>
 
-#ifndef ROCKETOS_TIME_H
-#define ROCKETOS_TIME_H
+void enable_timer(void);
 
-#endif //ROCKETOS_TIME_H
+void set_time_in_ticks(uint64_t new_val);
+
+void set_time_in_seconds(void);
+
+void increment_time(void);
+
+uint64_t get_time_in_ticks(void);
+
+uint64_t get_time_in_seconds(void);
+
+void enable_time(void);
+
+/*
+void set_time(double new_val);
+
+void increment_time(double amount);
+
+double get_time(void);*/
