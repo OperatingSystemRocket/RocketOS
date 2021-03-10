@@ -47,4 +47,4 @@ Returns whichever argument has the highest value.
 ``int64_t kmod(int64_t x, int64_t y)``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Returns the remainder of ''x / y''
+Returns the remainder of ``x / y``
