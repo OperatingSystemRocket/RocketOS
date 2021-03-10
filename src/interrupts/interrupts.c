@@ -215,11 +215,13 @@ void pic_send_eoi(const uint8_t no) {
 }
 
 __attribute__((interrupt)) static void timer_irq(struct interrupt_frame* frame) {
+    increment_time();
+    set_time_in_seconds();
     pic_send_eoi(1);
 }
 
-__attribute__((interrupt)) static void keyboard_irq(struct interrupt_frame* frame) {
-    unsigned char scancode = inb(0x60);
+__attribute__((interrupt)) static void keyboard_irq(struct interrupt_frame *const frame) {
+    const unsigned char scancode = inb(0x60);
 
     if (scancode & 128u) {
         // This is a release scancode, just ignore it
