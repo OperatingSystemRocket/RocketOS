@@ -12,7 +12,7 @@ void outb(const uint16_t port, const uint8_t val) {
 
 uint8_t inb(const uint16_t port) {
 	uint8_t ret;
-    asm volatile ( "inb %1, %0" : "=a"(ret) : "Nd"(port) );
+    asm volatile("inb %1, %0" : "=a"(ret) : "Nd"(port));
     return ret;
 }
 

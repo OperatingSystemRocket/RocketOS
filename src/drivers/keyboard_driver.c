@@ -1,6 +1,6 @@
 #include "keyboard_driver.h"
 
-void process_keystroke(char keycode) {
+void process_keystroke(const char keycode) {
     char final;
     switch(keycode) {
         case 14:
