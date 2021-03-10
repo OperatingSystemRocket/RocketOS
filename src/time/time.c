@@ -27,7 +27,7 @@ void set_time_in_ticks(uint64_t new_val) {
 void set_time_in_seconds(void) {
     if(kmod(ticks_since_epoch, (uint64_t)18) == (uint64_t)0) {
         seconds_since_epoch++; /// This is grossly inaccurate
-        //kprintf("%i\n", get_time_in_seconds());
+        kprintf("%i\n", get_time_in_seconds());
 
     }
 }
