@@ -22,7 +22,6 @@ static volatile uint16_t terminal_upward_history[VGA_WIDTH * VGA_HEIGHT];
 static volatile uint16_t terminal_downward_history[VGA_WIDTH * VGA_HEIGHT];
 static size_t terminal_upward_history_size;
 static size_t terminal_downward_history_size;
-static bool cursor_on = false;
 
 
 void terminal_initialize(void) {
