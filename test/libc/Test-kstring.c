@@ -25,7 +25,7 @@ void test_cstrlen(void) {
     TEST_ASSERT_EQUAL_INT(1, kstrlen("4"));
 
     //testing that the asserts are triggered
-    TEST_ASSERT_EQUAL_INT(0, kstrcmp(NULL, NULL));
+    TEST_ASSERT_EQUAL_INT(0, kstrlen(NULL));
 }
 
 void test_cstrcmp(void) {
@@ -53,11 +53,12 @@ void test_kint_to_string(void) {
 }
 
 
-int main(void) {
+void kernel_main(void) {
+    terminal_initialize();
+    terminal_writestring("kstring\n");
     UNITY_BEGIN();
     RUN_TEST(test_cstrlen);
     RUN_TEST(test_cstrcmp);
     RUN_TEST(test_kint_to_string);
     UNITY_END();
-    return 0;
 }

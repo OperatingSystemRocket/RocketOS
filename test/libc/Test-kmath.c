@@ -5,8 +5,8 @@ void setUp(void){}
 void tearDown(void){}
 
 
-int main(void) {
+void kernel_main(void) {
+    terminal_initialize();
     UNITY_BEGIN();
     UNITY_END();
-    return 0;
 }

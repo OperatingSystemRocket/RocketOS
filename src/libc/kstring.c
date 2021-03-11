@@ -25,6 +25,21 @@ int32_t kstrcmp(const char *const lhs, const char *const rhs) {
 	return 0;
 }
 
+char* kstrcat(char* destination, const char* source) {
+    kassert(destination != NULL && source != NULL, 0);
+    
+    char* ptr = destination + kstrlen(destination);
+    while(*source != '\0') {
+        *ptr = *source;
+        ptr++;
+        source++;
+    }
+
+    *ptr = '\0';
+
+    return destination;
+}
+
 void kint_to_string(int64_t input, char *const string_ret, const size_t ret_size) {
     size_t index = 0u;
     if(0u < ret_size && input < 0u) {

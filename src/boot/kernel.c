@@ -14,11 +14,7 @@ void kernel_main(void) {
     pic_init();
     isr_install();
 
-    kprintf("Hello %c %i %s\n", 'c', 5, "Hello String");
-    terminal_writestring("this is a test of scrolling\n");
-
-
-    enable_time(); // calls enable_timer()
+    enable_time();
     enable_keyboard();
 
     /*
@@ -37,6 +33,7 @@ void kernel_main(void) {
 
 
 
+    terminal_start();
 
     for(volatile uint32_t i = 0u; ; ++i);
 }

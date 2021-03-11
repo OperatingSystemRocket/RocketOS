@@ -331,7 +331,9 @@ void test_terminal_scrolling(void) {
     terminal_writing_common_util(parsed_string_bottom, parsed_string_bottom_size, VGA_COLOR_RED, offset);
 }
 
-int main(void) {
+void kernel_main(void) {
+    terminal_initialize();
+    terminal_writestring("vga_driver\n");
     UNITY_BEGIN();
     RUN_TEST(test_terminal_clear);
     RUN_TEST(test_terminal_setcolor);
@@ -344,5 +346,4 @@ int main(void) {
     RUN_TEST(test_terminal_writestring_color);
     RUN_TEST(test_terminal_scrolling);
     UNITY_END();
-    return 0;
 }
