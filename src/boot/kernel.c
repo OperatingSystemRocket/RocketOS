@@ -3,6 +3,9 @@
 #include "kstdio.h"
 #include "kmath.h"
 #include "interrupts.h"
+#include "time.h"
+
+
 
 
 void kernel_main(void) {
@@ -11,15 +14,9 @@ void kernel_main(void) {
     pic_init();
     isr_install();
 
-    kprintf("Hello %c %i %s\n", 'c', 5, "Hello String");
-    terminal_writestring("this is a test of scrolling\n");
-
-    enable_timer();
+    enable_time();
     enable_keyboard();
-
-    //volatile int32_t n = 0;
-    //volatile int32_t y = 3;
-    //volatile int32_t r = y/n;
+    terminal_start();
 
     for(volatile uint32_t i = 0u; ; ++i);
 }

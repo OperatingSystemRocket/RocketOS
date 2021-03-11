@@ -112,6 +112,8 @@ _start:
 	; stack since (pushed 0 bytes so far) and the alignment is thus
 	; preserved and the call is well defined.
     ; note, that if you are building on Windows, C functions may have "_" prefix in assembly: _kmain
+
+
 	extern kernel_main
 	call kernel_main
 

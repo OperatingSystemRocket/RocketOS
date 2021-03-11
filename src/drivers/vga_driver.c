@@ -1,6 +1,5 @@
 #include "vga_driver.h"
 
-
 static inline uint8_t vga_entry_color(const enum vga_color fg, const enum vga_color bg) {
     return fg | bg << 4u;
 }
@@ -14,10 +13,6 @@ static inline uint16_t vga_entry(const char uc, const enum vga_color color) {
 #define VGA_HEIGHT 25
 
 
-static size_t terminal_row;
-static size_t terminal_column;
-static enum vga_color terminal_color;
-static volatile uint16_t* terminal_buffer;
 static volatile uint16_t terminal_upward_history[VGA_WIDTH * VGA_HEIGHT];
 static volatile uint16_t terminal_downward_history[VGA_WIDTH * VGA_HEIGHT];
 static size_t terminal_upward_history_size;
@@ -75,11 +70,16 @@ void terminal_putentryat(const char c, const enum vga_color color, const size_t 
 
 void terminal_putchar(const char c) {
 	if (c == '\n') {
+        if(true) {
+            terminal_swapchar('\0');
+            terminal_end();
+        }
 		if(++terminal_row == VGA_HEIGHT) {
 			terminal_scroll_down();
 		}
 		terminal_column = 0;
         terminal_updatecursor();
+        if(true) terminal_process_command();
 		return;
 	}
     terminal_putentryat(c, terminal_color, terminal_column, terminal_row);

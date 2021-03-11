@@ -214,7 +214,9 @@ void pic_send_eoi(const uint8_t no) {
 	outb(PIC1_COMMAND, PIC_EOI);
 }
 
-__attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const frame) {
+__attribute__((interrupt)) static void timer_irq(struct interrupt_frame* frame) {
+    increment_time();
+    set_time_in_seconds();
     pic_send_eoi(1);
 }
 
