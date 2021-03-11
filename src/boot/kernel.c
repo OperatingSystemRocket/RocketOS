@@ -26,6 +26,15 @@ void kernel_main(void) {
     volatile int32_t y = 3;
     volatile int32_t r = y/n;
 */
+    kprintf("%s", "Line 1\n");
+    time_sleep_ticks(5);
+    kprintf("%s", "Line 2\n");
+    time_sleep_ticks(18);
+    kprintf("%s", "Line 3\n");
+    time_sleep_ticks(36);
+    kprintf("%s", "Line 4\n");
+
+
 
 
 
