@@ -1,19 +1,24 @@
 #pragma once
 
-
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
+#include "kstring.h"
 #include "hardware_io.h"
 
 
-int32_t serial_received();
-
-char read_serial();
-
-int32_t is_transmit_empty();
-
-void write_serial(char a);
-
-//returns whether or not the serial is faulty
+//returns whether or not the serial is faulty. true = serial works properly. false = serial is faulty.
 bool serial_init(void);
+
+int8_t serial_received();
+
+char serial_read();
+
+int8_t is_transmit_empty();
+
+void serial_write(const char* text, size_t size);
+
+void serial_writestring(const char* text);
+
+void serial_putchar(char a);

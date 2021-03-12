@@ -86,7 +86,7 @@ build : create_directory_structure os.bin
 
 
 run : build
-	qemu-system-i386 -cdrom build/results/os.iso
+	qemu-system-i386 -serial stdio -cdrom build/results/os.iso
 
 
 create_directory_structure :

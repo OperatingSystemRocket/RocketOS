@@ -6,26 +6,6 @@
 #define COM4 0x2E8
 
 
-int32_t serial_received() {
-   return inb(COM1 + 5) & 1;
-}
-
-char read_serial() {
-   while (serial_received() == 0);
- 
-   return inb(COM1);
-}
-
-int32_t is_transmit_empty() {
-   return inb(COM1 + 5) & 0x20;
-}
-
-void write_serial(const char a) {
-   while (is_transmit_empty() == 0);
- 
-   outb(COM1, a);
-}
-
 bool serial_init(void) {
     outb(COM1 + 1, 0x00);    // Disable all interrupts
     outb(COM1 + 3, 0x80);    // Enable DLAB (set baud rate divisor)
@@ -37,8 +17,38 @@ bool serial_init(void) {
     outb(COM1 + 4, 0x1E);    // Set in loopback mode, test the serial chip
     outb(COM1 + 0, 0xAE);    // Test serial chip (send byte 0xAE and check if serial returns same byte)
 
-    if(inb(COM1 + 0) != 0xAE) return true;
+    if(inb(COM1 + 0) != 0xAE) return false;
 
     outb(COM1 + 4, 0x0F);
-    return false;
+    return true;
+}
+
+int8_t serial_received() {
+   return inb(COM1 + 5) & 1u;
+}
+
+char serial_read() {
+   while (serial_received() == 0);
+ 
+   return inb(COM1);
+}
+
+int8_t is_transmit_empty() {
+   return inb(COM1 + 5) & 0x20u;
+}
+
+void serial_write(const char *const text, size_t size) {
+   for(size_t i = 0u; i < size; ++i) {
+      serial_putchar(text[i]);
+   }
+}
+
+void serial_writestring(const char *const text) {
+   serial_write(text, kstrlen(text));
+}
+
+void serial_putchar(const char a) {
+   while (is_transmit_empty() == 0);
+ 
+   outb(COM1, a);
 }

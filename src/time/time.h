@@ -1,6 +1,8 @@
 #pragma once
+
 #include <stdint.h>
-#include <kmath.h>
+
+#include "kmath.h"
 
 void enable_timer(void);
 
