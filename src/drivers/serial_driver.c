@@ -23,21 +23,21 @@ bool serial_init(void) {
     return true;
 }
 
-int8_t serial_received() {
+int8_t serial_received(void) {
    return inb(COM1 + 5) & 1u;
 }
 
-char serial_read() {
+char serial_read(void) {
    while (serial_received() == 0);
  
    return inb(COM1);
 }
 
-int8_t is_transmit_empty() {
+int8_t is_transmit_empty(void) {
    return inb(COM1 + 5) & 0x20u;
 }
 
-void serial_write(const char *const text, size_t size) {
+void serial_write(const char *const text, const size_t size) {
    for(size_t i = 0u; i < size; ++i) {
       serial_putchar(text[i]);
    }
