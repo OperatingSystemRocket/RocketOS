@@ -1,10 +1,5 @@
-ifdef TEST
-CC := gcc
-AS := nasm
-else
 CC := i686-elf-gcc
 AS := nasm -felf32
-endif
 
 WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Wstrict-prototypes -Wcast-qual -Wconversion -Wunreachable-code \
@@ -49,7 +44,7 @@ C_DIR_WITH_STAR := $(addsuffix *,$(C_DIR))
 C_OBJECTS_OUT := $(addprefix build/objs/,$(C_OBJECTS_WITH_DIR))
 OBJECTS := $(AS_OBJS_WITH_DIR) $(C_OBJECTS_OUT)
 
-OBJECTS_WITHOUT_MAIN := $(subst build/objs/boot/boot.o,,$(subst build/objs/boot/kernel.o,,$(C_OBJECTS_OUT)))
+OBJECTS_WITHOUT_MAIN := $(subst build/objs/boot/kernel.o,,$(OBJECTS))
 
 
 TEST_C := $(shell find test/ -name '*.c')
@@ -59,13 +54,15 @@ TEST_C_WITHOUT_TEST_NAMES := $(subst test/,build/objs/,$(subst Test-,,$(TEST_C))
 TEST_C_WITHOUT_TEST_OBJ := $(patsubst %.c,%.o,$(TEST_C_WITHOUT_TEST_NAMES))
 TEST_C_OBJECTS_NAME := $(subst test/,,$(TEST_OBJECTS))
 TEST_C_OBJECTS_OUT := $(subst test/,build/tests/,$(TEST_OBJECTS))
-TEST_C_OBJECT_EXECUTABLES_WITH_PATH := $(patsubst %.c,%.out,$(TEST_C_WITHOUT_TEST_NAMES))
+TEST_C_OBJECT_EXECUTABLES_WITH_PATH := $(patsubst %.c,%.bin,$(TEST_C_WITHOUT_TEST_NAMES))
 TEST_C_OBJECT_EXECUTABLES := $(subst build/objs/,,$(TEST_C_OBJECT_EXECUTABLES_WITH_PATH))
-TEXT_FILES := $(subst build/objs/,$(PATHOT),$(patsubst %.out,%.txt,$(TEST_C_OBJECT_EXECUTABLES_WITH_PATH)))
+TEXT_FILES := $(subst build/objs/,$(PATHOT),$(patsubst %.bin,%.txt,$(TEST_C_OBJECT_EXECUTABLES_WITH_PATH)))
 
 
+ifdef TEST
 DEPEND := $(TEST_CC) -MM -MG -MF
 CFLAGS := -I. -Itest/ -I$(PATHU) $(H_FILES_INCLUDE) -DTEST
+endif
 
 
 #debug is default
@@ -81,15 +78,15 @@ all : build
 
 #creates bootable image
 build : create_directory_structure os.bin
-	./is_multiboot.sh
-	mkdir -p isodir/boot/grub
+	./is_multiboot.sh build/results/os.bin
+	$(MKDIR) isodir/boot/grub
 	cp build/results/os.bin isodir/boot/os.bin
 	cp grub.cfg isodir/boot/grub/grub.cfg
 	grub-mkrescue -o build/results/os.iso isodir
 
 
 run : build
-	qemu-system-i386 -cdrom build/results/os.iso
+	qemu-system-i386 -serial stdio -cdrom build/results/os.iso
 
 
 create_directory_structure :
@@ -112,13 +109,14 @@ build/objs/%.o : src/%.s
 
 
 build/objs/%.o: src/%.c
-	$(CC) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(FLAGS) -I. $(H_FILES_INCLUDE)
+	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(FLAGS) -I. $(H_FILES_INCLUDE)
 
 os.bin : $(OBJECTS)
+	@echo $(OBJECTS)
 	$(CC) -T linker.ld -o build/results/os.bin $(IMAGE_FLAGS) $(OBJECTS) -lgcc
 
 
-test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES) run_static_analyzers
+test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES)
 	@echo "\n"
 	cat $(TEXT_FILES)
 	@echo "\n"
@@ -138,9 +136,20 @@ $(PATHOT)%.o : test/%.c
 	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(DEBUG_FLAGS)
 
 
-%.out : $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN)
-	$(CC) $(OBJECTS_WITHOUT_MAIN) $(PATHD)unity.o $(PATHOT)$(dir $(patsubst %.out,%.o,$@))Test-$(notdir $(patsubst %.out,%.o,$@)) -o $(PATHOT)$@ -ffreestanding -O3 -lgcc
-	./$(PATHOT)$@ > $(PATHOT)$(patsubst %.out,%.txt,$@)
+%.bin : $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN)
+	$(CC) -T linker.ld $(OBJECTS_WITHOUT_MAIN) $(PATHD)unity.o $(PATHOT)$(dir $(patsubst %.bin,%.o,$@))Test-$(notdir $(patsubst %.bin,%.o,$@)) -o $(PATHOT)$@ $(IMAGE_FLAGS) -lgcc
+	./is_multiboot.sh $(PATHOT)$@
+	$(MKDIR) build/results/$(subst .bin,,$@)/isodir/boot/grub
+	cp $(PATHOT)$@ build/results/$(subst .bin,,$@)/isodir/boot/$(notdir $@)
+	./generate_grubcfg.sh build/results/$(subst .bin,,$@)/isodir/boot/grub/grub.cfg $(subst .bin,,$(notdir $@)) /boot/$(notdir $@)
+	#cp grub.cfg build/results/$(subst .bin,,$@)/isodir/boot/grub/grub.cfg
+	grub-mkrescue -o $(patsubst %.bin,%.iso,build/results/$@) build/results/$(subst .bin,,$@)/isodir/
+	qemu-system-i386 -cdrom $(patsubst %.bin,%.iso,build/results/$@) -serial file:$(PATHOT)$(patsubst %.bin,%.txt,$@)
+
+	#qemu-system-i386 -cdrom $(PATHOT)$@
+	#./$(PATHOT)$@ > $(PATHOT)$(patsubst %.bin,%.txt,$@)
+
+
 
 
 run_static_analyzers :
@@ -166,4 +175,3 @@ clean :
 	-rm -f $(C_DIR_WITH_STAR)
 	-rm -f $(AS_OBJS_DIR_WITH_STAR)
 	-rm -rf build/
-
