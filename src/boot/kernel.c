@@ -14,7 +14,7 @@ void kernel_main(void) {
     pic_init();
     isr_install();
 
-    enable_time();
+    //enable_time();
     enable_keyboard();
     terminal_start();
 

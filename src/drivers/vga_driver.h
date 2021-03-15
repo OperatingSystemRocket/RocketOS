@@ -7,11 +7,11 @@
 #include "kstring.h"
 #include "hardware_io.h"
 
-static bool terminal_on;
-static size_t terminal_row;
-static size_t terminal_column;
-static enum vga_color terminal_color;
-static volatile uint16_t* terminal_buffer;
+extern bool terminal_on;
+extern size_t terminal_row;
+extern size_t terminal_column;
+extern enum vga_color terminal_color;
+extern volatile uint16_t* terminal_buffer;
 
 /* Hardware text mode color constants. */
 enum vga_color {

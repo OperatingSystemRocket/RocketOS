@@ -13,21 +13,23 @@ void terminal_end(void) {
 void terminal_process_command(void) {
     terminal_on = false;
     if(end_of_command - start_of_command <= 0) {
+        kprintf("Invalid command! Try 'help'\n");
         terminal_start();
         return;
     }
-    const char* command_string = get_command();
-    terminal_writestring(command_string);
+    char command_string[80];
+    get_command(command_string);
+    kprintf(kstrcat(command_string, "\n"));
     terminal_start();
 }
 
-const char* get_command(void) {
-    char* final;
-    char* temp;
-    for(size_t i = start_of_command; i <= end_of_command; i++) {
-        *temp = (char)terminal_buffer[i];
-        *(temp + 1) = '\0';
+void get_command(char final[]) {
+    final[0] = (char)terminal_buffer[start_of_command];
+    final[1] = '\0';
+    char temp[2];
+    for(size_t i = start_of_command + 1; i < end_of_command; i++) {
+        temp[0] = (char)terminal_buffer[i];
+        temp[1] = '\0';
         kstrcat(final, temp);
     }
-    return final;
 }

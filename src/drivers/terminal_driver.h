@@ -10,4 +10,4 @@ void terminal_start(void);
 void terminal_end(void);
 void terminal_process_command(void);
 
-const char* get_command(void);
+void get_command(char final[]);
