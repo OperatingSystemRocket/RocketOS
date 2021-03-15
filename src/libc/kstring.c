@@ -29,7 +29,7 @@ int32_t kstrncmp(const char *const lhs, const char *const rhs, const size_t sz) 
     kassert(lhs != NULL && rhs != NULL, 0);
 
 	size_t index = 0u;
-	while (lhs[index] && index < sz) {
+	while (index < sz) {
 		if (lhs[index] == rhs[index]) {
 			index++;
 		} else if (lhs[index] < rhs[index]) {
