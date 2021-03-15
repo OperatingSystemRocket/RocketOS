@@ -12,9 +12,11 @@ void process_keystroke(const char keycode) {
            terminal_writestring("    ");
         case 42:
            //left shift
+           lshift = true;
            break;
         case 54:
            //right shift
+           rshift = true;
            break;
         case 58:
            //caps lock
@@ -37,10 +39,55 @@ void process_keystroke(const char keycode) {
            terminal_cursor_down();
            break;
         default:
-            if(caps_lock) {
-                final = keyboard_map[keycode] - 32;
-            } else {
-                final = keyboard_map[keycode];
+            final = keyboard_map[keycode];
+            if(caps_lock && final >= 97 && final <= 122 && !lshift && !rshift) {
+                final -= 32;
+            } else if(lshift || rshift) {
+                if(final >= 97 && final <= 122 && !caps_lock) {
+                    final -= 32;
+                } else if (final == '`') {
+                    final = '~';
+                } else if (final == '1') {
+                    final = '!';
+                } else if (final == '2') {
+                    final = '@';
+                } else if (final == '3') {
+                    final = '#';
+                } else if (final == '4') {
+                    final = '$';
+                } else if (final == '5') {
+                    final = '%';
+                } else if (final == '6') {
+                    final = '^';
+                } else if (final == '7') {
+                    final = '&';
+                } else if (final == '8') {
+                    final = '*';
+                } else if (final == '9') {
+                    final = '(';
+                } else if (final == '0') {
+                    final = ')';
+                } else if (final == '-') {
+                    final = '_';
+                } else if (final == '=') {
+                    final = '+';
+                } else if (final == '[') {
+                    final = '{';
+                } else if (final == ']') {
+                    final = '}';
+                } else if (final == '\\') {
+                    final = '|';
+                } else if (final == ';') {
+                    final = ':';
+                } else if (final == '\'') {
+                    final = '\"';
+                } else if (final == ',') {
+                    final = '<';
+                } else if (final == '.') {
+                    final = '>';
+                } else if (final == '/') {
+                    final = '?';
+                }
             }
             if(final > 0) {
                 terminal_putchar(final);
