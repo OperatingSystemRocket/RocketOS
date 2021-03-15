@@ -56,7 +56,7 @@ char* kstrcat(char* destination, char* source) {
     return destination;
 }
 
-void kint_to_string(int64_t input, char *const string_ret, const size_t ret_size) {
+char* kint_to_string(int64_t input, char *const string_ret, const size_t ret_size) {
     size_t index = 0u;
     if(0u < ret_size && input < 0u) {
         string_ret[index++] = '-';
@@ -79,4 +79,17 @@ void kint_to_string(int64_t input, char *const string_ret, const size_t ret_size
         string_ret[i+start_index] = string_ret[index-i-1u];
         string_ret[index-i-1u] = temp;
     }
+
+    return string_ret;
+}
+
+void* kmemset(void *const ptr, const int32_t value, size_t num) {
+    char *const ptr_char = ptr; //so we can set each byte
+    const int8_t value_byte = value & 0xFFu; //this is to only grab the lowest byte and discard the rest as we are writing to chars
+
+    while(num--) {
+        *ptr_char = value_byte;
+    }
+
+    return ptr;
 }

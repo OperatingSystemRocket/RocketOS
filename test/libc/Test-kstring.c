@@ -54,8 +54,6 @@ void test_kint_to_string(void) {
 
 
 void kernel_main(void) {
-    terminal_initialize();
-    terminal_writestring("kstring\n");
     UNITY_BEGIN();
     RUN_TEST(test_cstrlen);
     RUN_TEST(test_cstrcmp);
