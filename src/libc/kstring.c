@@ -25,7 +25,23 @@ int32_t kstrcmp(const char *const lhs, const char *const rhs) {
 	return 0;
 }
 
-char* kstrcat(char* destination, const char* source) {
+int32_t kstrncmp(const char *const lhs, const char *const rhs, const size_t sz) {
+    kassert(lhs != NULL && rhs != NULL, 0);
+
+	size_t index = 0u;
+	while (index < sz) {
+		if (lhs[index] == rhs[index]) {
+			index++;
+		} else if (lhs[index] < rhs[index]) {
+			return -1;
+		} else {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+char* kstrcat(char* destination, char* source) {
     kassert(destination != NULL && source != NULL, 0);
     
     char* ptr = destination + kstrlen(destination);

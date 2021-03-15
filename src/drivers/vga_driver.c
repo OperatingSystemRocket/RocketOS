@@ -13,6 +13,11 @@ static inline uint16_t vga_entry(const char uc, const enum vga_color color) {
 #define VGA_HEIGHT 25
 
 
+bool terminal_on;
+size_t terminal_row;
+size_t terminal_column;
+enum vga_color terminal_color;
+volatile uint16_t* terminal_buffer;
 static volatile uint16_t terminal_upward_history[VGA_WIDTH * VGA_HEIGHT];
 static volatile uint16_t terminal_downward_history[VGA_WIDTH * VGA_HEIGHT];
 static size_t terminal_upward_history_size;
@@ -70,16 +75,13 @@ void terminal_putentryat(const char c, const enum vga_color color, const size_t 
 
 void terminal_putchar(const char c) {
 	if (c == '\n') {
-        if(true) {
-            terminal_swapchar('\0');
-            terminal_end();
-        }
+        if(terminal_on) terminal_end();
 		if(++terminal_row == VGA_HEIGHT) {
 			terminal_scroll_down();
 		}
 		terminal_column = 0;
         terminal_updatecursor();
-        if(true) terminal_process_command();
+        if(terminal_on) terminal_process_command();
 		return;
 	}
     terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
@@ -133,6 +135,7 @@ void terminal_writestring_color(const char *const text, const enum vga_color col
 
 void terminal_scroll_down(void) {
     for(size_t x = 0u; x < VGA_WIDTH; x++) {
+        if(terminal_upward_history_size >= VGA_WIDTH * VGA_HEIGHT) terminal_upward_history_size = 0;
         terminal_upward_history[terminal_upward_history_size++] = terminal_buffer[x];
     }
 	for(size_t y = 0u; y < VGA_HEIGHT - 1; y++) {
@@ -145,17 +148,19 @@ void terminal_scroll_down(void) {
 	    	terminal_putentryat(' ', terminal_color, x, VGA_HEIGHT - 1);
 	    }
     } else {
-        for(size_t x = terminal_downward_history_size - 1; x > 0u; x--) {
-            terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x] = terminal_downward_history[--terminal_downward_history_size];
+        for(size_t x = VGA_WIDTH; x > 0u; x--) {
+            terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x - 1] = terminal_downward_history[--terminal_downward_history_size];
         }
     }
 	terminal_row = VGA_HEIGHT - 1;
 	terminal_column = 0u;
+    terminal_shift();
 }
 
 void terminal_scroll_up(void) {
     if(terminal_upward_history_size == 0u) return;
     for(size_t x = 0u; x < VGA_WIDTH; x++) {
+        if(terminal_downward_history_size >= VGA_WIDTH * VGA_HEIGHT) terminal_downward_history_size = 0;
         terminal_downward_history[terminal_downward_history_size++] = terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x];
     }
 	for(size_t y = VGA_HEIGHT - 1; y > 0u; y--) {
@@ -164,21 +169,22 @@ void terminal_scroll_up(void) {
 		}
 	}
     for(size_t x = 1u; x < VGA_WIDTH + 1; x++) {
-        terminal_buffer[VGA_WIDTH - x] = terminal_upward_history[--terminal_downward_history_size];
+        terminal_buffer[VGA_WIDTH - x] = terminal_upward_history[--terminal_upward_history_size];
     }
-	terminal_row = VGA_HEIGHT - 1;
+	terminal_row = 0u;
 	terminal_column = 0u;
 }
 
 void terminal_cursor_up(void) {
-    if(--terminal_row < 0) {
+    if(terminal_row-- == 0) {
+        terminal_scroll_up();
         terminal_row = 0;
     }
     terminal_updatecursor();
 }
 
 void terminal_cursor_left(void) {
-    if(--terminal_column < 0) {
+    if(terminal_column-- == 0) {
         terminal_column = 0;
     }
     terminal_updatecursor();
@@ -193,13 +199,14 @@ void terminal_cursor_right(void) {
 
 void terminal_cursor_down(void) {
     if(++terminal_row > 24) {
+        if(terminal_downward_history_size > 0) terminal_scroll_down();
         terminal_row = 24;
     }
     terminal_updatecursor();
 }
 
 void terminal_backspace(void) {
-    if(--terminal_column < 0) {
+    if(terminal_column-- == 0) {
         terminal_column = 0;
     } else {
         terminal_swapchar(' ');

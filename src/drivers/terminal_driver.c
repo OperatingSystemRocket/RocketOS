@@ -13,21 +13,43 @@ void terminal_end(void) {
 void terminal_process_command(void) {
     terminal_on = false;
     if(end_of_command - start_of_command <= 0) {
+        kprintf("Invalid command! Try 'help'\n");
         terminal_start();
         return;
+    } else if(end_of_command - start_of_command > 79) {
+        kprintf("Command is too long! Limit of 79 characters! Cutting down to length...\n");
+        end_of_command = start_of_command + 79;
     }
-    const char* command_string = get_command();
-    terminal_writestring(command_string);
+    char command_string[80];
+    get_command(command_string);
+    run_command(command_string);
     terminal_start();
 }
 
-const char* get_command(void) {
-    char* final;
-    char* temp;
-    for(size_t i = start_of_command; i <= end_of_command; i++) {
-        *temp = (char)terminal_buffer[i];
-        *(temp + 1) = '\0';
+void terminal_shift(void) {
+    start_of_command -= 80;
+    end_of_command -= 80;
+}
+
+void get_command(char final[]) {
+    final[0] = (char)terminal_buffer[start_of_command];
+    final[1] = '\0';
+    char temp[2];
+    for(size_t i = start_of_command + 1; i < end_of_command; i++) {
+        temp[0] = (char)terminal_buffer[i];
+        temp[1] = '\0';
         kstrcat(final, temp);
     }
-    return final;
+}
+
+void run_command(char* command) {
+    if(kstrncmp(command, "echo", 4) == 0) {
+        if(kstrlen(command) > 5) {
+            kprintf(kstrcat(command + 4, "\n"));
+        } else {
+            kprintf("'echo' requires one argument!\n");
+        }
+    } else {
+        kprintf("Invalid command! Try 'help'\n");
+    }
 }
