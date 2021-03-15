@@ -2,7 +2,7 @@
 
 int32_t color_setting = -1;
 
-//@todo replace with ansi escape codes: https://en.wikipedia.org/wiki/ANSI_escape_code
+//TODO: replace with ansi escape codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 //possible good idea: have zsh type color formatting codes
 static int32_t has_color(const char *const format, const size_t format_size) {
     if(format_size < 2u) return -1;
@@ -86,7 +86,7 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     return 2;
                 case 'd':
                 case 'i':
-                    number = va_arg(*variadic_args, int);
+                    number = va_arg(*variadic_args, unsigned int);
                     kint_to_string(number, str, 128u);
                     if(color_setting == -1) {
                         terminal_writestring(str);
@@ -144,5 +144,5 @@ int kprintf(const char *const format, ...) {
 
     color_setting = -1;
 
-    return 0; //@todo implement return value
+    return 0; //TODO: implement return value
 }

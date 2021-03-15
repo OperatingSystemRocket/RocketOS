@@ -42,4 +42,6 @@ SECTIONS
 
 	/* The compiler may produce other sections, by default it will put them in
 	   a segment with the same name. Simply add stuff here as needed. */
+
+	endkernel = .; /*define address of extern variable to mark the end of the kernel address space*/
 }

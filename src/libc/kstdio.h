@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #include "kassert.h"
-#include "../drivers/vga_driver.h"
+#include "vga_driver.h"
 #include "kstring.h"
 
 int kprintf(const char *format, ...);

@@ -7,6 +7,8 @@
 #include "serial_driver.h"
 #include "kassert.h"
 
+#include "physical_mem_allocator.h"
+
 
 void kernel_main(void) {
     terminal_initialize();
@@ -21,7 +23,7 @@ void kernel_main(void) {
     volatile int32_t n = 0;
     volatile int32_t y = 3;
     volatile int32_t r = y/n;
-*/
+    */
     //kprintf("%s", "Line 1\n");
     //time_sleep_ticks(5);
     //kprintf("%s", "Line 2\n");
@@ -31,6 +33,12 @@ void kernel_main(void) {
     //kprintf("%s", "Line 4\n");
 
 
+    allocate_init();
+    void* allocated_page = allocate_page();
+
+
+    free_page(allocated_page);
+
 
 
     terminal_start();
@@ -38,6 +46,7 @@ void kernel_main(void) {
     kassert_void(serial_init()); //fails if serial is faulty
 
     serial_writestring("hello, this is \n a test \n of serial strings \n containing \n newlines\n");
+
 
 
 

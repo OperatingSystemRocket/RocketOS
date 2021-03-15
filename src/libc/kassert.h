@@ -3,9 +3,7 @@
 #include "kstdio.h"
 #include "vga_driver.h"
 
-//@todo disable asserts when NDEBUG is defined so that no release runtime performance penalty is kept for asserts
-
-//@note clion keep breaking the indentation on these macros, don't bother reformatting them manually
+//TODO: disable asserts when NDEBUG is defined so that no release runtime performance penalty is kept for asserts
 
 #define kassert(cond, return_code)  do { \
                                     if(!(cond)) { \
