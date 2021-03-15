@@ -1,5 +1,8 @@
 #include "keyboard_map.h"
 
+bool rshift = false;
+bool lshift = false;
+
 bool caps_lock = false;
 
 char keyboard_map[128] = {

@@ -225,6 +225,8 @@ __attribute__((interrupt)) static void keyboard_irq(struct interrupt_frame *cons
 
     if (scancode & 128u) {
         // This is a release scancode, just ignore it
+        if(scancode == 170) lshift = false;
+        if(scancode == 182) rshift = false;
         pic_send_eoi(1);
         return;
     }
