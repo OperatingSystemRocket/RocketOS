@@ -41,7 +41,7 @@ int32_t kstrncmp(const char *const lhs, const char *const rhs, const size_t sz) 
 	return 0;
 }
 
-char* kstrcat(char* destination, char* source) {
+char* kstrcat(char *const destination, const char* source) {
     kassert(destination != NULL && source != NULL, 0);
     
     char* ptr = destination + kstrlen(destination);

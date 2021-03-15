@@ -1,5 +1,20 @@
 #include <terminal_driver.h>
 
+size_t start_of_command;
+size_t end_of_command;
+
+void run_command(char *const command) {
+    if(kstrncmp(command, "echo", 4) == 0) {
+        if(kstrlen(command) > 5) {
+            kprintf(kstrcat(command + 4, "\n"));
+        } else {
+            kprintf("'echo' requires one argument!\n");
+        }
+    } else {
+        kprintf("Invalid command! Try 'help'\n");
+    }
+}
+
 void terminal_start(void) {
     terminal_on = true;
     terminal_writestring(PROMPT);
@@ -39,17 +54,5 @@ void get_command(char final[]) {
         temp[0] = (char)terminal_buffer[i];
         temp[1] = '\0';
         kstrcat(final, temp);
-    }
-}
-
-void run_command(char* command) {
-    if(kstrncmp(command, "echo", 4) == 0) {
-        if(kstrlen(command) > 5) {
-            kprintf(kstrcat(command + 4, "\n"));
-        } else {
-            kprintf("'echo' requires one argument!\n");
-        }
-    } else {
-        kprintf("Invalid command! Try 'help'\n");
     }
 }

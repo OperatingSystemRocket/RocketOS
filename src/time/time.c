@@ -48,12 +48,12 @@ void enable_time(void) {
     set_time_in_ticks(0);
 }
 
-time_sleep_seconds(uint64_t duration) {
+void time_sleep_seconds(uint64_t duration) {
     uint64_t start_time = get_time_in_seconds();
     while(get_time_in_seconds() < start_time + duration);
 }
 
-time_sleep_ticks(uint64_t duration) {
+void time_sleep_ticks(uint64_t duration) {
     uint64_t start_time = get_time_in_ticks();
     while(get_time_in_ticks() < start_time + duration);
 }

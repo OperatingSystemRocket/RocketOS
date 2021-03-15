@@ -1,4 +1,5 @@
 #pragma once
+
 #include "vga_driver.h"
 #include "keyboard_map.h"
 

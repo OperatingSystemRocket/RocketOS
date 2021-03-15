@@ -6,6 +6,7 @@
 
 #include "kstring.h"
 #include "hardware_io.h"
+#include "terminal_driver.h"
 
 extern bool terminal_on;
 extern size_t terminal_row;

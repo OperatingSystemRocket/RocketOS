@@ -70,9 +70,9 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                 case 'c':
                     //for some reason (maybe integer promotion), cppreference says to retrieve the character via as an int
                     if(color_setting == -1) {
-                        terminal_putchar(va_arg(*variadic_args, int));
+                        terminal_putchar(va_arg(*variadic_args, int32_t));
                     } else {
-                        terminal_putchar_color(va_arg(*variadic_args, int), color_setting);
+                        terminal_putchar_color(va_arg(*variadic_args, int32_t), color_setting);
                     }
                     *index += 1u;
                     return 1;
@@ -86,7 +86,7 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     return 2;
                 case 'd':
                 case 'i':
-                    number = va_arg(*variadic_args, unsigned int);
+                    number = va_arg(*variadic_args, int32_t);
                     kint_to_string(number, str, 128u);
                     if(color_setting == -1) {
                         terminal_writestring(str);
