@@ -147,10 +147,6 @@ $(PATHOT)%.o : test/%.c
 	sh -c 'qemu-system-i386 -cdrom $(patsubst %.bin,%.iso,build/results/$@) -display none -serial file:$(PATHOT)$(patsubst %.bin,%.txt,$@) -device isa-debug-exit,iobase=0xf4,iosize=0x04'; \
 	exit `expr $$? - 33`
 
-	#qemu-system-i386 -cdrom $(PATHOT)$@
-	#./$(PATHOT)$@ > $(PATHOT)$(patsubst %.bin,%.txt,$@)
-
-
 
 
 run_static_analyzers :
