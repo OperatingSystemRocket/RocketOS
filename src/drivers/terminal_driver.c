@@ -6,10 +6,14 @@ size_t end_of_command;
 void run_command(char *const command) {
     if(kstrncmp(command, "echo", 4) == 0) {
         if(kstrlen(command) > 5) {
-            kprintf(kstrcat(command + 4, "\n"));
+            kprintf(kstrcat(command + 5, "\n"));
         } else {
             kprintf("'echo' requires one argument!\n");
         }
+    } else if(kstrncmp(command, "help", 4) == 0) {
+        kprintf("List of available commands:\n");
+        kprintf("echo\n");
+        kprintf("help\n");
     } else {
         kprintf("Invalid command! Try 'help'\n");
     }
