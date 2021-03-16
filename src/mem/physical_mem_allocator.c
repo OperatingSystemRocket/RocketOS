@@ -28,6 +28,9 @@ void allocate_init(void) {
     if(number_of_pages_used % PAGE_SIZE) {
         ++number_of_pages_used;
     }
+    //reserve an extra 4 mb to make sure the multiboot structure is safe
+    number_of_pages_used += 1024u;
+
     kassert_void(number_of_pages_used > 0);
 
     //Marks all pages that are used by the kernel and below as used in the page table cache and never frees them.

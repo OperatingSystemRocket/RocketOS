@@ -48,7 +48,6 @@ void kernel_main(void) {
 
     serial_writestring("hello, this is \n a test \n of serial strings \n containing \n newlines\n");
 
-    kprintf("%i\n", -152234);
 
 
 

@@ -1,5 +1,6 @@
 #include "unity.h"
 #include "kstring.h"
+#include "hardware_io.h"
 
 
 uint16_t buffer[2048u];
@@ -59,4 +60,5 @@ void kernel_main(void) {
     RUN_TEST(test_cstrcmp);
     RUN_TEST(test_kint_to_string);
     UNITY_END();
+    outb(0xf4, 0x10);
 }

@@ -344,4 +344,5 @@ void kernel_main(void) {
     RUN_TEST(test_terminal_writestring_color);
     RUN_TEST(test_terminal_scrolling);
     UNITY_END();
+    outb(0xf4, 0x10);
 }
