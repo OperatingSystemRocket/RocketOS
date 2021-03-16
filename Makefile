@@ -144,7 +144,7 @@ $(PATHOT)%.o : test/%.c
 	./generate_grubcfg.sh build/results/$(subst .bin,,$@)/isodir/boot/grub/grub.cfg $(subst .bin,,$(notdir $@)) /boot/$(notdir $@)
 	#cp grub.cfg build/results/$(subst .bin,,$@)/isodir/boot/grub/grub.cfg
 	grub-mkrescue -o $(patsubst %.bin,%.iso,build/results/$@) build/results/$(subst .bin,,$@)/isodir/
-	sh -c 'qemu-system-i386 -cdrom $(patsubst %.bin,%.iso,build/results/$@) -serial file:$(PATHOT)$(patsubst %.bin,%.txt,$@) -device isa-debug-exit,iobase=0xf4,iosize=0x04'; \
+	sh -c 'qemu-system-i386 -cdrom $(patsubst %.bin,%.iso,build/results/$@) -display none -serial file:$(PATHOT)$(patsubst %.bin,%.txt,$@) -device isa-debug-exit,iobase=0xf4,iosize=0x04'; \
 	exit `expr $$? - 33`
 
 	#qemu-system-i386 -cdrom $(PATHOT)$@
