@@ -191,18 +191,25 @@ void terminal_cursor_left(void) {
 }
 
 void terminal_cursor_right(void) {
-    if(++terminal_column > 79) {
-        terminal_column = 79;
+    if(terminal_row * 80 + terminal_column < end_of_command) {
+        if(++terminal_column > 79) {
+            terminal_column = 79;
+        }
+        terminal_updatecursor();
     }
-    terminal_updatecursor();
 }
 
 void terminal_cursor_down(void) {
-    if(++terminal_row > 24) {
-        if(terminal_downward_history_size > 0) terminal_scroll_down();
-        terminal_row = 24;
+    if((terminal_row + 1) * 80 <= end_of_command) {
+        if(++terminal_row > 24) {
+            if(terminal_downward_history_size > 0) terminal_scroll_down();
+            terminal_row = 24;
+        }
+        if(terminal_row * 80 + terminal_column > end_of_command) {
+            terminal_column = end_of_command % 80;
+        }
+        terminal_updatecursor();
     }
-    terminal_updatecursor();
 }
 
 void terminal_backspace(void) {
