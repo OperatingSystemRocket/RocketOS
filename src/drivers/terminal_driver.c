@@ -23,6 +23,7 @@ void terminal_start(void) {
     terminal_on = true;
     terminal_writestring(PROMPT);
     start_of_command = terminal_row * 80 + terminal_column;
+    end_of_command = start_of_command;
 }
 
 void terminal_end(void) {

@@ -9,7 +9,10 @@ void process_keystroke(const char keycode) {
            break;
         case 15:
            //tab
-           terminal_writestring("    ");
+           if(terminal_row * 80 + terminal_column >= start_of_command) {
+               terminal_writestring("    ");
+               terminal_end();
+           }
         case 42:
            //left shift
            lshift = true;
@@ -89,8 +92,9 @@ void process_keystroke(const char keycode) {
                     final = '?';
                 }
             }
-            if(final > 0) {
+            if(final > 0 && terminal_row * 80 + terminal_column >= start_of_command) {
                 terminal_putchar(final);
+                terminal_end();
             }
            break;
     }

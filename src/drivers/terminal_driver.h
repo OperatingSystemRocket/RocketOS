@@ -4,6 +4,8 @@
 
 #define PROMPT "> "
 
+extern size_t start_of_command;
+extern size_t end_of_command;
 
 void terminal_start(void);
 void terminal_end(void);
