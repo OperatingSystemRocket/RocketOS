@@ -65,7 +65,3 @@ jobs:
         files: |
           LICENSE
           build/results/os.iso
-    - name: Log the directory
-      shell: bash
-      run: |
-        ls -a
