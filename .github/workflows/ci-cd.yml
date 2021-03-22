@@ -18,7 +18,7 @@ jobs:
       run: |
         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
         git submodule sync --recursive
-        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recurse-submodules --depth=1
     - name: tests
       run: make build
 
@@ -33,7 +33,7 @@ jobs:
       run: |
         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
         git submodule sync --recursive
-        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recurse-submodules --depth=1
     - name: tests
       run: make test TEST=1
   
@@ -42,6 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/operatingsystemrocket/image:latest
+    args:
+      - "--name pre-release-container"
     steps:
     - uses: actions/checkout@v2
     - name: Checkout submodules # checkout rest
@@ -49,7 +51,7 @@ jobs:
       run: |
         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
         git submodule sync --recursive
-        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recurse-submodules --depth=1
     - name: tests
       run: make test TEST=1
     - name: clean
