@@ -42,8 +42,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/operatingsystemrocket/image:latest
-      args:
-        - "--name pre-release-container"
     steps:
     - uses: actions/checkout@v2
     - name: Checkout submodules # checkout rest
