@@ -63,5 +63,9 @@ jobs:
         prerelease: true
         title: "Development Build"
         files: |
-          LICENSE.txt
-          *.iso
+          /LICENSE.txt
+          /*.iso
+    - name: Log the directory
+      shell: bash
+      run: |
+        ls -a
