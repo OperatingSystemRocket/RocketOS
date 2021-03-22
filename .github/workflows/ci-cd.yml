@@ -63,8 +63,8 @@ jobs:
         prerelease: true
         title: "Development Build"
         files: |
-          /LICENSE
-          /*.iso
+          LICENSE
+          build/results/os.iso
     - name: Log the directory
       shell: bash
       run: |
