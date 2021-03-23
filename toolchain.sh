@@ -14,7 +14,7 @@ prefix=~/cross/$target
 
 # Install prerequisite software using the package manager
 # Package manager installed gcc is used to build the cross compiler gcc
-apt install git xorriso grub-pc-bin build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo qemu qemu-system-i386 clang clang-format clang-tidy gcc nasm -y
+sudo apt install git xorriso grub-pc-bin build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo qemu qemu-system-i386 clang clang-format clang-tidy gcc nasm -y
 
 
 # First check whether the toolchain was already built on a previous run of this script.
@@ -43,11 +43,11 @@ then
 
 	# Build binutils.
 	cd /tmp/toolchain/build-binutils
-	rm -rf *
+	sudo rm -rf *
 	/tmp/toolchain/binutils-$binutils_version/configure --target=$target --prefix=$prefix --disable-nls 2>&1
 	make all 2>&1
 	make install 2>&1
-	rm -rf *
+	sudo rm -rf *
 
 	# Build gcc and libgcc.
 	cd /tmp/toolchain/build-gcc
@@ -59,8 +59,8 @@ then
 
 	# Make sure that our cross compiler will be found by creating links.
 	# Alternative: Add the $prefix/bin directory to your $PATH.
-	ln -s -f $prefix/bin/* /usr/local/bin/
+	sudo ln -s -f $prefix/bin/* /usr/local/bin/
 fi
 
 # Also if the cross compiler has not been freshly build, link it so that it will be found.
-ln -s -f $prefix/bin/* /usr/local/bin/
+sudo ln -s -f $prefix/bin/* /usr/local/bin/
