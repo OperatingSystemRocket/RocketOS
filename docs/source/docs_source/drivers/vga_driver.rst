@@ -103,6 +103,22 @@ is reset to the previous terminal color.
 
 |br|
 
+``void terminal_swapchar(char c)``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function replaces the current character in the vga_buffer
+with character c, used internally by the terminal.
+
+|br|
+
+``void terminal_swapchar_color(char c, enum vga_color color)``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function replaces the current character in the vga_buffer
+with character c of color color, used internally by the terminal.
+
+|br|
+
 ``void terminal_write(const char* text, size_t size)``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -151,3 +167,53 @@ line, if it doesn't exist will be replaced by an empty line.
 This function shifts all lines down one line in the buffer, the bottom line is saved
 to a scroll history, if a scroll history exits, the top line will be replace by an old
 line, if it doesn't exist, this function will do nothing.
+
+|br|
+
+``void terminal_cursor_up(void)``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function moves the cursor in the
+vga_buffer up one row.
+
+|br|
+
+``void terminal_cursor_left(void)``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function moves the cursor in the
+vga_buffer left one column.
+
+|br|
+
+``void terminal_cursor_right(void)``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function moves the cursor in the
+vga_buffer right one column.
+
+|br|
+
+``void terminal_cursor_down(void)``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function moves the cursor in the
+vga_buffer down one row.
+
+|br|
+
+``void terminal_backspace(void)``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function moves the cursor in the
+vga_buffer left one column, and deletes
+the character at that location.
+
+|br|
+
+``void terminal_updatecursor(void)``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function moves the build in cursor
+for qemu to the current position in the
+vga_buffer.
