@@ -1,0 +1,34 @@
+name: CI/CD on Tagged Releases
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  tagged-release:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/operatingsystemrocket/image:latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout submodules # checkout rest
+      shell: bash
+      run: |
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+    - name: tests
+      run: make test TEST=1
+    - name: clean
+      run: make clean #clean so that we can do a release build and release it
+    - name: release-build
+      run: make RELEASE=1 #do release build
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        files: |
+          LICENSE
+          build/results/os.iso
