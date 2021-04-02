@@ -16,17 +16,20 @@ It is currently in its infancy.
 
 This guide assumes a unix environment with access to the `apt` package manager.
 You will have to manually edit the install script on other platforms.
-This README.md used to hold an a list of all the needed software to develop this OS and how to install them,
-but instead we have decided to provide an installation bash script. To use it, just download `toolchain.sh` and run it.
-Follow any prompts for putting in your root password. This script will be building gcc from source, so it might take a while to finish. 
+This repo provides a bash script that when run will install and setup all software required to develop RocketOS.
+To use it, just download `toolchain.sh` and run it.
+Follow any prompts for putting in your root password.
+This script will be building gcc from source, so it might take a while to finish. 
 
 
 ## How to install RocketOS (without the need for developing/editing the code)
 
 Navigate to <a href="https://github.com/OperatingSystemRocket/RocketOS/releases">releases</a>.
 
-Here you will see a copy of the `LICENSE` (MIT) and a copy of the iso.
-You can download and use this iso without any software. Just flash it to a usb or run it in a VM and you're good to go.
+You should also have obtained a copy of the MIT license together with this project.
+If not, go to: https://mit-license.org/.
+You can download and use this iso without any software.
+Flash the iso to a usb or run it in a VM and then the OS should boot and dump you into a terminal.
 
 
 ## How to contribute
