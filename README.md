@@ -2,6 +2,7 @@
 
 [![C/C++ CI](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml)
 [![Docs](https://readthedocs.org/projects/rocketos/badge/?version=latest)](https://rocketos.readthedocs.io/en/latest/?badge=latest)
+[![Releases](https://github.com/OperatingSystemRocket/RocketOS/releases/badge.svg)](https://github.com/OperatingSystemRocket/RocketOS/releases)
 
 
 <details open="open">
