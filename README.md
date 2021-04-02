@@ -37,7 +37,8 @@ Follow any prompts for putting in your root password. This script will be buildi
 ## How to install RocketOS (without the need for developing/editing the code)
 
 This is very simple, just click on the release icon in this REAME.md, clicking on the github releases tab, or going to:
-<a href="https://github.com/OperatingSystemRocket/RocketOS/releases">releases</a>
+<a href="https://github.com/OperatingSystemRocket/RocketOS/releases">releases</a>.
+
 Here you will see a copy of the `LICENSE` (MIT) and a copy of the iso.
 You can download and use this iso without any software. Just flash it to a usb or run it in a VM and you're good to go.
 
@@ -54,4 +55,4 @@ We do not currently require you to forfeit your individual copyright to the code
 
 ## Where can I find the docs?
 
-<a href="https://rocketos.readthedocs.io/en/latest/">documentation</a>
+<a href="https://rocketos.readthedocs.io/en/latest/">Documentation</a>
