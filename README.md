@@ -9,7 +9,16 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#development-environment">Development Environment</a>
+    </li>
+    <li>
+      <a href="#how-to-install-rocketos-without-the-need-for-developing-editing-the-code">Installing/Getting the iso for RocketOS</a>
+    </li>
+    <li>
+      <a href="#how-want-to-contribute">How to Contribute</a>
+    </li>
+    <li>
+      <a href="#where-can-i-find-the-docs">Link the the documentation</a>
     </li>
   </ol>
 </details>
@@ -28,12 +37,12 @@ Follow any prompts for putting in your root password. This script will be buildi
 ## How to install RocketOS (without the need for developing/editing the code)
 
 This is very simple, just click on the release icon in this REAME.md, clicking on the github releases tab, or going to:
-<li><a href="https://github.com/OperatingSystemRocket/RocketOS/releases">releases</a></li>
+<a href="https://github.com/OperatingSystemRocket/RocketOS/releases">releases</a>
 Here you will see a copy of the `LICENSE` (MIT) and a copy of the iso.
 You can download and use this iso without any software. Just flash it to a usb or run it in a VM and you're good to go.
 
 
-## I want to contribute
+## How want to contribute
 
 RocketOS is currently very early in its development, but we do have a CI/CD system and can handle external pull requests.
 The most useful thing currently would be contributions or filing issues (though issues of any kind are welcome)
@@ -45,4 +54,4 @@ We do not currently require you to forfeit your individual copyright to the code
 
 ## Where can I find the docs?
 
-<li><a href="https://rocketos.readthedocs.io/en/latest/">documentation</a></li>
+<a href="https://rocketos.readthedocs.io/en/latest/">documentation</a>
