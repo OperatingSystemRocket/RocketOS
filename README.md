@@ -2,7 +2,7 @@
 
 [![C/C++ CI](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml)
 [![Docs](https://readthedocs.org/projects/rocketos/badge/?version=latest)](https://rocketos.readthedocs.io/en/latest/?badge=latest)
-[![Releases](https://img.shields.io/github/release-date-pre/OperatingSystemRocket/RocketOS)](https://github.com/OperatingSystemRocket/RocketOS/releases)
+[![Pre-Releases](https://img.shields.io/github/release-date-pre/OperatingSystemRocket/RocketOS)](https://github.com/OperatingSystemRocket/RocketOS/releases)
 
 
 <details open="open">
@@ -10,103 +10,39 @@
   <ol>
     <li>
       <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
     </li>
-    <li><a href="#roadmap">Roadmap</a></li>
   </ol>
 </details>
 
-## Getting Started
-
-### Prerequisites
-
-This is a list of the software you will need to use and develop this software.
-
-* Be using a Unix system that supports bash
 
 
-* A gcc compatible cross compiler capable of emitting flat elf binaries for i686 (do not use x86_64). 
-  
-    If you do not know how to do this, this is a good guide on how:
-    
-    https://wiki.osdev.org/GCC_Cross-Compiler
+## Development Environment
+
+This guide assumes a unix environment with access to the `apt` package manager.
+You will have to manually edit the install script on other platforms.
+This README.md used to hold an a list of all the needed software to develop this OS and how to install them,
+but instead we have decided to provide an installation bash script. To use it, just download `toolchain.sh` and run it.
+Follow any prompts for putting in your root password. This script will be building gcc from source, so it might take a while to finish. 
 
 
-* An install of `xorriso`
-  
-  If on Ubuntu, you can type:
-  
-  `sudo apt install xorriso`
+## How to install RocketOS (without the need for developing/editing the code)
+
+This is very simple, just click on the release icon in this REAME.md, clicking on the github releases tab, or going to:
+<li><a href="https://github.com/OperatingSystemRocket/RocketOS/releases">releases</a></li>
+Here you will see a copy of the `LICENSE` (MIT) and a copy of the iso.
+You can download and use this iso without any software. Just flash it to a usb or run it in a VM and you're good to go.
 
 
-* You need a system install of grub for the utilities `grub-mkrescue` and if developing the software, you also need `grub-file`. If using a standard Ubuntu install, these should already be installed.
+## I want to contribute
 
-  If it isn't installed, type `sudo apt install grub-pc-bin`
-
-
-* A copy of `build-essential` for utilities such as `make`.
-
-  You can install this on Ubuntu with the following command:
-  
-  `sudo apt install build-essential`
+RocketOS is currently very early in its development, but we do have a CI/CD system and can handle external pull requests.
+The most useful thing currently would be contributions or filing issues (though issues of any kind are welcome)
+in unit tests and documentation as there is currently a backlog
+and because this something that takes a lot of time and is currently a WIP.
+To contribute you must agree to have your code and changes licensed under MIT.
+We do not currently require you to forfeit your individual copyright to the code.
 
 
-* If planning on running the operating system in a VM, you must install `qemu` with the command:
+## Where can I find the docs?
 
-  `sudo apt install qemu qemu-system-i386`
-
-
-* For developers only: Install `clang-tidy` and `clang-format`.
-
-    This can be done with:
-
-    `sudo apt install clang clang-format clang-tidy`
-
-### Installation
-
-This guide assumes basic familiarity with a Unix Terminal and a Unix operating system (you may install WSL if on Windows).
-
-#### Setup
-
-1. Clone this repository with the following command:
-
-    `git clone --recurse-submodules https://github.com/OperatingSystemRocket/RocketOS`
-  
-2. Enter the new directory
-
-    `cd RocketOS/`
-
-#### Running it in a VM
-
-3. If running it in a VM (`qemu`), just type:
-
-    `make run RELEASE=1`
-
-#### Running it on Real Hardware
-
-3. This part of the guide is incomplete and will be finished later.
-
-#### Cleaning Up
-4. Type `make clean`
-
-
-### Development Installation
-
-1. Follow the two steps in <a href="#Setup">Setup</a>
-
-2. To only run the static analysis checks as well as the code format checks, type:
-
-    `make run_static_analyzers`
-
-3. To a debug build, type:
-
-    `make build`
-
-    To do a debug build and run it in `qemu`, type:
-   
-    `make run`
-
-4. This part of the guide is incomplete and will be finished later.
+<li><a href="https://rocketos.readthedocs.io/en/latest/">documentation</a></li>
