@@ -12,4 +12,4 @@ void terminal_end(void);
 void terminal_process_command(void);
 void terminal_shift(void);
 
-void get_command(char final[]);
+void get_command(char* final);
