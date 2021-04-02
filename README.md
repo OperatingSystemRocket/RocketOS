@@ -5,26 +5,6 @@
 [![Pre-Releases](https://img.shields.io/github/release-date-pre/OperatingSystemRocket/RocketOS)](https://github.com/OperatingSystemRocket/RocketOS/releases)
 
 
-<details open="open">
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#development-environment">Development Environment</a>
-    </li>
-    <li>
-      <a href="#how-to-install-rocketos-without-the-need-for-developing-editing-the-code">Installing/Getting the iso for RocketOS</a>
-    </li>
-    <li>
-      <a href="#how-want-to-contribute">How to Contribute</a>
-    </li>
-    <li>
-      <a href="#where-can-i-find-the-docs">Link the the documentation</a>
-    </li>
-  </ol>
-</details>
-
-
-
 ## Development Environment
 
 This guide assumes a unix environment with access to the `apt` package manager.
