@@ -5,6 +5,13 @@
 [![Pre-Releases](https://img.shields.io/github/release-date-pre/OperatingSystemRocket/RocketOS)](https://github.com/OperatingSystemRocket/RocketOS/releases)
 
 
+## What is RocketOS?
+
+RocketOS is a Unix based OS that uses legacy BIOS and GRUB and is written in C17.
+It is being developed for educational purposes primarily, but it still is a serious project.
+It is currently in its infancy.
+
+
 ## Development Environment
 
 This guide assumes a unix environment with access to the `apt` package manager.
