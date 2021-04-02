@@ -86,9 +86,8 @@ void paging_init(void) {
     serial_writestring("paging enabled successfully\n");
 }
 
-
 void map_page(void *const virtual_address, const uint32_t phys_frame, const uint32_t pt_flags, const uint32_t pd_flags) {
-    kassert(((uint32_t)virtual_address % PAGE_SIZE == 0) && (phys_frame % PAGE_SIZE == 0), NULL);
+    kassert_void(((uint32_t)virtual_address % PAGE_SIZE == 0) && (phys_frame % PAGE_SIZE == 0));
 
 
     const uint32_t page_index = ((uint32_t)virtual_address) / PAGE_SIZE;
@@ -114,41 +113,6 @@ void map_page(void *const virtual_address, const uint32_t phys_frame, const uint
     flush_tlb_single_page(virtual_address);
     //loadPageDirectory(page_directory); //don't do this unless you want to invalidate ALL tlb entries
 }
-
-/*
-uint32_t* map_virtual_page(void *const virtual_address, const uint32_t pt_flags, const uint32_t pd_flags) {
-    kassert((uint32_t)virtual_address % PAGE_SIZE == 0, NULL);
-
-
-    const uint32_t page_index = ((uint32_t)virtual_address) / PAGE_SIZE;
-    const uint32_t table_index = page_index / 1024;
-    const uint32_t page_index_in_table = page_index % 1024;
-
-
-    const uint32_t phys_frame = (uint32_t)allocate_page(USER_USE);
-
-
-    uint32_t *const virt_page_directory = page_directory;
-    if((virt_page_directory[table_index] & PD_PRESENT) == 0) {
-        const uint32_t phys_page_table = (uint32_t)allocate_page(CRITICAL_KERNEL_USE); //will be identity mapped
-
-        virt_page_directory[table_index] = phys_page_table | pd_flags;
-    }
-
-    uint32_t *const virt_page_table = (uint32_t*)((virt_page_directory[table_index]) & 0xFFFFF000u);
-    //TODO: properly handle the wack case if someone maps an already mapped page
-
-
-    const uint32_t page = phys_frame | pt_flags;
-
-    virt_page_table[page_index_in_table] = page;
-
-    flush_tlb_single_page(virtual_address);
-    //loadPageDirectory(page_directory); //don't do this unless you want to invalidate ALL tlb entries
-
-    return page & 0xFFFFF000u;
-}
-*/
 
 uint32_t map_virtual_page(void *const virtual_address, const uint32_t pt_flags, const uint32_t pd_flags) {
     const uint32_t phys_frame = (uint32_t)allocate_page(USER_USE);

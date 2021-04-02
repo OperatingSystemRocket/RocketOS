@@ -75,10 +75,6 @@ void kernel_main(void) {
     kprintf("first mapped page again: %i\n", virtual_mapped_page_address1[0]);
 
 
-    //uint32_t *const unmapped_page = allocate_page(USER_USE);
-    //*unmapped_page = 5;
-
-
     //terminal_start();
 
     //kassert_void(serial_init()); //fails if serial is faulty
