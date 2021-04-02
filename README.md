@@ -1,6 +1,6 @@
 # <p align="center"> RocketOS </p>
 
-[![C/C++ CI](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/c-cpp.yml)
+[![C/C++ CI](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml)
 [![Docs](https://readthedocs.org/projects/rocketos/badge/?version=latest)](https://rocketos.readthedocs.io/en/latest/?badge=latest)
 
 
