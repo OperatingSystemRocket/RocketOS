@@ -1,4 +1,4 @@
-name: CI/CD On Every Commit
+name: CI/CD
 
 on:
   push:
