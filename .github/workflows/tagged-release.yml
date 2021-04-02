@@ -1,4 +1,4 @@
-name: CI/CD on Tagged Releases
+name: Tagged Release
 
 on:
   push:
