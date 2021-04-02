@@ -29,7 +29,7 @@ Navigate to <a href="https://github.com/OperatingSystemRocket/RocketOS/releases"
 You should also have obtained a copy of the MIT license together with this project.
 If not, go to: https://mit-license.org/.
 You can download and use this iso without any software.
-Flash the iso to a usb or run it in a VM and then the OS should boot and dump you into a terminal.
+Flash the iso to a USB or run it in a VM and then the OS should boot and dump you into a terminal.
 
 
 ## How to contribute
