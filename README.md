@@ -2,13 +2,13 @@
 
 <p align="center">
 <a href="https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml">
-  <img src="https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml/badge.svg">C/C++ CI</img>
+  <img src="https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml/badge.svg" alt="C/C++ CI"></img>
 </a>
 <a href="https://rocketos.readthedocs.io/en/latest/?badge=latest">
-  <img src="https://readthedocs.org/projects/rocketos/badge/?version=latest">Docs</img>
+  <img src="https://readthedocs.org/projects/rocketos/badge/?version=latest" alt="Docs"></img>
 </a>
 <a href="https://github.com/OperatingSystemRocket/RocketOS/releases">
-  <img src="https://img.shields.io/github/release-date-pre/OperatingSystemRocket/RocketOS">Pre-Releases</img>
+  <img src="https://img.shields.io/github/release-date-pre/OperatingSystemRocket/RocketOS" alt="Pre-Releases"></img>
 </a>
 </p>
 
