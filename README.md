@@ -13,14 +13,14 @@
 </p>
 
 
-## What is RocketOS?
+## <p align="center"> What is RocketOS? </p>
 
 RocketOS is a Unix based OS that uses legacy BIOS and GRUB and is written in C17.
 It is being developed for educational purposes primarily, but it still is a serious project.
 It is currently in its infancy.
 
 
-## Development Environment
+## <p align="center"> Development Environment </p>
 
 This guide assumes a unix environment with access to the `apt` package manager.
 You will have to manually edit the install script on other platforms.
@@ -30,7 +30,7 @@ Follow any prompts for putting in your root password.
 This script will be building gcc from source, so it might take a while to finish. 
 
 
-## How to install RocketOS (without the need for developing/editing the code)
+## <p align="center"> How to install RocketOS </p>
 
 Navigate to <a href="https://github.com/OperatingSystemRocket/RocketOS/releases">releases</a>.
 
@@ -40,7 +40,7 @@ You can download and use this iso without any software.
 Flash the iso to a USB or run it in a VM and then the OS should boot and dump you into a terminal.
 
 
-## How to contribute
+## <p align="center"> How to contribute </p>
 
 RocketOS is currently very early in its development, but we do have a CI/CD system and can handle external pull requests.
 The most useful thing currently would be contributions or filing issues (though issues of any kind are welcome)
@@ -49,6 +49,6 @@ To contribute you must agree to have your code and other changes licensed under 
 We do not currently require you to forfeit your individual copyright to your changes.
 
 
-## Where can I find the docs?
+## <p align="center"> Where can I find the docs? </p>
 
 <a href="https://rocketos.readthedocs.io/en/latest/">Documentation</a>
