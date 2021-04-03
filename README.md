@@ -43,7 +43,7 @@ This script will be building gcc from source, so it might take a while to finish
 
 ## How to install RocketOS
 
-<deatils>
+<details>
 <summary>Installation</summary>
 
 Navigate to <a href="https://github.com/OperatingSystemRocket/RocketOS/releases">releases</a>.
