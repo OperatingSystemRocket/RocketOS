@@ -10,6 +10,9 @@
 <a href="https://github.com/OperatingSystemRocket/RocketOS/releases">
   <img src="https://img.shields.io/github/release-date-pre/OperatingSystemRocket/RocketOS" alt="Pre-Releases"></img>
 </a>
+<a href="https://mit-license.org/">
+  <img src="https://shields.io/badge/license-MIT-green" alt="License"></img>
+</a>
 </p>
 
 
