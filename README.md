@@ -1,9 +1,15 @@
 # <p align="center"> RocketOS </p>
 
 <p align="center">
-[![C/C++ CI](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml)
-[![Docs](https://readthedocs.org/projects/rocketos/badge/?version=latest)](https://rocketos.readthedocs.io/en/latest/?badge=latest)
-[![Pre-Releases](https://img.shields.io/github/release-date-pre/OperatingSystemRocket/RocketOS)](https://github.com/OperatingSystemRocket/RocketOS/releases)
+<a href="https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml">
+  <img src="https://github.com/OperatingSystemRocket/RocketOS/actions/workflows/ci-cd.yml/badge.svg">C/C++ CI</img>
+</a>
+<a href="https://rocketos.readthedocs.io/en/latest/?badge=latest">
+  <img src="https://readthedocs.org/projects/rocketos/badge/?version=latest">Docs</img>
+</a>
+<a href="https://github.com/OperatingSystemRocket/RocketOS/releases">
+  <img src="https://img.shields.io/github/release-date-pre/OperatingSystemRocket/RocketOS">Pre-Releases</img>
+</a>
 </p>
 
 
