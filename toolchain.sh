@@ -14,7 +14,7 @@ prefix=~/cross/$target
 
 # Install prerequisite software using the package manager
 # Package manager installed gcc is used to build the cross compiler gcc
-sudo apt install git xorriso grub-pc-bin build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo qemu qemu-system-i386 clang clang-format clang-tidy gcc nasm -y
+sudo apt install git xorriso grub-pc-bin build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo qemu qemu-system-i386 gcc nasm -y
 
 
 # First check whether the toolchain was already built on a previous run of this script.

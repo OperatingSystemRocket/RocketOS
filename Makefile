@@ -148,21 +148,15 @@ $(PATHOT)%.o : test/%.c
 	exit `expr $$? - 33`
 
 
-
-run_static_analyzers :
-	-clang-tidy $(C_NAMES) $(TEST_C)
-	-clang-format $(C_NAMES) $(TEST_C) --dry-run
-
-
 .PHONY: all
 .PHONY: build
 .PHONY: run
 
 .PHONY: test
 
-.PHONY: run_static_analyzers
-
 .PHONY: clean
+
+
 clean :
 	-rm -rf isodir/
 	-rm -f $(PATHD)*
