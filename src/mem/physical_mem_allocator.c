@@ -5,7 +5,7 @@
 extern uint32_t endkernel;
 
 
-#define NUMBER_OF_PAGES (0xFFFFFFFFu/PAGE_SIZE)
+#define NUMBER_OF_PAGES (0x100000000u/PAGE_SIZE)
 
 
 #define NUMBER_OF_PAGES_IN_KERNEL_HEAP (4096u)
