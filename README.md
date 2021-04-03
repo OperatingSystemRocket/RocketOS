@@ -15,40 +15,52 @@
 
 ## <p align="center"> What is RocketOS? </p>
 
+<p align="center">
 RocketOS is a Unix based OS that uses legacy BIOS and GRUB and is written in C17.
 It is being developed for educational purposes primarily, but it still is a serious project.
 It is currently in its infancy.
+</p>
 
 
 ## <p align="center"> Development Environment </p>
 
+<p align="center">
 This guide assumes a unix environment with access to the `apt` package manager.
 You will have to manually edit the install script on other platforms.
 This repo provides a bash script that when run will install and setup all software required to develop RocketOS.
 To use it, just download `toolchain.sh` and run it.
 Follow any prompts for putting in your root password.
 This script will be building gcc from source, so it might take a while to finish. 
+</p>
 
 
 ## <p align="center"> How to install RocketOS </p>
 
+<p align="center">
 Navigate to <a href="https://github.com/OperatingSystemRocket/RocketOS/releases">releases</a>.
+</p>
 
+<p align="center">
 You should also have obtained a copy of the MIT license together with this project.
 If not, go to: https://mit-license.org/.
 You can download and use this iso without any software.
 Flash the iso to a USB or run it in a VM and then the OS should boot and dump you into a terminal.
+</p>
 
 
 ## <p align="center"> How to contribute </p>
 
+<p align="center">
 RocketOS is currently very early in its development, but we do have a CI/CD system and can handle external pull requests.
 The most useful thing currently would be contributions or filing issues (though issues of any kind are welcome)
 in unit tests and documentation as there is currently a backlog.
 To contribute you must agree to have your code and other changes licensed under the MIT license.
 We do not currently require you to forfeit your individual copyright to your changes.
+</p>
 
 
 ## <p align="center"> Where can I find the docs? </p>
 
+<p align="center">
 <a href="https://rocketos.readthedocs.io/en/latest/">Documentation</a>
+</p>
