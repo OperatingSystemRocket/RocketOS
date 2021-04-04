@@ -1,3 +1,7 @@
+<p align="center">
+<img src="https://github.com/OperatingSystemRocket/RocketOS/blob/master/logo/Rocket.svg" alt="RocketOS logo"></img>
+</p>
+
 # <p align="center"> RocketOS </p>
 
 <p align="center">
