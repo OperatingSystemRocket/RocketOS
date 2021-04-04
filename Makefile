@@ -10,7 +10,7 @@ WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
 KERNEL_FLAGS := -std=gnu17 -ffreestanding -mgeneral-regs-only
 
 RELEASE_LINK_FLAGS := -O3 -flto
-DEBUG_LINK_FLAGS := -Og
+DEBUG_LINK_FLAGS := -O0 -g
 
 ifdef RELEASE
 IMAGE_FLAGS := -ffreestanding $(RELEASE_LINK_FLAGS) -nostdlib
@@ -18,7 +18,7 @@ else
 IMAGE_FLAGS := -ffreestanding $(DEBUG_LINK_FLAGS) -nostdlib
 endif
 
-DEBUG_FLAGS := -fverbose-asm -Og -DDEBUG -save-temps=obj
+DEBUG_FLAGS := -fverbose-asm -O0 -g -DDEBUG -save-temps=obj
 RELEASE_FLAGS := -O3 -DNDEBUG
 
 
