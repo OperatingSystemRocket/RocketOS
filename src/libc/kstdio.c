@@ -48,7 +48,7 @@ static int32_t has_color(const char *const format, const size_t format_size) {
 }
 
 
-//For now just cover the none cases. Deal with length modifiers later
+//TODO: Deal with length modifiers later
 static int32_t conversion_specifier(const char *const format, const size_t format_size, uint32_t *const index, va_list* variadic_args) {
     kassert((*index) < format_size, -1);
 
@@ -68,7 +68,6 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
 
             switch (format[(*index) + 1]) {
                 case 'c':
-                    //for some reason (maybe integer promotion), cppreference says to retrieve the character via as an int
                     if(color_setting == -1) {
                         terminal_putchar(va_arg(*variadic_args, int32_t));
                     } else {
@@ -87,7 +86,7 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                 case 'd':
                 case 'i':
                     number = va_arg(*variadic_args, int32_t);
-                    kint_to_string(number, str, 128u);
+                    kint_to_string(number, str, 128u, 10u, false);
                     if(color_setting == -1) {
                         terminal_writestring(str);
                     } else {
@@ -96,28 +95,81 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     *index += 1u;
                     return 3;
                 case 'o':
+                    number = va_arg(*variadic_args, uint32_t);
+                    kint_to_string(number, str, 128u, 8u, false);
+                    if(color_setting == -1) {
+                        terminal_writestring(str);
+                    } else {
+                        terminal_writestring_color(str, color_setting);
+                    }
+                    *index += 1u;
                     return 4;
                 case 'x':
-                case 'X':
+                    number = va_arg(*variadic_args, uint32_t);
+                    kint_to_string(number, str, 128u, 16u, true);
+                    if(color_setting == -1) {
+                        terminal_writestring(str);
+                    } else {
+                        terminal_writestring_color(str, color_setting);
+                    }
+                    *index += 1u;
                     return 5;
-                case 'u':
+                case 'X':
+                    number = va_arg(*variadic_args, uint32_t);
+                    kint_to_string(number, str, 128u, 16u, false);
+                    if(color_setting == -1) {
+                        terminal_writestring(str);
+                    } else {
+                        terminal_writestring_color(str, color_setting);
+                    }
+                    *index += 1u;
                     return 6;
+                case 'u':
+                    number = va_arg(*variadic_args, uint32_t);
+                    kint_to_string(number, str, 128u, 10u, false);
+                    if(color_setting == -1) {
+                        terminal_writestring(str);
+                    } else {
+                        terminal_writestring_color(str, color_setting);
+                    }
+                    *index += 1u;
+                    return 7;
                 case 'f':
                 case 'F':
-                    return 7;
+                    return 8;
                 case 'e':
                 case 'E':
-                    return 8;
+                    return 9;
                 case 'a':
                 case 'A':
-                    return 9;
+                    return 10;
                 case 'g':
                 case 'G':
-                    return 10;
-                case 'n':
                     return 11;
-                case 'p':
+                case 'n':
                     return 12;
+                case 'p':
+                    number = (uint32_t)va_arg(*variadic_args, void*);
+                    kint_to_string(number, str, 128u, 10u, false);
+                    if(color_setting == -1) {
+                        terminal_writestring(str);
+                    } else {
+                        terminal_writestring_color(str, color_setting);
+                    }
+                    *index += 1u;
+                    return 13;
+                /*non-standard:*/
+                case 'b':
+                case 'B':
+                    number = va_arg(*variadic_args, uint32_t);
+                    kint_to_string(number, str, 128u, 2u, false);
+                    if(color_setting == -1) {
+                        terminal_writestring(str);
+                    } else {
+                        terminal_writestring_color(str, color_setting);
+                    }
+                    *index += 1u;
+                    return 14;
             }
         }
     } else {

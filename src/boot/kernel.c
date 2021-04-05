@@ -41,6 +41,8 @@ void kernel_main(void) {
     free_page(allocated_page);
 
 
+    kprintf("Decimal number test: %x\n", 0xdeadbeefu);
+
 
     terminal_start();
 
