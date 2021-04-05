@@ -22,19 +22,12 @@
 
 ## What is RocketOS?
 
-<details>
-<summary>About</summary>
-
 RocketOS is a Unix based OS that uses legacy BIOS and GRUB and is written in C17.
 It is being developed for educational purposes primarily, but it still is a serious project.
 It is currently in its infancy.
-</details>
 
 
 ## Development Environment
-
-<details>
-<summary>Setup</summary>
 
 This guide assumes a unix environment with access to the `apt` package manager.
 You will have to manually edit the install script on other platforms.
@@ -42,13 +35,9 @@ This repo provides a bash script that when run will install and setup all softwa
 To use it, just download `toolchain.sh` and run it.
 Follow any prompts for putting in your root password.
 This script will be building gcc from source, so it might take a while to finish. 
-</details>
 
 
 ## How to install RocketOS
-
-<details>
-<summary>Installation</summary>
 
 Navigate to <a href="https://github.com/OperatingSystemRocket/RocketOS/releases">releases</a>.
 
@@ -56,26 +45,38 @@ You should also have obtained a copy of the MIT license together with this proje
 If not, go to: https://mit-license.org/.
 You can download and use this iso without any software.
 Flash the iso to a USB or run it in a VM and then the OS should boot and dump you into a terminal.
-</details>
 
 
 ## How to contribute
-
-<details>
-<summary>Information</summary>
 
 RocketOS is currently very early in its development, but we do have a CI/CD system and can handle external pull requests.
 The most useful thing currently would be contributions or filing issues (though issues of any kind are welcome)
 in unit tests and documentation as there is currently a backlog.
 To contribute you must agree to have your code and other changes licensed under the MIT license.
 We do not currently require you to forfeit your individual copyright to your changes.
-</details>
 
 
 ## Where can I find the docs?
 
-<details>
-<summary>Docs</summary>
-
 <a href="https://rocketos.readthedocs.io/en/latest/">Documentation</a>
-</details>
+
+
+## Roadmap
+
+- [x] Global Descriptor Table
+- [x] CPU Interrupts
+- [x] VGA Driver
+- [x] Keyboard Support
+- [x] Basic Working Text Terminal
+- [x] Serial Driver
+- [ ] Mouse Support
+- [x] Paging and Virtual Memory
+- [ ] Dynamic Memory Allocation
+- [ ] Floating Point Number Support
+- [ ] Time and Calendar
+- [ ] Privilege Levels (Protection Rings)
+- [ ] ELF Loader
+- [ ] Disk/HDD Support
+- [ ] Filesystem
+- [ ] Full libc Implementation
+- [ ] Basic GUI Support
