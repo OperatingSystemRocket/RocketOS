@@ -1,3 +1,6 @@
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "unity.h"
 #include "kstring.h"
 #include "hardware_io.h"
@@ -11,9 +14,10 @@ void setUp(void) {
 void tearDown(void) {}
 
 
+//for base 10 numbers
 void kint_to_string_util(const char *const expected_text, const int32_t number) {
     char str[128u];
-    kint_to_string(number, str, 128u);
+    kint_to_string(number, str, 128u, 10u, false);
     const size_t size_of_str = kstrlen(expected_text);
     TEST_ASSERT_EQUAL_MEMORY(expected_text, str, size_of_str);
 }
