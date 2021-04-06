@@ -46,11 +46,9 @@ void kernel_main(void) {
 
     terminal_start();
 
-    kassert_void(serial_init()); //fails if serial is faulty
-
-    serial_writestring("hello, this is \n a test \n of serial strings \n containing \n newlines\n");
-
-
+    if(serial_init()) { //fails if serial is faulty
+        serial_writestring("hello, this is \n a test \n of serial strings \n containing \n newlines\n");
+    }
 
 
 
