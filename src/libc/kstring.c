@@ -56,7 +56,7 @@ char* kstrcat(char *const destination, const char* source) {
     return destination;
 }
 
-//TODO: discuss whether it should take a int32_t and if we should have a separate `kuint_to_string`
+//TODO: discuss whether it should take an int32_t and if we should have a separate `kuint_to_string`
 char* kint_to_string(int64_t input, char *const string_ret, const size_t ret_size, const uint32_t base, const bool lowercase) {
     size_t index = 0u;
     if(0u < ret_size && input < 0u) {
