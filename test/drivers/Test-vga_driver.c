@@ -1,3 +1,6 @@
+#include <multiboot.h>
+
+
 #include "unity.h"
 #include "vga_driver.h"
 #include "kassert.h"
@@ -329,6 +332,16 @@ void test_terminal_scrolling(void) {
     terminal_writing_common_util(parsed_string_top, parsed_string_top_size, VGA_COLOR_RED, offset);
     offset = 80u * 24u; // start of last line
     terminal_writing_common_util(parsed_string_bottom, parsed_string_bottom_size, VGA_COLOR_RED, offset);
+}
+
+
+void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
+    terminal_initialize();
+    if (mboot_magic != MULTIBOOT_BOOTLOADER_MAGIC) {
+        terminal_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
+    } else {
+        terminal_writestring("The multiboot structure was loaded properly\n");
+    }
 }
 
 void kernel_main(void) {
