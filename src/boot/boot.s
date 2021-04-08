@@ -105,6 +105,7 @@ _start:
 	; runtime support to work as well.
 	call gdt_load
 
+
 	; Enter the high-level kernel. The ABI requires the stack is 16-byte
 	; aligned at the time of the call instruction (which afterwards pushes
 	; the return pointer of size 4 bytes). The stack as originally 16-byte
@@ -114,8 +115,18 @@ _start:
 	; note, that if you are building on Windows, C functions may have "_" prefix in assembly: _kmain
 
 
+	; push multiboot header and magic
+	push ebx
+    push eax
+
+
+	extern kernel_early
+	call kernel_early
+
+
 	extern kernel_main
 	call kernel_main
+
 
 	; If the system has nothing more to do, put the computer into an
 	; infinite loop. To do that:

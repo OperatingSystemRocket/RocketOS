@@ -5,12 +5,20 @@ WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Wstrict-prototypes -Wcast-qual -Wconversion -Wunreachable-code \
                   -Wwrite-strings -Wredundant-decls -Wnested-externs \
                   -Winline -Wno-long-long -Wpedantic
+
+#TODO: hardcode a special rule for interrupts to use the last flag in this list and don't use it for any other c files as it may disable FPU support
 KERNEL_FLAGS := -std=gnu17 -ffreestanding -mgeneral-regs-only
 
-#Do not use these for tests
-IMAGE_FLAGS := -ffreestanding -O3 -nostdlib
+RELEASE_LINK_FLAGS := -O3 -flto
+DEBUG_LINK_FLAGS := -O0 -g
 
-DEBUG_FLAGS := -fverbose-asm -Og -DDEBUG -save-temps=obj
+ifdef RELEASE
+IMAGE_FLAGS := -ffreestanding $(RELEASE_LINK_FLAGS) -nostdlib
+else
+IMAGE_FLAGS := -ffreestanding $(DEBUG_LINK_FLAGS) -nostdlib
+endif
+
+DEBUG_FLAGS := -fverbose-asm -O0 -g -DDEBUG -save-temps=obj
 RELEASE_FLAGS := -O3 -DNDEBUG
 
 

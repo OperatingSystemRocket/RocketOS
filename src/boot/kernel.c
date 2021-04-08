@@ -1,3 +1,6 @@
+#include <multiboot.h>
+
+
 #include <stdbool.h>
 
 #include "kstdio.h"
@@ -9,37 +12,44 @@
 #include "terminal_driver.h"
 
 #include "physical_mem_allocator.h"
+#include "paging.h"
 
+
+//TODO: remove all 64 bit integer types as they are bigger than a word size
+
+
+
+void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
+    terminal_initialize();
+    if (mboot_magic != MULTIBOOT_BOOTLOADER_MAGIC) {
+        terminal_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
+    } else {
+        terminal_writestring("The multiboot structure was loaded properly\n");
+    }
+}
 
 void kernel_main(void) {
-    terminal_initialize();
-
     pic_init();
     isr_install();
 
     //enable_time();
     enable_keyboard();
 
-    /*
-    volatile int32_t n = 0;
-    volatile int32_t y = 3;
-    volatile int32_t r = y/n;
-    */
-    //kprintf("%s", "Line 1\n");
-    //time_sleep_ticks(5);
-    //kprintf("%s", "Line 2\n");
-    //time_sleep_ticks(18);
-    //kprintf("%s", "Line 3\n");
-    //time_sleep_ticks(36);
-    //kprintf("%s", "Line 4\n");
+
+    kassert_void(serial_init()); //fails if serial is faulty
 
 
     allocate_init();
-    void* allocated_page = allocate_page();
+    paging_init();
+    //dynamic_memory_init();
 
 
-    free_page(allocated_page);
+    uint32_t *const allocated_page = allocate_page(CRITICAL_KERNEL_USE);
+    kprintf("%i\n", (uint32_t)allocated_page);
+    *allocated_page = 5;
+    free_page(CRITICAL_KERNEL_USE, allocated_page);
 
+    #define VIRTUAL_ADDRESS_TEST 0xfffe000
 
     kprintf("Decimal number test: %x\n", 0xdeadbeefu);
 
@@ -49,8 +59,39 @@ void kernel_main(void) {
     if(serial_init()) { //fails if serial is faulty
         serial_writestring("hello, this is \n a test \n of serial strings \n containing \n newlines\n");
     }
+    kprintf("first_nonreserved_address: %i, address: %i\n", (uint32_t)get_first_nonreserved_address(), (uint32_t)VIRTUAL_ADDRESS_TEST);
+
+    const uint32_t test_pt_flags = PT_PRESENT | PT_RW;
+    const uint32_t test_pd_flags = PD_PRESENT | PD_RW;
+
+    const uint32_t physical_page_address = map_virtual_page((void*)VIRTUAL_ADDRESS_TEST, test_pt_flags, test_pd_flags);
+    map_page(VIRTUAL_ADDRESS_TEST+PAGE_SIZE, physical_page_address, test_pt_flags, test_pd_flags);
+    map_page(VIRTUAL_ADDRESS_TEST+(PAGE_SIZE*2), physical_page_address, test_pt_flags, test_pd_flags);
+
+    uint32_t *const virtual_mapped_page_address1 = (uint32_t*)VIRTUAL_ADDRESS_TEST;
+    *virtual_mapped_page_address1 = 8;
+    kprintf("first mapped page: %i\n", virtual_mapped_page_address1[0]);
+
+    uint32_t *const virtual_mapped_page_address2 = (uint32_t*)(VIRTUAL_ADDRESS_TEST+PAGE_SIZE);
+    kprintf("second mapped page: %i\n", virtual_mapped_page_address2[0]);
+    *virtual_mapped_page_address2 = 17;
+
+    uint32_t *const virtual_mapped_page_address3 = (uint32_t*)(VIRTUAL_ADDRESS_TEST+(PAGE_SIZE*2));
+    kprintf("third mapped page: %i\n", virtual_mapped_page_address3[0]);
+    *virtual_mapped_page_address3 = 92;
+
+    kprintf("first mapped page again: %i\n", virtual_mapped_page_address1[0]);
+
+
+    //terminal_start();
+
+    //kassert_void(serial_init()); //fails if serial is faulty
+
+    //serial_writestring("hello, this is \n a test \n of serial strings \n containing \n newlines\n");
 
 
 
-    for(volatile uint32_t i = 0u; ; ++i);
+    for(;;) {
+        asm volatile("hlt");
+    }
 }
