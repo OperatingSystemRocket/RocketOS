@@ -37,5 +37,5 @@ size_t kstrspn(const char* str1, const char* str2);
 
 size_t kstrlen(const char* str);
 
-char* kint_to_string(int64_t input, char* string_ret, size_t ret_size);
+char* kint_to_string(int64_t input, char* string_ret, size_t ret_size, uint32_t base, bool lowercase);
 

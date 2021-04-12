@@ -5,12 +5,20 @@ WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Wstrict-prototypes -Wcast-qual -Wconversion -Wunreachable-code \
                   -Wwrite-strings -Wredundant-decls -Wnested-externs \
                   -Winline -Wno-long-long -Wpedantic
-KERNEL_FLAGS := -std=gnu17 -ffreestanding -mgeneral-regs-only
 
-#Do not use these for tests
-IMAGE_FLAGS := -ffreestanding -O3 -nostdlib
+#TODO: hardcode a special rule for interrupts to use the last flag in this list and don't use it for any other c files as it may disable FPU support
+KERNEL_FLAGS := -std=gnu17 -ffreestanding
 
-DEBUG_FLAGS := -fverbose-asm -Og -DDEBUG -save-temps=obj
+RELEASE_LINK_FLAGS := -O3 -flto
+DEBUG_LINK_FLAGS := -O0 -g
+
+ifdef RELEASE
+IMAGE_FLAGS := -ffreestanding $(RELEASE_LINK_FLAGS) -nostdlib
+else
+IMAGE_FLAGS := -ffreestanding $(DEBUG_LINK_FLAGS) -nostdlib
+endif
+
+DEBUG_FLAGS := -fverbose-asm -O0 -g -DDEBUG -save-temps=obj
 RELEASE_FLAGS := -O3 -DNDEBUG
 
 
@@ -116,6 +124,10 @@ os.bin : $(OBJECTS)
 	$(CC) -T linker.ld -o build/results/os.bin $(IMAGE_FLAGS) $(OBJECTS) -lgcc
 
 
+build/objs/interrupts/interrupts.o : src/interrupts/interrupts.c
+	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) -mgeneral-regs-only $(WARNING_FLAGS) $(FLAGS) -I. $(H_FILES_INCLUDE)
+
+
 test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES)
 	@echo "\n"
 	cat $(TEXT_FILES)
@@ -148,21 +160,15 @@ $(PATHOT)%.o : test/%.c
 	exit `expr $$? - 33`
 
 
-
-run_static_analyzers :
-	-clang-tidy $(C_NAMES) $(TEST_C)
-	-clang-format $(C_NAMES) $(TEST_C) --dry-run
-
-
 .PHONY: all
 .PHONY: build
 .PHONY: run
 
 .PHONY: test
 
-.PHONY: run_static_analyzers
-
 .PHONY: clean
+
+
 clean :
 	-rm -rf isodir/
 	-rm -f $(PATHD)*

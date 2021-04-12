@@ -232,16 +232,23 @@ size_t kstrlen(const char *const str) {
     return len;
 }
 
-char* kint_to_string(int64_t input, char *const string_ret, const size_t ret_size) {
+char* kint_to_string(int64_t input, char *const string_ret, const size_t ret_size, const uint32_t base, const bool lowercase) {
     size_t index = 0u;
     if(0u < ret_size && input < 0u) {
         string_ret[index++] = '-';
         input *= -1;
     }
     do {
-        size_t current_input = input % 10u;
-        input /= 10u;
-        const char current_char = current_input + 48u;
+        const size_t current_input = input % base;
+        input /= base;
+        char current_char;
+        if(current_input >= 0u && current_input < 10u) {
+            current_char = current_input + 48u;
+        } else if(!lowercase) {
+            current_char = current_input + 55u;
+        } else {
+            current_char = current_input + 87u;
+        }
         if(index < ret_size) {
             string_ret[index++] = current_char;
         }
@@ -258,4 +265,3 @@ char* kint_to_string(int64_t input, char *const string_ret, const size_t ret_siz
 
     return string_ret;
 }
-

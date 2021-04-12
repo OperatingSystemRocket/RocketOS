@@ -1,6 +1,13 @@
+#include <multiboot.h>
+
+
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "unity.h"
 #include "kstring.h"
 #include "hardware_io.h"
+#include "vga_driver.h"
 
 
 uint16_t buffer[2048u];
@@ -11,9 +18,10 @@ void setUp(void) {
 void tearDown(void) {}
 
 
+//for base 10 numbers
 void kint_to_string_util(const char *const expected_text, const int32_t number) {
     char str[128u];
-    kint_to_string(number, str, 128u);
+    kint_to_string(number, str, 128u, 10u, false);
     const size_t size_of_str = kstrlen(expected_text);
     TEST_ASSERT_EQUAL_MEMORY(expected_text, str, size_of_str);
 }
@@ -53,6 +61,15 @@ void test_kint_to_string(void) {
     kint_to_string_util("0", -0);
 }
 
+
+void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
+    terminal_initialize();
+    if (mboot_magic != MULTIBOOT_BOOTLOADER_MAGIC) {
+        terminal_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
+    } else {
+        terminal_writestring("The multiboot structure was loaded properly\n");
+    }
+}
 
 void kernel_main(void) {
     UNITY_BEGIN();
