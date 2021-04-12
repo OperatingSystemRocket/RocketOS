@@ -16,10 +16,6 @@ https://web.archive.org/web/20151025081259/http://www.intel.com/content/dam/www/
 uint32_t* page_directory;
 
 
-//TODO: hoist the macro `PAGE_SIZE` into a header instead of redeclaring it like I am here
-#define PAGE_SIZE 4096
-
-
 void identity_map_page(const uint32_t page_directory, const uint32_t address, const uint32_t pt_flags, const uint32_t pd_flags) {
     const uint32_t page_index = address / PAGE_SIZE;
     const uint32_t table_index = page_index / 1024;
@@ -108,11 +104,40 @@ void map_page(void *const virtual_address, const uint32_t phys_frame, const uint
     flush_tlb_single_page(virtual_address);
 }
 
-uint32_t map_virtual_page(void *const virtual_address, const uint32_t pt_flags, const uint32_t pd_flags) {
+uint32_t allocate_virtual_page(void *const virtual_address, const uint32_t pt_flags, const uint32_t pd_flags) {
     const uint32_t phys_frame = (uint32_t)allocate_page(USER_USE);
 
-    map_page(virtual_address, phys_frame, pt_flags, pd_flags);
+    if(phys_frame) {
+        map_page(virtual_address, phys_frame, pt_flags, pd_flags);
+    }
 
     return phys_frame;
 }
 
+uint32_t unmap_page(const void *const virtual_address) {
+    kassert((uint32_t)virtual_address % PAGE_SIZE == 0, 0);
+
+    const uint32_t page_index = ((uint32_t)virtual_address) / PAGE_SIZE;
+    const uint32_t table_index = page_index / 1024;
+    const uint32_t page_index_in_table = page_index % 1024;
+
+    uint32_t *const virt_page_directory = page_directory;
+
+    uint32_t *const virt_page_table = (uint32_t*)((virt_page_directory[table_index]) & 0xFFFFF000u);
+
+    const uint32_t phys_frame = virt_page_table[page_index_in_table] & 0xFFFFF000u; //TODO: check if the bitmask is correct
+
+    virt_page_table[page_index_in_table] = 0x0;
+
+    flush_tlb_single_page(virtual_address);
+
+    return phys_frame;
+}
+
+void free_virtual_page(const void *const virtual_address) {
+    const uint32_t phys_frame = unmap_page(virtual_address);
+
+    kassert_void(phys_frame != 0 && phys_frame % PAGE_SIZE == 0);
+
+    free_page(phys_frame, USER_USE);
+}

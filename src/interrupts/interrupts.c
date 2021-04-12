@@ -175,7 +175,7 @@ __attribute__((interrupt)) static void isr14(struct interrupt_frame *const frame
 
     terminal_writestring("heres some info:\n");
 
-    kprintf("address in cr2: %i\n", get_faulting_address());
+    kprintf("address in cr2: %x\n", get_faulting_address());
 
     kprintf("ip: %i\n", frame->ip);
     kprintf("cs: %i\n", frame->cs);

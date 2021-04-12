@@ -7,7 +7,7 @@ WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Winline -Wno-long-long -Wpedantic
 
 #TODO: hardcode a special rule for interrupts to use the last flag in this list and don't use it for any other c files as it may disable FPU support
-KERNEL_FLAGS := -std=gnu17 -ffreestanding -mgeneral-regs-only
+KERNEL_FLAGS := -std=gnu17 -ffreestanding
 
 RELEASE_LINK_FLAGS := -O3 -flto
 DEBUG_LINK_FLAGS := -O0 -g
@@ -122,6 +122,10 @@ build/objs/%.o: src/%.c
 os.bin : $(OBJECTS)
 	@echo $(OBJECTS)
 	$(CC) -T linker.ld -o build/results/os.bin $(IMAGE_FLAGS) $(OBJECTS) -lgcc
+
+
+build/objs/interrupts/interrupts.o : src/interrupts/interrupts.c
+	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) -mgeneral-regs-only $(WARNING_FLAGS) $(FLAGS) -I. $(H_FILES_INCLUDE)
 
 
 test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES)

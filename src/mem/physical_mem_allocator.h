@@ -22,5 +22,3 @@ void* allocate_page(enum memory_type allocation_type);
 void free_page(const enum memory_type allocation_type, const void *const page);
 void* get_first_nonreserved_address(void);
 size_t get_amount_of_nonreserved_memory(void);
-
-void* get_end_kernel(void);

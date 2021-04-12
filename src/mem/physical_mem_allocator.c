@@ -58,8 +58,6 @@ void allocate_init(void) {
     }
 
     first_nonreserved_address = (void*)(number_of_pages_used*PAGE_SIZE);
-
-    endkernel = 7;
 }
 
 
@@ -87,7 +85,7 @@ void* allocate_page_impl(uint32_t *const bookkeeping_bitset, const size_t number
         const uint32_t current_pages = bookkeeping_bitset[i];
         //at least one bit is 0
         if(current_pages != 0xFFFFFFFF) {
-            for(uint8_t j = 0u; j < 32u; ++j) {
+            for(uint8_t j = 0u; j < 32u && number_of_free_pages < 20; ++j) {
                 if(at((i*32u)+j, bookkeeping_bitset) == 0) {
                     page_cache[number_of_free_pages++] = (i*32u)+j;
                 }
@@ -96,6 +94,7 @@ void* allocate_page_impl(uint32_t *const bookkeeping_bitset, const size_t number
     }
     //we store this to be able to detect if we are out of memory
     *has_searched_cache = true; //it might not have filled the page table if there is no free memory or not enough freed memory
+
 
     return allocate_page_impl(bookkeeping_bitset, number_of_entries, page_cache, has_searched_cache); //grabs the first page from most_recently_freed_pages and triggers the early return.
 }
@@ -120,7 +119,6 @@ void free_page(const enum memory_type allocation_type, const void *const page) {
 }
 
 
-
 void* get_first_nonreserved_address(void) {
     return first_nonreserved_address;
 }
@@ -130,10 +128,4 @@ size_t get_amount_of_nonreserved_memory(void) {
     //the +1 accounts for the fact that it is the first non-reserved address instead of the last reserved address
     const size_t number_of_nonreserved_pages = NUMBER_OF_PAGES - ((uintptr_t)first_nonreserved_address)/PAGE_SIZE + 1u;
     return number_of_nonreserved_pages*PAGE_SIZE;
-}
-
-
-void* get_end_kernel(void) {
-    kprintf("%i\n", endkernel);
-    return &endkernel;
 }

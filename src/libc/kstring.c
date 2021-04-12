@@ -96,7 +96,7 @@ void* kmemset(void *const ptr, const int32_t value, size_t num) {
     const int8_t value_byte = value & 0xFFu; //this is to only grab the lowest byte and discard the rest as we are writing to chars
 
     while(num--) {
-        *ptr_char = value_byte;
+        ptr_char[num] = value_byte;
     }
 
     return ptr;
