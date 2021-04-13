@@ -6,7 +6,6 @@ WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Wwrite-strings -Wredundant-decls -Wnested-externs \
                   -Winline -Wno-long-long -Wpedantic
 
-#TODO: hardcode a special rule for interrupts to use the last flag in this list and don't use it for any other c files as it may disable FPU support
 KERNEL_FLAGS := -std=gnu17 -ffreestanding
 
 RELEASE_LINK_FLAGS := -O3 -flto
