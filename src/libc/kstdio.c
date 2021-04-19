@@ -48,6 +48,24 @@ static int32_t has_color(const char *const format, const size_t format_size) {
 }
 
 
+static void print_char(const char c) {
+    serial_putchar(c);
+}
+
+static void print_char_color(const char c, const enum vga_color color) {
+    terminal_putchar_color(c, color);
+}
+
+static void print_string(const char *const str) {
+    serial_writestring(str);
+}
+
+static void print_string_color(const char *const str, const enum vga_color color) {
+    terminal_writestring_color(str, color);
+}
+
+
+
 //TODO: Deal with length modifiers later
 static int32_t conversion_specifier(const char *const format, const size_t format_size, uint32_t *const index, va_list* variadic_args) {
     kassert((*index) < format_size, -1);
@@ -69,17 +87,17 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
             switch (format[(*index) + 1]) {
                 case 'c':
                     if(color_setting == -1) {
-                        terminal_putchar(va_arg(*variadic_args, int32_t));
+                        print_char(va_arg(*variadic_args, int32_t));
                     } else {
-                        terminal_putchar_color(va_arg(*variadic_args, int32_t), color_setting);
+                        print_char_color(va_arg(*variadic_args, int32_t), color_setting);
                     }
                     *index += 1u;
                     return 1;
                 case 's':
                     if(color_setting == -1) {
-                        terminal_writestring(va_arg(*variadic_args, char*));
+                        print_string(va_arg(*variadic_args, char*));
                     } else {
-                        terminal_writestring_color(va_arg(*variadic_args, char*), color_setting);
+                        print_string_color(va_arg(*variadic_args, char*), color_setting);
                     }
                     *index += 1u;
                     return 2;
@@ -88,9 +106,9 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     number = va_arg(*variadic_args, int32_t);
                     kint_to_string(number, str, 128u, 10u, false);
                     if(color_setting == -1) {
-                        terminal_writestring(str);
+                        print_string(str);
                     } else {
-                        terminal_writestring_color(str, color_setting);
+                        print_string_color(str, color_setting);
                     }
                     *index += 1u;
                     return 3;
@@ -98,9 +116,9 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     number = va_arg(*variadic_args, uint32_t);
                     kint_to_string(number, str, 128u, 8u, false);
                     if(color_setting == -1) {
-                        terminal_writestring(str);
+                        print_string(str);
                     } else {
-                        terminal_writestring_color(str, color_setting);
+                        print_string_color(str, color_setting);
                     }
                     *index += 1u;
                     return 4;
@@ -108,9 +126,9 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     number = va_arg(*variadic_args, uint32_t);
                     kint_to_string(number, str, 128u, 16u, true);
                     if(color_setting == -1) {
-                        terminal_writestring(str);
+                        print_string(str);
                     } else {
-                        terminal_writestring_color(str, color_setting);
+                        print_string_color(str, color_setting);
                     }
                     *index += 1u;
                     return 5;
@@ -118,9 +136,9 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     number = va_arg(*variadic_args, uint32_t);
                     kint_to_string(number, str, 128u, 16u, false);
                     if(color_setting == -1) {
-                        terminal_writestring(str);
+                        print_string(str);
                     } else {
-                        terminal_writestring_color(str, color_setting);
+                        print_string_color(str, color_setting);
                     }
                     *index += 1u;
                     return 6;
@@ -128,9 +146,9 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     number = va_arg(*variadic_args, uint32_t);
                     kint_to_string(number, str, 128u, 10u, false);
                     if(color_setting == -1) {
-                        terminal_writestring(str);
+                        print_string(str);
                     } else {
-                        terminal_writestring_color(str, color_setting);
+                        print_string_color(str, color_setting);
                     }
                     *index += 1u;
                     return 7;
@@ -150,11 +168,11 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     return 12;
                 case 'p':
                     number = (uint32_t)va_arg(*variadic_args, void*);
-                    kint_to_string(number, str, 128u, 10u, false);
+                    kint_to_string(number, str, 128u, 16u, false);
                     if(color_setting == -1) {
-                        terminal_writestring(str);
+                        print_string(str);
                     } else {
-                        terminal_writestring_color(str, color_setting);
+                        print_string_color(str, color_setting);
                     }
                     *index += 1u;
                     return 13;
@@ -164,9 +182,9 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
                     number = va_arg(*variadic_args, uint32_t);
                     kint_to_string(number, str, 128u, 2u, false);
                     if(color_setting == -1) {
-                        terminal_writestring(str);
+                        print_string(str);
                     } else {
-                        terminal_writestring_color(str, color_setting);
+                        print_string_color(str, color_setting);
                     }
                     *index += 1u;
                     return 14;
@@ -174,9 +192,9 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
         }
     } else {
         if(color_setting == -1) {
-            terminal_putchar(format[*index]);
+            print_char(format[*index]);
         } else {
-            terminal_putchar_color(format[*index], color_setting);
+            print_char_color(format[*index], color_setting);
         }
     }
     return 0;

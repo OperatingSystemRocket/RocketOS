@@ -8,7 +8,6 @@ pop eax
 ret
 
 
-section .text
 global enablePaging
 enablePaging:
 push eax
@@ -19,7 +18,6 @@ pop eax
 ret
 
 
-section .text
 global enable_ring0_write_protect
 enable_ring0_write_protect:
 push eax

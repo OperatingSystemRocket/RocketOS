@@ -8,5 +8,6 @@
 #include "kassert.h"
 #include "vga_driver.h"
 #include "kstring.h"
+#include "serial_driver.h"
 
 int kprintf(const char *format, ...);

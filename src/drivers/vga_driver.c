@@ -144,9 +144,9 @@ void terminal_scroll_down(void) {
 		}
 	}
     if (terminal_downward_history_size == 0u) {
-	    for(size_t x = 0u; x < VGA_WIDTH; x++) {
-	    	terminal_putentryat(' ', terminal_color, x, VGA_HEIGHT - 1);
-	    }
+        for(size_t x = 0u; x < VGA_WIDTH; x++) {
+            terminal_putentryat(' ', terminal_color, x, VGA_HEIGHT - 1);
+        }
     } else {
         for(size_t x = VGA_WIDTH; x > 0u; x--) {
             terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x - 1] = terminal_downward_history[--terminal_downward_history_size];

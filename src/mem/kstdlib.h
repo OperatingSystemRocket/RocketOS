@@ -8,5 +8,7 @@
 #include "kstring.h"
 
 
-void dynamic_memory_init(void);
-void* malloc(size_t size);
+void kdynamic_memory_init(void);
+void* kmalloc(size_t size);
+void* zeroed_out_kmalloc(size_t size);
+void kfree(const void* payload_ptr);

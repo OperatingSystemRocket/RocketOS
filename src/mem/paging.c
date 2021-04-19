@@ -97,6 +97,9 @@ void map_page(void *const virtual_address, const uint32_t phys_frame, const uint
     }
 
     uint32_t *const virt_page_table = (uint32_t*)((virt_page_directory[table_index]) & 0xFFFFF000u);
+    if((virt_page_table[page_index] & PD_PRESENT) == 0) {
+        kprintf("Woah, mapping an already mapped page. You should fix this.\n");
+    }
     //TODO: properly handle the case of someone mapping an already mapped page
 
     virt_page_table[page_index_in_table] = phys_frame | pt_flags;
@@ -127,6 +130,7 @@ uint32_t unmap_page(const void *const virtual_address) {
 
     const uint32_t phys_frame = virt_page_table[page_index_in_table] & 0xFFFFF000u; //TODO: check if the bitmask is correct
 
+    //TODO: consider iterating through page table to decide whether it can be freed and unmapped
     virt_page_table[page_index_in_table] = 0x0;
 
     flush_tlb_single_page(virtual_address);

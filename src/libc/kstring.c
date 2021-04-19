@@ -51,12 +51,12 @@ int kmemcmp(const void* ptr1, const void* ptr2, size_t num) {
     return 0;
 }
 
-void* kmemset(void *const ptr, const int32_t value, size_t num) {
+void* kmemset(void *const ptr, const int32_t value, const size_t num) {
     char *const ptr_char = ptr; //so we can set each byte
     const int8_t value_byte = value & 0xFFu; //this is to only grab the lowest byte and discard the rest as we are writing to chars
 
-    while(num--) {
-        *ptr_char = value_byte;
+    for(size_t i = 0u; i < num; ++i) {
+        ptr_char[i] = value_byte;
     }
 
     return ptr;
@@ -160,8 +160,8 @@ char* kstrcpy(char* destination, const char* source) {
 
     size_t len = 0;
     while(source[len]) {
-       destination[len] = source[len];
-       len++;
+        destination[len] = source[len];
+        len++;
     }
     destination[len] = '\0';
     return destination;
