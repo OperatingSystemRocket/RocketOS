@@ -23,7 +23,7 @@ static get_allocated_bit(const uint32_t size_word) {
 
 //TODO: do this in a way to where it can increase by more than a page at a time (implement brk and sbrk in `paging`)
 //asks OS for an extra page
-bool increase_memory_pool(void) {
+static bool increase_memory_pool(void) {
     kprintf("increase_memory_pool\n");
 
 
@@ -66,7 +66,7 @@ bool increase_memory_pool(void) {
     return phys_addr;
 }
 
-uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const block) {
+static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const block) {
     if(get_size(block[0]) <= 2*MIN_BLOCK_SIZE) {
         block[0] |= 0x80000000;
         block[(get_size(block[0]))-1] |= 0x80000000;
@@ -111,7 +111,7 @@ uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const block) {
     return block+3; //points to beginning of payload
 }
 
-void dynamic_memory_init(void) {
+void kdynamic_memory_init(void) {
     number_of_pages_allocated = 1u;
     first_free_virtual_address = get_first_nonreserved_address();
     last_free_virtual_address = first_free_virtual_address;

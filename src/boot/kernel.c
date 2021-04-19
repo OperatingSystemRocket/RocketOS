@@ -38,7 +38,7 @@ void kernel_main(void) {
 
     allocate_init();
     paging_init();
-    dynamic_memory_init();
+    kdynamic_memory_init();
 
 
     if(serial_init()) { //fails if serial is faulty
