@@ -8,6 +8,11 @@
 #include "hardware_io.h"
 #include "terminal_driver.h"
 
+
+#define VGA_WIDTH 80
+#define VGA_HEIGHT 25
+
+
 extern bool terminal_on;
 extern size_t terminal_row;
 extern size_t terminal_column;
@@ -33,6 +38,17 @@ enum vga_color {
     VGA_COLOR_LIGHT_BROWN = 14,
     VGA_COLOR_WHITE = 15,
 };
+
+
+//these two functions are correct by inspection:
+inline uint8_t vga_entry_color(const enum vga_color fg, const enum vga_color bg) {
+    return fg | bg << 4u;
+}
+
+inline uint16_t vga_entry(const char uc, const enum vga_color color) {
+    return (uint16_t) uc | (uint16_t) color << 8u;
+}
+
 
 //should be used for actual code
 void terminal_initialize(void);

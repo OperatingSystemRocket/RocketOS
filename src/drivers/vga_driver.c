@@ -1,16 +1,8 @@
 #include "vga_driver.h"
 
-static inline uint8_t vga_entry_color(const enum vga_color fg, const enum vga_color bg) {
-    return fg | bg << 4u;
-}
 
-static inline uint16_t vga_entry(const char uc, const enum vga_color color) {
-    return (uint16_t) uc | (uint16_t) color << 8u;
-}
-
-
-#define VGA_WIDTH 80
-#define VGA_HEIGHT 25
+uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg);
+uint16_t vga_entry(char uc, enum vga_color color);
 
 
 bool terminal_on;

@@ -8,17 +8,42 @@
 #include "hardware_io.h"
 
 
+#define COM1 0x3F8
+#define COM2 0x2F8
+#define COM3 0x3E8
+#define COM4 0x2E8
+
+
 //returns whether or not the serial is faulty. true = serial works properly. false = serial is faulty.
 bool serial_init(void);
 
-int8_t serial_received(void);
 
-char serial_read(void);
+inline int8_t serial_received(void) {
+    return inb(COM1 + 5) & 1u;
+}
 
-int8_t is_transmit_empty(void);
+inline char serial_read(void) {
+    while (serial_received() == 0);
 
-void serial_write(const char* text, size_t size);
+    return inb(COM1);
+}
 
-void serial_writestring(const char* text);
+inline int8_t is_transmit_empty(void) {
+    return inb(COM1 + 5) & 0x20u;
+}
 
-void serial_putchar(char a);
+inline void serial_putchar(const char a) {
+    while (is_transmit_empty() == 0);
+
+    outb(COM1, a);
+}
+
+inline void serial_write(const char *const text, const size_t size) {
+    for(size_t i = 0u; i < size; ++i) {
+        serial_putchar(text[i]);
+    }
+}
+
+inline void serial_writestring(const char *const text) {
+    serial_write(text, kstrlen(text));
+}

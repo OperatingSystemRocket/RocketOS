@@ -51,7 +51,7 @@ void paging_init(void) {
     serial_writestring("page_directory created successfully\n");
 
     for(uint32_t i = 0u; i < get_first_nonreserved_address(); i += PAGE_SIZE) {
-        identity_map_page(page_directory, i, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+        identity_map_page((uint32_t)page_directory, i, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     }
     serial_writestring("indentity mapping done successfully\n");
 
@@ -104,7 +104,7 @@ void map_page(void *const virtual_address, const uint32_t phys_frame, const uint
 
     virt_page_table[page_index_in_table] = phys_frame | pt_flags;
 
-    flush_tlb_single_page(virtual_address);
+    flush_tlb_single_page((uint32_t)virtual_address);
 }
 
 uint32_t allocate_virtual_page(void *const virtual_address, const uint32_t pt_flags, const uint32_t pd_flags) {

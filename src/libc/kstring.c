@@ -1,53 +1,47 @@
 #include "kstring.h"
 
-void* kmemcpy(void* destination, const void* source, size_t num) {
-    kassert(destination != NULL && source != NULL, 0);
+void* kmemcpy(void *restrict const destination, const void *restrict const source, const size_t num) {
+    kassert(destination != NULL && source != NULL, NULL); //if this is tripped, the user has violated the contract of `restrict` and invoked UB
 
-    size_t len = 0;
-    while(len < num) {
-        *((char*)destination + len) = *((char*)source + len);
-        len++;
+    for(size_t len = 0u; len < num; ++len) {
+        ((char*)destination)[len] = ((const char*)source)[len];
     }
     return destination;
 }
 
-void* kmemmove(void* destination, const void* source, size_t num) {
-    kassert(destination != NULL && source != NULL, 0);
+void* kmemmove(void *const destination, const void *const source, const size_t num) {
+    kassert(destination != NULL && source != NULL, NULL);
 
-    char temp[num];
-    size_t len = 0;
-    while(len < num) {
-        *(temp + len) = *((char*)source + len);
-        len++;
+    char temp[num]; //TODO: Replace with fixed size array or *maybe* do a heap allocation. Probably the former option
+
+    for(size_t len = 0u; len < num; ++len) {
+        temp[len] = ((const char*)source)[len];
     }
-    len = 0;
-    while(len < num) {
-        *((char*)destination + len) = *(temp + len);
-        len++;
+
+    for(size_t len = 0u; len < num; ++len) {
+        ((char*)destination)[len] = temp[len];
     }
+
     return destination;
 }
 
-void* kmemchr(void* ptr, int value, size_t num) {
+void* kmemchr(const void *const ptr, const int32_t value, const size_t num) {
     kassert(ptr != NULL, 0);
 
-    size_t len = 0;
-    while(len < num) {
-        if(*((char*)ptr + len) = value) return ptr + len;
-        len++;
+    for(size_t len = 0u; len < num; ++len) {
+        if(((const char*)ptr)[len] == value) return ptr + len;
     }
     return NULL;
 }
 
-int kmemcmp(const void* ptr1, const void* ptr2, size_t num) {
+int kmemcmp(const void *const ptr1, const void *const ptr2, const size_t num) {
     kassert(ptr1 != NULL && ptr2 != NULL, 0);
 
-    size_t len = 0;
-    while(len < num) {
-        if(*((unsigned char*)ptr1 + len) < *((unsigned char*)ptr2 + len)) return -1;
-        if(*((unsigned char*)ptr1 + len) > *((unsigned char*)ptr2 + len)) return 1;
-        len++;
+    for(size_t len = 0u; len < num; ++len) {
+        if(((unsigned char*)ptr1)[len] < ((unsigned char*)ptr2)[len]) return -1;
+        if(((unsigned char*)ptr1)[len] > ((unsigned char*)ptr2)[len]) return 1;
     }
+
     return 0;
 }
 
@@ -93,26 +87,27 @@ char* kstrncat(char *const destination, const char* source, size_t num) {
     return destination;
 }
 
-char* kstrchr(char* str, int character) {
+char* kstrchr(char* str, int32_t character) {
     kassert(str != NULL, 0);
-    
-    if((char)character == '\0') return str + kstrlen(str);
 
-    size_t len = kstrlen(str);
-    size_t index = 0;
-    while(index < len) {
+    const size_t len = kstrlen(str);
+
+    if((char)character == '\0') return str + len;
+
+    for(size_t index = 0u; index < len; ++index) {
         if(str[index] == (char)character) return str + index;
-        index++;
     }
+
     return NULL;
 }
 
 char* kstrrchr(char* str, int character) {
     kassert(str != NULL, 0);
-    
-    if((char)character == '\0') return str + kstrlen(str);
 
     size_t len = kstrlen(str);
+
+    if((char)character == '\0') return str + len;
+
     while(len--) {
         if(str[len] == (char)character) return str + len;
     }
@@ -156,12 +151,11 @@ int kstrcoll(const char* str1, const char* str2) {
 }
 
 char* kstrcpy(char* destination, const char* source) {
-    kassert(destination != NULL && source != NULL, 0);
+    kassert(destination != NULL && source != NULL, NULL);
 
     size_t len = 0;
-    while(source[len]) {
+    for(; source[len]; ++len) {
         destination[len] = source[len];
-        len++;
     }
     destination[len] = '\0';
     return destination;
@@ -170,16 +164,14 @@ char* kstrcpy(char* destination, const char* source) {
 char* kstrncpy(char* destination, const char* source, size_t num) {
     kassert(destination != NULL && source != NULL, 0);
 
-    size_t len = 0;
     size_t size = kstrlen(source);
     char* temp = destination;
-    while(len < num) {
+    for(size_t len = 0u; len < num; ++len) {
         if(len < size) {
             *(temp++) = source[len];
         } else {
             *(temp++) = '\0';
         }
-        len++;
     }
     return destination;
 }
@@ -188,13 +180,13 @@ char* kstrerror(int errnum) {
     //TODO
 }
 
-size_t kstrspn(const char* str1, const char* str2) {
-    size_t cont = 0;
+size_t kstrspn(const char *const str1, const char *const str2) {
+    bool cont = 0;
     for(size_t i = 0; i < kstrlen(str1); i++) {
-        cont = 0;
+        cont = false;
         for(size_t j = 0; j < kstrlen(str2); j++) {
             if(str1[i] == str2[j]) {
-                cont = 1;
+                cont = true;
                 break;
             }
         }
