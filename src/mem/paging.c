@@ -133,7 +133,7 @@ uint32_t unmap_page(const void *const virtual_address) {
     //TODO: consider iterating through page table to decide whether it can be freed and unmapped
     virt_page_table[page_index_in_table] = 0x0;
 
-    flush_tlb_single_page(virtual_address);
+    flush_tlb_single_page((uint32_t)virtual_address);
 
     return phys_frame;
 }

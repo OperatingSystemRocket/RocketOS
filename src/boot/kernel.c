@@ -13,6 +13,7 @@
 
 #include "physical_mem_allocator.h"
 #include "paging.h"
+#include "kstdlib.h"
 
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
