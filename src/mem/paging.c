@@ -98,7 +98,7 @@ void map_page(void *const virtual_address, const uint32_t phys_frame, const uint
 
     uint32_t *const virt_page_table = (uint32_t*)((virt_page_directory[table_index]) & 0xFFFFF000u);
     if((virt_page_table[page_index] & PD_PRESENT) == 0) {
-        kprintf("Woah, mapping an already mapped page. You should fix this.\n");
+        kprintf("Woah, mapping an already mapped page. You should fix this.\n"); //find out why this is being triggered
     }
     //TODO: properly handle the case of someone mapping an already mapped page
 
