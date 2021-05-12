@@ -14,7 +14,8 @@
 #include "physical_mem_allocator.h"
 #include "paging.h"
 #include "kstdlib.h"
-#include "storage.h"
+#include "src/storage/storage.h"
+
 
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
@@ -34,7 +35,7 @@ void kernel_main(void) {
     pic_init();
     isr_install();
 
-    //enable_time();
+    enable_time();
     enable_keyboard();
 
 
@@ -140,11 +141,14 @@ void kernel_main(void) {
     char dest_buf[512] = "foobar\n"; /// prints page fault to qemu terminal when buf is >= 408 elements
     char src_buf[512] = "write this to the disk\n";
     terminal_writestring(dest_buf);
-    //read_disk(1,1,buf);
+    time_sleep_ticks(1);
 
-    write_disk(0,1,dest_buf);
+    ide_initialize(0x1F0, 0x3F4, 0x170, 0x374, 0x000);
+    ide_read_sectors(0,1,0,1,dest_buf);
+
+    ide_read_sectors(0,1,0,1, dest_buf);
+
     terminal_writestring(dest_buf);
-    terminal_writestring("done\n");
 
 
     for(;;) {
