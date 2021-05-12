@@ -206,6 +206,8 @@ void kfree(const void *const payload_ptr) {
 
         block_ptr[block_ptr[0]-1] = block_ptr[0]; //set last word of the new block to the new coalesced block size
         kassert_void(block_ptr[1] != &block_ptr[0] && block_ptr[2] != &block_ptr[0]);
+
+        kprintf("head: %p\n", head);
     }
     if(block_ptr > get_first_nonreserved_address() && !get_allocated_bit(block_ptr[-1])) { //points to last word of the previous block
         kprintf("previous word is free\n");
@@ -216,14 +218,22 @@ void kfree(const void *const payload_ptr) {
 
         uint32_t *const prev = block_ptr[1];
         uint32_t *const next = block_ptr[2];
+        if(prev == NULL && next == NULL) {
+            kprintf("prev and next are NULL\n");
+        }
         if(prev != NULL) {
             prev[2] = next;
-        } else {
+        } else if(next != NULL) {
+            kprintf("else\n");
+            kprintf("head: %p\n", head);
             head = next;
+            kprintf("head: %p\n", head);
         }
         if(next != NULL) {
             next[1] = prev;
         }
+
+        kprintf("head: %p\n", head);
 
         block_ptr -= block_ptr[-1];
         in_freelist = true;
@@ -239,6 +249,8 @@ void kfree(const void *const payload_ptr) {
         kprintf("block_ptr[0]: %u, block_ptr[1]: %p, block_ptr[2]: %p\n", block_ptr[0], block_ptr[1], block_ptr[2]);
 
         kassert_void(block_ptr[1] != &block_ptr[0] && block_ptr[2] != &block_ptr[0]);
+
+        kprintf("head: %p\n", head);
     }
 
 
