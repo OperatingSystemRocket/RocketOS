@@ -11,7 +11,7 @@ unsigned char ide_atapi_read(unsigned char drive, unsigned int lba, unsigned cha
                              unsigned short selector, unsigned int edi);
 
 void ide_read_sectors(unsigned char drive, unsigned char numsects, unsigned int lba, unsigned
-short es, unsigned int edi);
+short es, char* edi);
 
 void ide_write_sectors(unsigned char drive, unsigned char numsects, unsigned int lba, unsigned
 short es, unsigned int edi);
@@ -20,7 +20,7 @@ void ide_atapi_eject(unsigned char drive);
 
         void read_disk(uint32_t sector_lba_address, uint32_t num_of_sectors_to_read, char* buf);
 
-void write_disk(uint32_t sector_lba_address, uint32_t num_of_sectors_to_write, const char* const source_buf);
+void write_disk(uint32_t sector_lba_address, uint32_t num_of_sectors_to_write, const char* source_buf);
 /*
  *
 typedef struct tagFIS_REG_H2D

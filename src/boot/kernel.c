@@ -79,9 +79,10 @@ void kernel_main(void) {
     time_sleep_ticks(1);
 
     ide_initialize(0x1F0, 0x3F4, 0x170, 0x374, 0x000);
-    ide_read_sectors(0,1,0,1,dest_buf);
+    ide_write_sectors(0,1,0,100,src_buf);
 
-    ide_read_sectors(0,1,0,1, dest_buf);
+    ide_read_sectors(0x1F0,1,0,1,dest_buf);
+
 
     terminal_writestring(dest_buf);
 

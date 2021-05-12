@@ -174,9 +174,26 @@ unsigned char ide_polling(unsigned char channel, unsigned int advanced_check) {
     return 0; // No Error.
 }
 
+#define stringify(x) #x
+#define read_and_print(i, reg) kprintf("%s", stringify(reg##_)); kprintf("%s", ", address: "); kprintf("%s", stringify(reg)); kprintf("%s", ", value: "); kprintf("%c", ide_read(i,reg)); if(ide_read(i,reg) == 0) kprintf("%s"," (is zero)"); kprintf("%c", '\n')
+
+
 void ide_initialize(unsigned int BAR0, unsigned int BAR1, unsigned int BAR2, unsigned int
 BAR3,unsigned int BAR4) {
     int j, k, count = 0;
+    for(int i = 0; i < 4; ++i) {
+        read_and_print(i, ATA_REG_SECCOUNT0);
+        read_and_print(i, ATA_REG_SECCOUNT1);
+        read_and_print(i, ATA_REG_DATA);
+        read_and_print(i, ATA_REG_ERROR);
+        read_and_print(i, ATA_REG_FEATURES);
+        read_and_print(i, ATA_REG_SECCOUNT0);
+        read_and_print(i, ATA_REG_LBA0);
+        read_and_print(i, ATA_REG_CONTROL);
+        read_and_print(i, ATA_REG_ALTSTATUS);
+
+    }
+
     // 1- Detect I/O Ports which interface IDE Controller:
     channels[ATA_PRIMARY ].base = (BAR0 &= 0xFFFFFFFC) + 0x1F0*(!BAR0);
     channels[ATA_PRIMARY ].ctrl = (BAR1 &= 0xFFFFFFFC) + 0x3F4*(!BAR1);
@@ -211,8 +228,14 @@ BAR3,unsigned int BAR4) {
                 status = ide_read(i, ATA_REG_STATUS);
                 if ( (status & ATA_SR_ERR)) {err = 1;     terminal_writestring("error here\n"); break;} // If Err, Device is not ATA.
                 if (!(status & ATA_SR_BSY) && (status & ATA_SR_DRQ)) break; // Everything is right.
-                break; /// <- my addition
+                kprintf("%i\n", status);
+                kprintf("%c\n", status);
+                break;
+
             }
+            kprintf("%i\n", status);
+            kprintf("%c\n", status);
+
             // (IV) Probe for ATAPI Devices:
             if (err) {
                 unsigned char cl = ide_read(i,ATA_REG_LBA1);
@@ -226,6 +249,7 @@ BAR3,unsigned int BAR4) {
 
 // (V) Read Identification Space of the Device:
             ide_read_buffer(i, ATA_REG_DATA, (unsigned int) ide_buf, 128);
+
 
             // (VI) Read Device Parameters:
             ide_devices[count].reserved = 1;
@@ -263,11 +287,12 @@ BAR3,unsigned int BAR4) {
                    (const char *[]){"ATA", "ATAPI"}[ide_devices[i].type], /* Type */
                     ide_devices[i].size/1024/1024/2, /* Size */
                     ide_devices[i].model);
+
         }
 }
 
 unsigned char ide_ata_access( unsigned char direction, unsigned char drive, unsigned int
-lba, unsigned char numsects, unsigned short selector, unsigned int edi) {
+lba, unsigned char numsects, unsigned short selector, char* edi) {
     unsigned char lba_mode /* 0: CHS, 1:LBA28, 2: LBA48 */, dma /* 0: No DMA, 1: DMA */, cmd;
     unsigned char lba_io[6];
     unsigned int channel = ide_devices[drive].channel; // Read the Channel.
@@ -510,7 +535,7 @@ unsigned char ide_print_error(unsigned int drive, unsigned char err) {
 
 
 void ide_read_sectors(unsigned char drive, unsigned char numsects, unsigned int lba, unsigned
-short es, unsigned int edi) {
+short es, char* edi) {
     // 1: Check if the drive presents:
     // ==================================
     if (drive > 3 || ide_devices[drive].reserved == 0) package[0] = 0x1; // Drive Not Found!
