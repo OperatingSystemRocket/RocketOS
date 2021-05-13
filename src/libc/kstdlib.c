@@ -15,6 +15,9 @@ uint32_t* head;
 
 int32_t bytes_to_words(uint32_t bytes);
 
+void print_freelist(void);
+void dump_heap(void);
+
 
 uint32_t get_size(const uint32_t size_word) {
     return size_word & 0x7fffffff;
