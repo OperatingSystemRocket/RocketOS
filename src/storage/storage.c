@@ -1,5 +1,6 @@
 #include "storage.h"
 
+
 #define ATA_SR_BSY 0x80
 #define ATA_SR_DRDY 0x40
 #define ATA_SR_DF 0x20
@@ -80,9 +81,15 @@
 #define ATA_WRITE 0x01
 
 #define insl(port, buf, nr) \
-            __asm__ ("cld;rep;insl\n\t"::"d"(port), "D"(buf), "c"(nr))
+            __asm__ volatile("cld;rep;insl\n\t"::"d"(port), "D"(buf), "c"(nr))
+
+
 
 unsigned char package[1];
+
+unsigned char get_error_package(void) {
+    return package[0];
+}
 
 struct channel {
     unsigned short base; // I/O Base.
@@ -109,7 +116,6 @@ struct ide_device {
 } ide_devices[4];
 
 
-
 void ide_write(unsigned char channel, unsigned char reg, unsigned char data) {
     if (reg > 0x07 && reg < 0x0C) ide_write(channel, ATA_REG_CONTROL, 0x80 |
                                                                       channels[channel].nIEN);
@@ -121,29 +127,78 @@ void ide_write(unsigned char channel, unsigned char reg, unsigned char data) {
                                             channels[channel].nIEN);
 }
 
+#define stringify(x) #x
+#define read_and_print(i, reg) \
+kprintf("%s", "register name: ");                                    \
+kprintf("%s", stringify(reg##_)); \
+kprintf("%s", ", register value: ");                                    \
+kprintf("%s", stringify(reg));                                   \
+kprintf("%s", ", actual address read from: ");                                      \
+{char c = ide_read(i,reg); \
+kprintf("%s", ", ide_read result: ");                                \
+kprintf("%i", c);                                             \
+if((unsigned int)c == 0) kprintf("%s"," (is zero)");} kprintf("%c", '\n')
+
+
+
+
 unsigned char ide_read(unsigned char channel, unsigned char reg) {
     unsigned char result;
-    if (reg > 0x07 && reg < 0x0C) ide_write(channel, ATA_REG_CONTROL, 0x80 |
-                                                                      channels[channel].nIEN);
-    if (reg < 0x08) result = inb(channels[channel].base + reg - 0x00);
-    else if (reg < 0x0C) result = inb(channels[channel].base + reg - 0x06);
-    else if (reg < 0x0E) result = inb(channels[channel].ctrl + reg - 0x0A);
-    else if (reg < 0x16) result = inb(channels[channel].bmide + reg - 0x0E);
-    if (reg > 0x07 && reg < 0x0C) ide_write(channel, ATA_REG_CONTROL,
-                                            channels[channel].nIEN);
+    uint16_t address;
+    
+    if (reg > 0x07 && reg < 0x0C) {
+        ide_write(channel, ATA_REG_CONTROL, 0x80 | channels[channel].nIEN);
+        kprintf("%s %i", "ATA_REG_CONTROL address written to: ", 0x80 | channels[channel].nIEN);
+
+    }
+    if (reg < 0x08) {
+        address = channels[channel].base + reg - 0x00;
+        result =      inb(address);
+        //kprintf("%X", channels[channel].base + reg - 0x00);
+    }
+    else if (reg < 0x0C) {
+        address = channels[channel].base + reg - 0x06;
+        result = inb(address);
+        //kprintf("%X", channels[channel].base + reg - 0x06);
+
+    }
+    else if (reg < 0x0E) {
+        address = channels[channel].ctrl + reg - 0x0A;
+        result = inb(address);
+        //kprintf("%X", channels[channel].ctrl + reg - 0x0A);
+
+    }
+    else if (reg < 0x16) {
+        address = channels[channel].bmide + reg - 0x0E;
+        result = inb(address);
+        //kprintf("%X", channels[channel].bmide + reg - 0x0E);
+
+    }
+    if (reg > 0x07 && reg < 0x0C) {
+        int16_t ATA_REG_CONTROL_address = channels[channel].nIEN;
+        ide_write(channel, ATA_REG_CONTROL, ATA_REG_CONTROL_address);
+    }
+    
+    kprintf("%X", address);
+
+
+
+
     return result;
 }
+
+
 
 void ide_read_buffer(unsigned char channel, unsigned char reg, unsigned int buffer, unsigned
 int quads) {
     if (reg > 0x07 && reg < 0x0C) ide_write(channel, ATA_REG_CONTROL, 0x80 |
                                                                       channels[channel].nIEN);
-    asm("pushw %es; movw %ds, %ax; movw %ax, %es");
+    asm volatile("pushw %es; movw %ds, %ax; movw %ax, %es");
     if (reg < 0x08) insl(channels[channel].base + reg - 0x00, buffer, quads);
     else if (reg < 0x0C) insl(channels[channel].base + reg - 0x06, buffer, quads);
     else if (reg < 0x0E) insl(channels[channel].ctrl + reg - 0x0A, buffer, quads);
     else if (reg < 0x16) insl(channels[channel].bmide + reg - 0x0E, buffer, quads);
-    asm("popw %es;");
+    asm volatile("popw %es;");
     if (reg > 0x07 && reg < 0x0C) ide_write(channel, ATA_REG_CONTROL,
                                             channels[channel].nIEN);
 }
@@ -174,25 +229,15 @@ unsigned char ide_polling(unsigned char channel, unsigned int advanced_check) {
     return 0; // No Error.
 }
 
-#define stringify(x) #x
-#define read_and_print(i, reg) kprintf("%s", stringify(reg##_)); kprintf("%s", ", address: "); kprintf("%s", stringify(reg)); kprintf("%s", ", value: "); kprintf("%c", ide_read(i,reg)); if(ide_read(i,reg) == 0) kprintf("%s"," (is zero)"); kprintf("%c", '\n')
+
+
+
 
 
 void ide_initialize(unsigned int BAR0, unsigned int BAR1, unsigned int BAR2, unsigned int
 BAR3,unsigned int BAR4) {
     int j, k, count = 0;
-    for(int i = 0; i < 4; ++i) {
-        read_and_print(i, ATA_REG_SECCOUNT0);
-        read_and_print(i, ATA_REG_SECCOUNT1);
-        read_and_print(i, ATA_REG_DATA);
-        read_and_print(i, ATA_REG_ERROR);
-        read_and_print(i, ATA_REG_FEATURES);
-        read_and_print(i, ATA_REG_SECCOUNT0);
-        read_and_print(i, ATA_REG_LBA0);
-        read_and_print(i, ATA_REG_CONTROL);
-        read_and_print(i, ATA_REG_ALTSTATUS);
 
-    }
 
     // 1- Detect I/O Ports which interface IDE Controller:
     channels[ATA_PRIMARY ].base = (BAR0 &= 0xFFFFFFFC) + 0x1F0*(!BAR0);
@@ -223,18 +268,18 @@ BAR3,unsigned int BAR4) {
             ide_write(i, ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
             time_sleep_ticks(1); // This function should be implemented in your OS. which waits for 1 ms. it is based on System Timer Device Driver.
             // (III) Polling:
-            if (!(ide_read(i, ATA_REG_STATUS))) continue; // If Status = 0, No Device.
+            if (!(ide_read(i, ATA_REG_STATUS))) {continue ; kprintf("%s\n", "Error: no device");}; // If Status = 0, No Device.
             while(1) {
+                kprintf("%s", "actual address read from: ");
                 status = ide_read(i, ATA_REG_STATUS);
-                if ( (status & ATA_SR_ERR)) {err = 1;     terminal_writestring("error here\n"); break;} // If Err, Device is not ATA.
+                kprintf("%c", '\n');
+                if ( (status & ATA_SR_ERR)) {err = 1;     kprintf("%s","Error: SR_ERR\n"); break;} // If Err, Device is not ATA.
                 if (!(status & ATA_SR_BSY) && (status & ATA_SR_DRQ)) break; // Everything is right.
-                kprintf("%i\n", status);
-                kprintf("%c\n", status);
+                kprintf("%s %i", "ide_read status as int: ", status);
+                kprintf("%s %c\n\n", ", ide_read status as char: ", status);
                 break;
 
             }
-            kprintf("%i\n", status);
-            kprintf("%c\n", status);
 
             // (IV) Probe for ATAPI Devices:
             if (err) {
@@ -283,16 +328,35 @@ BAR3,unsigned int BAR4) {
     // 4- Print Summary:
     for (uint8_t i = 0; i < 4; i++)
         if (ide_devices[i].reserved == 1) {
-            kprintf(" Found %s Drive %dGB - %s\n", /// not the issue
-                   (const char *[]){"ATA", "ATAPI"}[ide_devices[i].type], /* Type */
-                    ide_devices[i].size/1024/1024/2, /* Size */
-                    ide_devices[i].model);
+            /*kprintf(" Found %s Drive %iGB - %s\n", /// not the issue
+                   (const char *[]){"ATA", "ATAPI"}[ide_devices[i].type], //Type
+                    ide_devices[i].size, // Size
+                    ide_devices[i].model);*/
+
+            kprintf("%s %s %s %i %s", "Found", (const char *[]){"ATA", "ATAPI"}[ide_devices[i].type], "drive, (index ", i, ") ");
+            kprintf("%s %i", "size (bytes):", ide_devices[i].size);
+            kprintf("%s %s \n", ", model: ", ide_devices[i].model);
 
         }
 }
 
+void ide_print_register_debug_info(void) {
+    for(int i = 0; i < 4; ++i) {
+        read_and_print(i, ATA_REG_SECCOUNT0);
+        read_and_print(i, ATA_REG_SECCOUNT1);
+        read_and_print(i, ATA_REG_DATA);
+        read_and_print(i, ATA_REG_ERROR);
+        read_and_print(i, ATA_REG_FEATURES);
+        read_and_print(i, ATA_REG_SECCOUNT0);
+        read_and_print(i, ATA_REG_LBA0);
+        read_and_print(i, ATA_REG_CONTROL);
+        read_and_print(i, ATA_REG_ALTSTATUS);
+
+    }
+}
+
 unsigned char ide_ata_access( unsigned char direction, unsigned char drive, unsigned int
-lba, unsigned char numsects, unsigned short selector, char* edi) {
+lba, unsigned char numsects, unsigned short selector, unsigned int edi) {
     unsigned char lba_mode /* 0: CHS, 1:LBA28, 2: LBA48 */, dma /* 0: No DMA, 1: DMA */, cmd;
     unsigned char lba_io[6];
     unsigned int channel = ide_devices[drive].channel; // Read the Channel.
@@ -301,7 +365,7 @@ lba, unsigned char numsects, unsigned short selector, char* edi) {
     unsigned int words = 256; // Approximatly all ATA-Drives has sector-size of 512-byte.
     unsigned short cyl, i; unsigned char head, sect, err;
 
-    ide_write(channel, ATA_REG_CONTROL, channels[channel].nIEN = (ide_irq_invoked = 0x0) + 0x02);
+    ide_write((unsigned char) channel, ATA_REG_CONTROL, channels[channel].nIEN = (ide_irq_invoked = 0x0) + 0x02);
 
     
     // (I) Select one from LBA28, LBA48 or CHS;
@@ -395,21 +459,21 @@ lba, unsigned char numsects, unsigned short selector, char* edi) {
     if (direction == 0)
         // PIO Read.
         for (i = 0; i < numsects; i++) {
-            if (err = ide_polling(channel, 1)) return err; // Polling, then set error and exit if there is.
-            asm("pushw %es");
-            asm("mov %%ax, %%es"::"a"(selector));
-            asm("rep insw"::"c"(words), "d"(bus), "D"(edi)); // Receive Data.
-            asm("popw %es");
+            if ((err = ide_polling((unsigned char) channel, 1))) return err; // Polling, then set error and exit if there is.
+            asm volatile("pushw %es");
+            asm volatile("mov %%ax, %%es"::"a"(selector));
+            asm volatile("rep insw"::"c"(words), "d"(bus), "D"(edi)); // Receive Data.
+            asm volatile("popw %es");
             edi += (words*2);
         } else {
         // PIO Write.
         for (i = 0; i < numsects; i++) {
 
             ide_polling(channel, 0); // Polling.
-            asm("pushw %ds");
-            asm("mov %%ax, %%ds"::"a"(selector));
-            asm("rep outsw"::"c"(words), "d"(bus), "S"(edi)); // Send Data
-            asm("popw %ds");
+            asm volatile("pushw %ds");
+            asm volatile("mov %%ax, %%ds"::"a"(selector));
+            asm volatile("rep outsw"::"c"(words), "d"(bus), "S"(edi)); // Send Data
+            asm volatile("popw %ds");
             edi += (words*2);
         }
         ide_write(channel, ATA_REG_COMMAND, (char []) { ATA_CMD_CACHE_FLUSH,
@@ -417,10 +481,11 @@ lba, unsigned char numsects, unsigned short selector, char* edi) {
                                                         ATA_CMD_CACHE_FLUSH_EXT}[lba_mode]);
         ide_polling(channel, 0); // Polling.
     }
+
     return 0; // Easy, ... Isn't it?
 }
 
-void ide_wait_irq() {
+void ide_wait_irq(void) {
     while (!ide_irq_invoked);
     ide_irq_invoked = 0;
 }
@@ -486,17 +551,17 @@ unsigned char ide_atapi_read(unsigned char drive, unsigned int lba, unsigned cha
 
     // (VIII): Sending the packet data:
     // ------------------------------------------------------------------
-    asm("rep outsw"::"c"(6), "d"(bus), "S"(atapi_packet)); // Send Packet Data
+    asm volatile("rep outsw"::"c"(6), "d"(bus), "S"(atapi_packet)); // Send Packet Data
 
 // (IX): Recieving Data:
     // ------------------------------------------------------------------
     for (i = 0; i < numsects; i++) {
         ide_wait_irq(); // Wait for an IRQ.
         if (err = ide_polling(channel, 1)) return err; // Polling and return if error.
-        asm("pushw %es");
-        asm("mov %%ax, %%es"::"a"(selector));
-        asm("rep insw"::"c"(words), "d"(bus), "D"(edi));// Receive Data.
-        asm("popw %es");
+        asm volatile("pushw %es");
+        asm volatile("mov %%ax, %%es"::"a"(selector));
+        asm volatile("rep insw"::"c"(words), "d"(bus), "D"(edi));// Receive Data.
+        asm volatile("popw %es");
         edi += (words*2);
     }
 
@@ -516,16 +581,16 @@ unsigned char ide_print_error(unsigned int drive, unsigned char err) {
     if (err == 1) {terminal_writestring("- Device Fault\n "); err = 19;}
     else if (err == 2) {
         unsigned char st = ide_read(ide_devices[drive].channel, ATA_REG_ERROR);
-        if (st & ATA_ER_AMNF) {terminal_writestring("- No Address Mark Found\n "); err = 7;}
-        if (st & ATA_ER_TK0NF) {terminal_writestring("- No Media or Media Error\n "); err = 3;}
-        if (st & ATA_ER_ABRT) {terminal_writestring("- Command Aborted\n "); err = 20;}
-        if (st & ATA_ER_MCR) {terminal_writestring("- No Media or Media Error\n "); err = 3;}
-        if (st & ATA_ER_IDNF) {terminal_writestring("- ID mark not Found\n "); err = 21;}
-        if (st & ATA_ER_MC) {terminal_writestring("- No Media or Media Error\n "); err = 3;}
-        if (st & ATA_ER_UNC) {terminal_writestring("- Uncorrectable Data Error\n "); err = 22;}
-        if (st & ATA_ER_BBK) {terminal_writestring("- Bad Sectors\n "); err = 13;}
-    } else if (err == 3) {terminal_writestring("- Reads Nothing\n "); err = 23;}
-    else if (err == 4) {terminal_writestring("- Write Protected\n "); err = 8;}
+        if (st & ATA_ER_AMNF) {kprintf("%s", "- No Address Mark Found\n "); err = 7;}
+        if (st & ATA_ER_TK0NF) {kprintf("%s", "- No Media or Media Error\n "); err = 3;}
+        if (st & ATA_ER_ABRT) {kprintf("%s", "- Command Aborted\n "); err = 20;}
+        if (st & ATA_ER_MCR) {kprintf("%s", "- No Media or Media Error\n "); err = 3;}
+        if (st & ATA_ER_IDNF) {kprintf("%s", "- ID mark not Found\n "); err = 21;}
+        if (st & ATA_ER_MC) {kprintf("%s", "- No Media or Media Error\n "); err = 3;}
+        if (st & ATA_ER_UNC) {kprintf("%s", "- Uncorrectable Data Error\n "); err = 22;}
+        if (st & ATA_ER_BBK) {kprintf("%s", "- Bad Sectors\n "); err = 13;}
+    } else if (err == 3) {kprintf("%s", "- Reads Nothing\n "); err = 23;}
+    else if (err == 4) {kprintf("%s", "- Write Protected\n "); err = 8;}
     kprintf("- [%s %s] %s\n",
            (const char *[]){"Primary","Secondary"}[ide_devices[drive].channel],
             (const char *[]){"Master", "Slave"}[ide_devices[drive].drive],
@@ -535,24 +600,35 @@ unsigned char ide_print_error(unsigned int drive, unsigned char err) {
 
 
 void ide_read_sectors(unsigned char drive, unsigned char numsects, unsigned int lba, unsigned
-short es, char* edi) {
+short es, unsigned int edi) {
     // 1: Check if the drive presents:
     // ==================================
-    if (drive > 3 || ide_devices[drive].reserved == 0) package[0] = 0x1; // Drive Not Found!
+    if (drive > 3 || ide_devices[drive].reserved == 0) { package[0] = 0x1; // Drive Not Found!
+    kprintf("%s\n", "Error: Drive Not Found");
+}
     // 2: Check if inputs are valid:
     // ==================================
-    else if (((lba + numsects) > ide_devices[drive].size) && (ide_devices[drive].type == IDE_ATA))
+    else if (((lba + numsects) > ide_devices[drive].size) && (ide_devices[drive].type == IDE_ATA)) {
         package[0] = 0x2; // Seeking to invalid position.
+        kprintf("%s\n", "Error: seeking to invalid position");
+    }
 
 // 3: Read in PIO Mode through Polling & IRQs:
         // ============================================
     else {
         unsigned char err;
-        if (ide_devices[drive].type == IDE_ATA)
+        if (ide_devices[drive].type == IDE_ATA) {
             err = ide_ata_access(ATA_READ, drive, lba, numsects, es, edi);
-        else if (ide_devices[drive].type == IDE_ATAPI)
+            kprintf("%s\n", "type is IDE_ATA");
+
+        }
+        else if (ide_devices[drive].type == IDE_ATAPI) {
             for (uint64_t i = 0; i < numsects; i++)
-                err = ide_atapi_read(drive, lba + i, 1, es, edi + (i*2048));
+                err = ide_atapi_read(drive, lba + i, 1, es, edi + (i * 2048));
+
+            kprintf("%s\n", "type is IDE_ATAPI");
+
+        }
         package[0] = ide_print_error(drive, err);
     }
 }
@@ -572,11 +648,13 @@ short es, unsigned int edi) {
         // 3: Read in PIO Mode through Polling & IRQs:
         // ============================================
     else {
-        unsigned char err;
+        unsigned char err; ///shouldn't this be set to 0 by default?
         if (ide_devices[drive].type == IDE_ATA)
             err = ide_ata_access(ATA_WRITE, drive, lba, numsects, es, edi);
+
         else if (ide_devices[drive].type == IDE_ATAPI)
             err = 4; // Write-Protected.
+            kprintf("%s\n", "error code 4: write protected");
         package[0] = ide_print_error(drive, err);
     }
 }
@@ -631,7 +709,7 @@ void ide_atapi_eject(unsigned char drive) {
             // (VI): Sending the packet data:
             // ------------------------------------------------------------------
         else {
-            asm("rep outsw"::"c"(6), "d"(bus), "S"(atapi_packet));// Send Packet Data
+            asm volatile("rep outsw"::"c"(6), "d"(bus), "S"(atapi_packet));// Send Packet Data
             ide_wait_irq(); // Wait for an IRQ.
             err = ide_polling(channel, 1); // Polling and get error code.
             if (err == 3) err = 0; // DRQ is not needed here.
@@ -641,17 +719,17 @@ void ide_atapi_eject(unsigned char drive) {
 }
 
 
-
+/*
 
 void read_disk(uint32_t sector_lba_address, uint32_t num_of_sectors_to_read, char* buf) {
     terminal_writestring("started read\n");
 
-    register uint32_t eax asm("eax") = sector_lba_address;
-    register uint32_t cl asm("cl") = num_of_sectors_to_read;
-    register char* edi asm("edi") = buf;
+    register uint32_t eax asm volatile("eax") = sector_lba_address;
+    register uint32_t cl asm volatile("cl") = num_of_sectors_to_read;
+    register char* edi asm volatile("edi") = buf;
 
 
-   __asm__ volatile(
+   __asm volatile__ volatile(
                  ".intel_syntax noprefix\n"
                  "ata_lba_read:\n"
                  "               pushfd\n"
@@ -719,18 +797,18 @@ void read_disk(uint32_t sector_lba_address, uint32_t num_of_sectors_to_read, cha
 
 
     terminal_writestring("finished read\n");
-   //__asm__ volatile("extern ata_lba_read\n" "jmp ata_lba_read");
-    //   __asm__ volatile(".include \"/home/dexter/Desktop/repos/RocketOS/src/storage/read_disk.s\"");
+   //__asm volatile__ volatile("extern ata_lba_read\n" "jmp ata_lba_read");
+    //   __asm volatile__ volatile(".include \"/home/dexter/Desktop/repos/RocketOS/src/storage/read_disk.s\"");
 }
 
 void write_disk(uint32_t sector_lba_address, uint32_t num_of_sectors_to_write, const char* const source_buf) {
     terminal_writestring("started write\n");
 
-    register uint32_t eax asm("eax") = sector_lba_address;
-    register uint32_t cl asm("cl") = num_of_sectors_to_write;
-    register const char* const edi asm("edi") = source_buf;
+    register uint32_t eax asm volatile("eax") = sector_lba_address;
+    register uint32_t cl asm volatile("cl") = num_of_sectors_to_write;
+    register const char* const edi asm volatile("edi") = source_buf;
     
-    __asm__ volatile(".intel_syntax noprefix\n"
+    __asm volatile__ volatile(".intel_syntax noprefix\n"
                      "ata_lba_write:\n"
                      "    pushfd\n"
                      "    and eax, 0x0FFFFFFF\n"
