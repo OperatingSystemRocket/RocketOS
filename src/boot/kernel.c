@@ -78,9 +78,15 @@ void kernel_main(void) {
     terminal_writestring(dest_buf);
     time_sleep_ticks(1);
 
+    kprintf("%s\n" "before ide_initialize:\n");
+    ide_print_register_debug_info();
+    kprintf("%s", "\n\n\n");
+
     ide_initialize(0x1F0, 0x3F4, 0x170, 0x374, 0x000);
 
-    //ide_print_register_debug_info();
+    kprintf("%s\n" "after ide_initialize:\n");
+
+    ide_print_register_debug_info();
 
     ide_write_sectors((unsigned char)3,1,0,0,(unsigned int)src_buf);
 

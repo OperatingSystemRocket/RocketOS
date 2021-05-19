@@ -73,6 +73,13 @@
 #define ATA_REG_ALTSTATUS 0x0C
 #define ATA_REG_DEVADDRESS 0x0D
 
+
+
+
+
+
+
+
 // Channels:
 #define ATA_PRIMARY 0x00
 #define ATA_SECONDARY 0x01
@@ -131,13 +138,13 @@ void ide_write(unsigned char channel, unsigned char reg, unsigned char data) {
 #define read_and_print(i, reg) \
 kprintf("%s", "register name: ");                                    \
 kprintf("%s", stringify(reg##_)); \
-kprintf("%s", ", register value: ");                                    \
+kprintf("%s", ", register address offset: ");                                    \
 kprintf("%s", stringify(reg));                                   \
 kprintf("%s", ", actual address read from: ");                                      \
 {char c = ide_read(i,reg); \
-kprintf("%s", ", ide_read result: ");                                \
-kprintf("%i", c);                                             \
-if((unsigned int)c == 0) kprintf("%s"," (is zero)");} kprintf("%c", '\n')
+kprintf("%s", ", ide_read result: 0x");                                \
+kprintf("%X\n", c);                }                             \
+//if((unsigned int)c == 0) kprintf("%s"," (is zero)");} kprintf("%c", '\n')
 
 
 
@@ -148,7 +155,7 @@ unsigned char ide_read(unsigned char channel, unsigned char reg) {
     
     if (reg > 0x07 && reg < 0x0C) {
         ide_write(channel, ATA_REG_CONTROL, 0x80 | channels[channel].nIEN);
-        kprintf("%s %i", "ATA_REG_CONTROL address written to: ", 0x80 | channels[channel].nIEN);
+        //kprintf("%s %i", "ATA_REG_CONTROL address written to: ", 0x80 | channels[channel].nIEN);
 
     }
     if (reg < 0x08) {
@@ -179,7 +186,7 @@ unsigned char ide_read(unsigned char channel, unsigned char reg) {
         ide_write(channel, ATA_REG_CONTROL, ATA_REG_CONTROL_address);
     }
     
-    kprintf("%X", address);
+    kprintf("%s%X", "0x", address);
 
 
 
@@ -247,6 +254,7 @@ BAR3,unsigned int BAR4) {
     channels[ATA_PRIMARY ].bmide = (BAR4 &= 0xFFFFFFFC) + 0; // Bus Master IDE
     channels[ATA_SECONDARY].bmide = (BAR4 &= 0xFFFFFFFC) + 8; // Bus Master IDE
 
+
     terminal_writestring("works here\n");
 
     // 2- Disable IRQs:
@@ -275,9 +283,9 @@ BAR3,unsigned int BAR4) {
                 kprintf("%c", '\n');
                 if ( (status & ATA_SR_ERR)) {err = 1;     kprintf("%s","Error: SR_ERR\n"); break;} // If Err, Device is not ATA.
                 if (!(status & ATA_SR_BSY) && (status & ATA_SR_DRQ)) break; // Everything is right.
-                kprintf("%s %i", "ide_read status as int: ", status);
-                kprintf("%s %c\n\n", ", ide_read status as char: ", status);
                 break;
+                kprintf("%s %x", "ide_read status as hex: ", status);
+                kprintf("%s %c\n\n", ", ide_read status as char: ", status);
 
             }
 
@@ -341,16 +349,26 @@ BAR3,unsigned int BAR4) {
 }
 
 void ide_print_register_debug_info(void) {
-    for(int i = 0; i < 4; ++i) {
-        read_and_print(i, ATA_REG_SECCOUNT0);
-        read_and_print(i, ATA_REG_SECCOUNT1);
+    for(int i = 0; i < 2; ++i) {
+        kprintf("%s %i\n", "\nChannel: ", i);
         read_and_print(i, ATA_REG_DATA);
         read_and_print(i, ATA_REG_ERROR);
         read_and_print(i, ATA_REG_FEATURES);
         read_and_print(i, ATA_REG_SECCOUNT0);
         read_and_print(i, ATA_REG_LBA0);
+        read_and_print(i, ATA_REG_LBA1);
+        read_and_print(i, ATA_REG_LBA2);
+        read_and_print(i, ATA_REG_HDDEVSEL);
+        read_and_print(i, ATA_REG_COMMAND);
+        read_and_print(i, ATA_REG_STATUS);
+        read_and_print(i, ATA_REG_SECCOUNT1);
+        read_and_print(i, ATA_REG_LBA3);
+        read_and_print(i, ATA_REG_LBA4);
+        read_and_print(i, ATA_REG_LBA5);
         read_and_print(i, ATA_REG_CONTROL);
         read_and_print(i, ATA_REG_ALTSTATUS);
+        read_and_print(i, ATA_REG_DEVADDRESS);
+
 
     }
 }
