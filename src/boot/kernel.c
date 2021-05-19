@@ -30,10 +30,13 @@ void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboo
 }
 
 void kernel_main(void) {
+    init_gdt();
+	gdt_load();
+
     pic_init();
     isr_install();
 
-    install_tss();
+    write_tss();
     jump_usermode();
 
 
