@@ -86,31 +86,33 @@ void kernel_main(void) {
     heap_dump(2u);
 
 
-/*
+
     uint32_t* realloc_ptr = zeroed_out_kmalloc(576);
     kprintf("ptr: %p, (((uint32_t*)get_first_nonreserved_address())+3): %p\n", ptr, (((uint32_t*)get_first_nonreserved_address())+3));
     kassert_void(ptr == (((uint32_t*)get_first_nonreserved_address())+3));
     kassert_void(realloc_ptr == ptr);
     kprintf("before pointer: %p\n", realloc_ptr);
     kprintf("before size: %u\n", bytes_to_words(576));
-    for(int32_t i = -3; i <= bytes_to_words(576); ++i) {
-        if(i >= 0 && i < bytes_to_words(576)) {
-            realloc_ptr[i] = 1;
-        }
-        kprintf("%u\n", (realloc_ptr[i]&0x7fffffffu));
-    }
+    //for(int32_t i = -3; i <= bytes_to_words(576); ++i) {
+    //    if(i >= 0 && i < bytes_to_words(576)) {
+    //        realloc_ptr[i] = 1;
+    //    }
+    //    kprintf("%u\n", (realloc_ptr[i]&0x7fffffffu));
+    //}
     realloc_ptr = zeroed_out_krealloc(realloc_ptr, 87);
     kprintf("after pointer: %p\n", realloc_ptr);
     kprintf("after size: %u\n", bytes_to_words(87));
-    for(int32_t i = -3; i <= bytes_to_words(87); ++i) {
-        kprintf("%u\n", (realloc_ptr[i]&0x7fffffffu));
-    }
-    kprintf("memory block dump of first 1004 words\n");
-    for(int32_t i = -3; i <= 643; ++i) {
-        kprintf("%u\n", (realloc_ptr[i]&0x7fffffffu));
-    }
+    //for(int32_t i = -3; i <= bytes_to_words(87); ++i) {
+    //    kprintf("%u\n", (realloc_ptr[i]&0x7fffffffu));
+    //}
+    //kprintf("memory block dump of first 1004 words\n");
+    //for(int32_t i = -3; i <= 643; ++i) {
+    //    kprintf("%u\n", (realloc_ptr[i]&0x7fffffffu));
+    //}
     kfree(realloc_ptr);
-*/
+
+    freelist_dump(true);
+    heap_dump(2u);
 
 
 
