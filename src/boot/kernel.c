@@ -19,7 +19,6 @@
 //TODO: remove all 64 bit integer types as they are bigger than a word size
 
 
-
 void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
     terminal_initialize();
     if (mboot_magic != MULTIBOOT_BOOTLOADER_MAGIC) {
@@ -46,46 +45,48 @@ void kernel_main(void) {
         serial_writestring("hello, this is \n a test \n of serial strings \n containing \n newlines\n");
     }
 
+
+
+    freelist_dump(true);
+
     char *const ptr = zeroed_out_kmalloc(100);
     uint16_t *const ptr2 = zeroed_out_kmalloc(37);
     kfree(ptr);
+    freelist_dump(true);
     uint8_t *const ptr3 = zeroed_out_kmalloc(43);
     uint32_t *const ptr4 = zeroed_out_kmalloc(1000);
     kfree(ptr4);
+    freelist_dump(true);
     uint32_t *const ptr5 = zeroed_out_kmalloc(5);
     uint32_t *const ptr6 = zeroed_out_kmalloc(19);
     kfree(ptr2);
+    freelist_dump(true);
     kfree(ptr3);
+    freelist_dump(true);
     kfree(ptr5);
+    freelist_dump(true);
     kfree(ptr6);
 
-    {
-        kprintf("freelist\n");
-        uint32_t* current_block = get_head();
-        if(get_head() != NULL) {
-            kprintf("head is not NULL\n");
-        } else {
-            kprintf("head is NULL\n");
-        }
-        while(current_block != NULL) {
-            kprintf("first word size: %u, first word allocated bit: %u, second word: %u, third word: %u, last word size: %u, last word allocated bit: %u\n",
-            get_size(current_block[0]), get_allocated_bit(current_block[0]), current_block[1], current_block[2], get_size(current_block[get_size(current_block[0])-1]), get_allocated_bit(current_block[get_size(current_block[0])-1]));
-            current_block = current_block[2];
-        }
-    }
+    freelist_dump(true);
 
     char *const ptr7 = zeroed_out_kmalloc(100);
     uint16_t *const ptr8 = zeroed_out_kmalloc(37);
     kfree(ptr7);
+    freelist_dump(true);
     kfree(ptr8);
+    freelist_dump(true);
 
 
 
     uint32_t *const big_ptr = zeroed_out_kmalloc(4197);
     kfree(big_ptr);
 
+    freelist_dump(true);
+
+    heap_dump(2u);
 
 
+/*
     uint32_t* realloc_ptr = zeroed_out_kmalloc(576);
     kprintf("ptr: %p, (((uint32_t*)get_first_nonreserved_address())+3): %p\n", ptr, (((uint32_t*)get_first_nonreserved_address())+3));
     kassert_void(ptr == (((uint32_t*)get_first_nonreserved_address())+3));
@@ -109,28 +110,8 @@ void kernel_main(void) {
         kprintf("%u\n", (realloc_ptr[i]&0x7fffffffu));
     }
     kfree(realloc_ptr);
+*/
 
-
-
-    kprintf("full heap dump\n");
-    for(int32_t i = 0; i < 1024*2; ++i) {
-        const uint32_t *const start_of_heap = get_first_nonreserved_address();
-        kprintf("size: %u, is_allocated: %u\n", get_size(start_of_heap[i]), get_allocated_bit(start_of_heap[i]));
-    }
-    {
-        kprintf("freelist\n");
-        uint32_t* current_block = get_head();
-        if(get_head() != NULL) {
-            kprintf("head is not NULL\n");
-        } else {
-            kprintf("head is NULL\n");
-        }
-        while(current_block != NULL) {
-            kprintf("memory address: %u, first word size: %u, first word allocated bit: %u, second word: %u, third word: %u, last word size: %u, last word allocated bit: %u\n",
-            current_block, get_size(current_block[0]), get_allocated_bit(current_block[0]), current_block[1], current_block[2], get_size(current_block[get_size(current_block[0])-1]), get_allocated_bit(current_block[get_size(current_block[0])-1]));
-            current_block = current_block[2];
-        }
-    }
 
 
     //terminal_start();

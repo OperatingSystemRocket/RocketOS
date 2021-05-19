@@ -3,15 +3,17 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdbool.h>
 
 #include "paging.h"
 #include "kstring.h"
 
 
 uint32_t get_size(uint32_t size_word);
-
 bool get_allocated_bit(uint32_t size_word);
 
+void heap_dump(size_t number_of_pages);
+void freelist_dump(bool increment);
 
 inline int32_t bytes_to_words(const uint32_t bytes) {
     return (bytes/4) + (bytes%4 > 0);

@@ -24,6 +24,42 @@ bool get_allocated_bit(const uint32_t size_word) {
     return (size_word & 0x80000000) > 0;
 }
 
+void heap_dump(const size_t number_of_pages) {
+    kprintf("\n\n\n");
+    kprintf("full heap dump\n");
+
+    for(int32_t i = 0; i < 1024*number_of_pages; ++i) {
+        const uint32_t *const start_of_heap = get_first_nonreserved_address();
+        kprintf("size: %u, is_allocated: %u\n", get_size(start_of_heap[i]), get_allocated_bit(start_of_heap[i]));
+    }
+
+    kprintf("\n\n\n");
+}
+
+void freelist_dump(const bool increment) {
+    static size_t number_of_freelist_dump = 0;
+
+    kprintf("freelist\n");
+
+    uint32_t* current_block = get_head();
+    if(get_head() != NULL) {
+        kprintf("head is not NULL\n");
+    } else {
+        kprintf("head is NULL\n");
+    }
+    while(current_block != NULL) {
+        kprintf("number_of_freelist_dump: %u, address of entry: %X, first word size: %u, first word allocated bit: %u, second word: %X, third word: %X, last word size: %u, last word allocated bit: %u\n",
+        number_of_freelist_dump, &current_block[0], get_size(current_block[0]), get_allocated_bit(current_block[0]), current_block[1], current_block[2], get_size(current_block[get_size(current_block[0])-1]), get_allocated_bit(current_block[get_size(current_block[0])-1]));
+        current_block = current_block[2];
+    }
+
+    if(increment) {
+        ++number_of_freelist_dump;
+
+        kprintf("\n\n\n");
+    }
+}
+
 
 //TODO: do this in a way to where it can increase by more than a page at a time (implement brk and sbrk in `paging`)
 //asks OS for an extra page
@@ -130,7 +166,7 @@ void kdynamic_memory_init(void) {
     head[1] = NULL; //prev pointer
     head[2] = NULL; //next pointer
 
-    head[BYTES_IN_WORD-1] = WORDS_IN_PAGE; //duplicate of first word of block
+    head[WORDS_IN_PAGE-1] = WORDS_IN_PAGE; //duplicate of first word of block
 }
 
 //TODO: ask OS if no suitable memory found
@@ -144,7 +180,9 @@ void* kmalloc(const size_t size) {
             if((get_size(current_block[0])) >= size_in_words) {
                 //first fit policy
                 //TODO: try using best fit policy
-                return allocate_block(size_in_words, current_block);
+                uint32_t *const ret = allocate_block(size_in_words, current_block)-3;
+                kassert_void(ret[1] == NULL && ret[2] == NULL);
+                return ret+3;
             }
             kprintf("block size: %u\n", get_size(current_block[0]));
             kprintf("next block address: %p\n", current_block[2]);
@@ -183,21 +221,42 @@ void kfree(const void *const payload_ptr) {
         kprintf("next word is free\n");
         kprintf("head: %p\n", head);
 
+        freelist_dump(false);
+
         uint32_t *const prev = (uint32_t*)block_ptr[block_ptr[0] + 1];
         uint32_t *const next = (uint32_t*)block_ptr[block_ptr[0] + 2];
         if(prev != NULL) {
+            kprintf("prev is not NULL\n");
+            freelist_dump(false);
             prev[2] = &block_ptr[0];
+            freelist_dump(false);
         } else {
+            kprintf("prev is NULL\n");
+            freelist_dump(false);
             head = &block_ptr[0];
+            freelist_dump(false);
         }
+        freelist_dump(false);
         if(next != NULL) {
+            kprintf("next is not NULL\n");
+            freelist_dump(false);
             next[1] = &block_ptr[0];
+            freelist_dump(false);
         }
+
         in_freelist = true;
+
+        freelist_dump(false);
 
         const uint32_t old_index = block_ptr[0];
 
+        block_ptr[1] = prev;
+        block_ptr[2] = next;
+
+        kprintf("block_ptr[block_ptr[0]]: %u\n", block_ptr[block_ptr[0]]);
+
         block_ptr[0] += block_ptr[block_ptr[0]];
+
 
         block_ptr[old_index - 1] = 0;
         block_ptr[old_index] = 0;
@@ -208,6 +267,8 @@ void kfree(const void *const payload_ptr) {
         kassert_void(block_ptr[1] != &block_ptr[0] && block_ptr[2] != &block_ptr[0]);
 
         kprintf("head: %p\n", head);
+
+        freelist_dump(false);
     }
     if(block_ptr > get_first_nonreserved_address() && !get_allocated_bit(block_ptr[-1])) { //points to last word of the previous block
         kprintf("previous word is free\n");
