@@ -21,7 +21,12 @@
 
 
 void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
+    if(serial_init()) { //fails if serial is faulty
+        serial_writestring("Serial driver works\n");
+    }
+
     terminal_initialize();
+    
     if (mboot_magic != MULTIBOOT_BOOTLOADER_MAGIC) {
         terminal_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
     } else {
@@ -48,10 +53,6 @@ void kernel_main(void) {
     paging_init();
     kdynamic_memory_init();
 
-
-    if(serial_init()) { //fails if serial is faulty
-        serial_writestring("hello, this is \n a test \n of serial strings \n containing \n newlines\n");
-    }
 
     char *const ptr = zeroed_out_kmalloc(100);
     uint16_t *const ptr2 = zeroed_out_kmalloc(37);

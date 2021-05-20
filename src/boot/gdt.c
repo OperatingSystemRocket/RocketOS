@@ -3,8 +3,8 @@
 
 void test_user_function() {
     //kprintf("test_user_function() called\n");
-	asm volatile("cli");
-	//for(volatile int i = 0; ;++i);
+	//asm volatile("hlt");
+	for(volatile int i = 0; ;++i);
 }
 
 extern void* stack_bottom;
@@ -25,7 +25,7 @@ struct gdt_ptr {
 	uint32_t base;
 } __attribute__((packed));
 
-struct gdt_entry gdt_entries[6];
+struct gdt_entry gdt_entries[7];
 struct gdt_ptr gdt_entries_ptr;
 
 
@@ -95,7 +95,7 @@ void init_gdt(void) {
 	gdt_entries[5].base_high = (base & 0xFF000000) >> 24;
 
 
-	gdt_entries_ptr.limit = (sizeof(struct gdt_entry) * 6) - 1;
+	gdt_entries_ptr.limit = (sizeof(struct gdt_entry) * 7) - 1;
 	gdt_entries_ptr.base = &gdt_entries[0];
 }
 
@@ -103,7 +103,7 @@ void write_tss(void) {
 	kmemset(&tss_entry, 0, sizeof(struct tss_entry_struct));
 
 	//may not be correct
-	tss_entry.ss0 = 3*sizeof(struct gdt_entry);
+	tss_entry.ss0 = 2*sizeof(struct gdt_entry);
 	tss_entry.esp0 = ((uint32_t)&stack_bottom + 16384) - 4;
 
     flush_tss();
