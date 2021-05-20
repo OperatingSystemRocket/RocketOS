@@ -86,7 +86,7 @@ void kernel_main(void) {
 
     kprintf("%s\n" "after ide_initialize:\n");
 
-    ide_print_register_debug_info();
+    //ide_print_register_debug_info();
 
     ide_write_sectors((unsigned char)3,1,0,0,(unsigned int)src_buf);
 

@@ -273,7 +273,7 @@ BAR3,unsigned int BAR4) {
             ide_write(i, ATA_REG_HDDEVSEL, 0xA0 | (j<<4)); // Select Drive.
             time_sleep_ticks(1); // Wait 1ms for drive select to work.
             // (II) Send ATA Identify Command:
-            ide_write(i, ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
+            //ide_write(i, ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
             time_sleep_ticks(1); // This function should be implemented in your OS. which waits for 1 ms. it is based on System Timer Device Driver.
             // (III) Polling:
             if (!(ide_read(i, ATA_REG_STATUS))) {continue ; kprintf("%s\n", "Error: no device");}; // If Status = 0, No Device.
