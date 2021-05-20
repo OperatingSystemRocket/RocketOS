@@ -16,7 +16,7 @@ uint16_t e_shnum;
 uint16_t e_shstrndx;
 
 int load_elf_file(const uint8_t* const file) {
-    e_ident = file;
+    e_ident = file; //e_ident is an array of length 16, indices 0-7 are important and 8-15 are padding set to 0
     e_type = *((const uint16_t*)file + 16);
     e_machine = *((const uint16_t*)file + 18);
     e_version = *((const uint16_t*)file + 20);
@@ -82,7 +82,10 @@ int process_program_header(const uint8_t* const program_header, const uint8_t* c
     uint32_t align = *((const uint32_t*)program_header + 28);
 
     if(type == 1) {
-        //TODO
+        //TODO: load into memory
+        //ex:
+        uint8_t* mem = vaddr;
+        kmemcpy(mem, file + offset, filesz);
     }
 
     return 0;
