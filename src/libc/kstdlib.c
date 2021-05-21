@@ -376,15 +376,18 @@ void* krealloc(void *const ptr, const size_t new_size) {
 
         kprintf("next_block_head: %X, last_free_virtual_address: %X\n", next_block_head, last_free_virtual_address);
 
-        if(next_block_head < last_free_virtual_address-1 && !get_allocated_bit(next_block_head[0]) && difference_in_size > 2*MIN_BLOCK_SIZE) {
+        if(next_block_head < last_free_virtual_address && !get_allocated_bit(next_block_head[0]) && difference_in_size > 2*MIN_BLOCK_SIZE) {
             kprintf("split\n");
             uint32_t *const new_split_block = next_block_head - difference_in_size;
             next_block_head[0] += difference_in_size;
-            //block_head[next_block_head[0]-1] = next_block_head[0];
+            block_head[get_size(block_head[0]) - 1] = 0;
+            block_head[0] -= difference_in_size;
+            block_head[block_head[0]-1] = block_head[0];
             new_split_block[0] = next_block_head[0];
             new_split_block[1] = next_block_head[1];
             new_split_block[2] = next_block_head[2];
-            //block_head[new_split_block[0]-1] = new_split_block[0];
+            new_split_block[new_split_block[0]-1] = new_split_block[0];
+            next_block_head[0] = 0;
 
             kprintf("new_split_block[0]: %u\n", get_size(new_split_block[0]));
 
