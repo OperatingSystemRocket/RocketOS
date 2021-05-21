@@ -23,3 +23,5 @@ char* kstrncpy(char* destination, const char* source, size_t num);
 size_t kstrspn(const char* str1, const char* str2);
 size_t kstrlen(const char* str);
 char* kint_to_string(int64_t input, char* string_ret, size_t ret_size, uint32_t base, bool lowercase);
+void kuint_to_string(uint64_t input, char* const string_ret, const size_t ret_size);
+char kint_to_char(int8_t);

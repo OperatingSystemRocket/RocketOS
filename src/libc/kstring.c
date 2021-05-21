@@ -257,3 +257,28 @@ char* kint_to_string(int64_t input, char *const string_ret, const size_t ret_siz
 
     return string_ret;
 }
+
+void kuint_to_string(uint64_t input, char* const string_ret, const size_t ret_size) {
+    size_t index = 0u;
+    do {
+        size_t current_input = input % 10u;
+        input /= 10u;
+        const char current_char = current_input + 48u;
+        if(index < ret_size) {
+            string_ret[index++] = current_char;
+        }
+    } while(input);
+    if(index < ret_size) {
+        string_ret[index] = '\0';
+    }
+    const size_t start_index = (string_ret[0u] == '-') ? 1u : 0u;
+    for(size_t i = 0u; i < index/2u; ++i) {
+        const char temp = string_ret[i+start_index];
+        string_ret[i+start_index] = string_ret[index-i-1u];
+        string_ret[index-i-1u] = temp;
+    }
+}
+
+char kint_to_char(int8_t i) {
+    return '0' + i;
+}

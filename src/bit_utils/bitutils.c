@@ -12,7 +12,7 @@ void print_bits(size_t const size, void const * const ptr)
         for (j = 7; j >= 0; j--) {
             byte = (b[i] >> j) & 1;
 
-            terminal_putchar(kitoc(byte));
+            terminal_putchar(kint_to_char(byte));
 
             pos = i*8 + j;
             if(pos == 63 || pos == 52) {
@@ -39,7 +39,7 @@ void print_double_bits(const double* const ptr) {
     for (i = 0; i < size; ++i) {
         for (j = 0; j < 8; ++j) {
             byte = (b[i] >> j) & 1;
-            terminal_putchar(kitoc(byte));
+            terminal_putchar(kint_to_char(byte));
 
             pos = i*8 + j;
             if(pos == 62 || pos == 51) {

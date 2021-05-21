@@ -14,6 +14,8 @@
 #include "physical_mem_allocator.h"
 #include "paging.h"
 #include "kstdlib.h"
+#include "src/storage/storage.h"
+
 
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
@@ -32,7 +34,7 @@ void kernel_main(void) {
     pic_init();
     isr_install();
 
-    //enable_time();
+    enable_time();
     enable_keyboard();
 
 
@@ -76,10 +78,8 @@ void kernel_main(void) {
     kfree(ptr8);
     freelist_dump(true);
 
+    //terminal_start();
 
-
-    uint32_t *const big_ptr = zeroed_out_kmalloc(4197);
-    kfree(big_ptr);
 
     freelist_dump(true);
 
@@ -114,9 +114,29 @@ void kernel_main(void) {
     freelist_dump(true);
     heap_dump(2u);
 
+    //ide_print_register_debug_info();
+
+    char dest_buf[512] = "You shouldn't be seeing this text\n";
+    char src_buf[512] = "EPIC STORAGE SUCCESS\n";
+    terminal_writestring(dest_buf);
+    time_sleep_ticks(1);
+
+    kprintf("%s\n" "before ide_initialize:\n");
+    ide_print_register_debug_info();
+    kprintf("%s", "\n\n\n");
+
+    ide_initialize(0x1F0, 0x3F4, 0x170, 0x374, 0x000);
+
+    kprintf("%s\n" "after ide_initialize:\n");
 
 
-    //terminal_start();
+    ide_write_sectors((unsigned char)3,1,0,0,(unsigned int)src_buf);
+
+
+    ide_read_sectors((unsigned char)3,1,0,0,(unsigned int)dest_buf);
+
+
+    terminal_writestring(dest_buf);
 
 
     for(;;) {
