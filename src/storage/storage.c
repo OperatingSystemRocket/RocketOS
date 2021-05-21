@@ -264,16 +264,17 @@ BAR3,unsigned int BAR4) {
 // 3- Detect ATA-ATAPI Devices:
     for (uint8_t i = 0; i < 2; i++)
         for (j = 0; j < 2; j++) {
-            terminal_writestring("works here\n");
 
             unsigned char err = 0, type = IDE_ATA, status;
             ide_devices[count].reserved = 0; // Assuming that no drive here.
-            terminal_writestring("works here\n");
+
             // (I) Select Drive:
-            ide_write(i, ATA_REG_HDDEVSEL, 0xA0 | (j<<4)); // Select Drive.
+            ide_write(i, ATA_REG_HDDEVSEL, (unsigned char) (0xA0 | (j << 4))); // Select Drive.
             time_sleep_ticks(1); // Wait 1ms for drive select to work.
             // (II) Send ATA Identify Command:
-            //ide_write(i, ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
+
+            ide_write(i, ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
+
             time_sleep_ticks(1); // This function should be implemented in your OS. which waits for 1 ms. it is based on System Timer Device Driver.
             // (III) Polling:
             if (!(ide_read(i, ATA_REG_STATUS))) {continue ; kprintf("%s\n", "Error: no device");}; // If Status = 0, No Device.
@@ -302,7 +303,7 @@ BAR3,unsigned int BAR4) {
 
 // (V) Read Identification Space of the Device:
             ide_read_buffer(i, ATA_REG_DATA, (unsigned int) ide_buf, 128);
-
+            asm volatile("sti");
 
             // (VI) Read Device Parameters:
             ide_devices[count].reserved = 1;
