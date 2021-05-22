@@ -92,16 +92,21 @@ void kernel_main(void) {
     uint32_t* realloc_ptr = zeroed_out_kmalloc(576);
     kprintf("malloc'ed size: %u\n", bytes_to_words(576)+4);
 
+    uint32_t *const malloced_ptr = zeroed_out_kmalloc(1000);
+
+    kprintf("realloc_ptr: %X, malloced_ptr: %X\n", realloc_ptr, malloced_ptr);
     freelist_dump(true);
     //heap_dump(2u);
 
     realloc_ptr = zeroed_out_krealloc(realloc_ptr, 87);
     kprintf("realloc'ed size: %u\n", bytes_to_words(87)+4);
 
+    kprintf("realloc_ptr: %X, malloced_ptr: %X\n", realloc_ptr, malloced_ptr);
     freelist_dump(true);
     //heap_dump(2u);
 
     kfree(realloc_ptr);
+    kfree(malloced_ptr);
 
     freelist_dump(true);
     heap_dump(2u);
