@@ -32,35 +32,35 @@ int load_elf_file(const uint8_t* const file) {
     e_shstrndx = *((const uint16_t*)file + 50); 
 
     if(e_ident[0] != 0x7f || e_ident[1] != 'E' || e_ident[2] != 'L' || e_ident[3] != 'F') {
-        kprintf("Not an ELF file!");
+        kprintf("Not an ELF file!\n");
         return 1;
     }
     if(e_ident[4] != 1) {
-        kprintf("Must be 32 bit!");
+        kprintf("Must be 32 bit!\n");
         return 2;
     }
     if(e_ident[5] != 1) {
-        kprintf("Must use little endian encoding!"); //TODO add support for big endian encoding
+        kprintf("Must use little endian encoding!\n"); //TODO add support for big endian encoding
         return 3;
     } 
     if(e_ident[6] != 1) {
-        kprintf("Something is wrong with that elf file, should be set to 1!");
+        kprintf("Something is wrong with that elf file, should be set to 1!\n");
         return 4;
     }
     if(e_ident[7] != 0) {
-        kprintf("OS ABI should be set to 0!");
+        kprintf("OS ABI should be set to 0!\n");
         return 5;
     }
     if(e_type != 2) {
-        kprintf("Not an executable file!");
+        kprintf("Not an executable file!\n");
         return 6;
     }
     if(e_machine != 0x03) {
-        kprintf("Not x86!");
+        kprintf("Not x86!\n");
         return 7;
     }
     if(e_version != 1) {
-        kprintf("Must be ELF version 1!");
+        kprintf("Must be ELF version 1!\n");
         return 8;
     }
 
@@ -82,9 +82,7 @@ int process_program_header(const uint8_t* const program_header, const uint8_t* c
     uint32_t align = *((const uint32_t*)program_header + 28);
 
     if(type == 1) {
-        //TODO: load into memory
-        //ex:
-        uint8_t* mem = vaddr;
+        uint8_t* mem = allocate_virtual_page(vaddr, flags, flags);
         kmemcpy(mem, file + offset, filesz);
     }
 

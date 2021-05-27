@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vga_driver.h"
+#include "elf_loader.h"
 
 #define PROMPT "> "
 

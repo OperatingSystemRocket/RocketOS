@@ -1,5 +1,6 @@
 #include "terminal_driver.h"
 
+char test_file[16] = "\0ELF\0\0\0\0\0\0\0\0\0\0\0\0";
 size_t start_of_command;
 size_t end_of_command;
 
@@ -10,9 +11,18 @@ void run_command(char *const command) {
         } else {
             kprintf("'echo' requires one argument!\n");
         }
+    } else if(kstrncmp(command, "load", 4) == 0) {
+        if(kstrlen(command) > 5) {
+            kprintf("Loading file...");
+            load_elf_file(test_file); 
+            kprintf("Done!\n");
+        } else {
+            kprintf("'load' requires one argument!\n");
+        }
     } else if(kstrncmp(command, "help", 4) == 0) {
         kprintf("List of available commands:\n");
         kprintf("echo\n");
+        kprintf("load\n");
         kprintf("help\n");
     } else {
         kprintf("Invalid command! Try 'help'\n");
