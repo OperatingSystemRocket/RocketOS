@@ -203,8 +203,20 @@ const char* kstrpbrk(const char* str1, const char* str2) {
     //TODO
 }
 
-const char* kstrstr(const char* str1, const char* str2) {
-    //TODO
+const char* kstrstr_impl(const char* haystack, const char* needle, uint8_t mode) {
+    size_t needle_len = kstrlen(needle);
+    for(size_t i = 0; i < kstrlen(haystack); ++i) {
+        if(haystack[i] == needle[0]) {
+            if(kstrncmp(haystack+i, needle, needle_len) == 0) {
+                return haystack + i + (mode == 0 ? 0 : needle_len);
+            }
+        }
+    }
+    return NULL;
+}
+
+const char* kstrstr(const char* haystack, const char* needle) {
+    return kstrstr_impl(haystack, needle, 0);
 }
 
 char* kstrtok(char* str, const char* delimiters) {
@@ -282,3 +294,17 @@ void kuint_to_string(uint64_t input, char* const string_ret, const size_t ret_si
 char kint_to_char(int8_t i) {
     return '0' + i;
 }
+
+int8_t kchar_to_int(char c) {
+    return c-'0';
+}
+
+///NOTE: nonstandard, but useful. Works like strstr, but returns a pointer to the END of needle found within haystack
+const char* kstrstr_end(const char* haystack, const char* needle) {
+    return kstrstr_impl(haystack, needle, 1);
+}
+
+const char* get_string_between_substrings(const char* haystack, const char* lhs, const char* rhs) {
+    // TODO (maybe)
+}
+

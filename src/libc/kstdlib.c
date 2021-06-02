@@ -443,3 +443,13 @@ void* zeroed_out_krealloc(void *const ptr, const size_t new_size) {
 uint32_t* get_head(void) {
     return head;
 }
+
+int64_t kstrtol(const char* src, char** endptr, int8_t base) {
+    size_t src_len = kstrlen(src);
+    int64_t result = 0;
+    for(int64_t i = 0; i < src_len; ++i) {
+        result += kchar_to_int(src[i]) * kpow(base, src_len - i - 1);
+        kprintf("%s %i %s %i\n", "multiple: ", kchar_to_int(src[i]), "kpow: ", kpow(base, src_len - i - 1));
+    }
+    return result;
+}

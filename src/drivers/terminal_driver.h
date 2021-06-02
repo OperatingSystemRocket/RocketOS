@@ -2,6 +2,7 @@
 
 #include "vga_driver.h"
 #include "elf_loader.h"
+#include "storage.h"
 
 #define PROMPT "> "
 
@@ -14,3 +15,6 @@ void terminal_process_command(void);
 void terminal_shift(void);
 
 void get_command(char* final);
+void parse_command_args(const char* args);
+
+int8_t get_string_section_after(const char* const src, char* const dest, const char* const search_term);

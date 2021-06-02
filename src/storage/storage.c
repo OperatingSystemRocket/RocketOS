@@ -289,7 +289,7 @@ BAR3,unsigned int BAR4) {
                 kprintf("%s", "actual address read from: ");
                 status = ide_read(i, ATA_REG_STATUS);
                 kprintf("%c", '\n');
-                if ( (status & ATA_SR_ERR) /*|| (status & 0x20)*/) {err = 1;     kprintf("%s","Error: SR_ERR\n"); break;} // If Err, Device is not ATA.
+                if ( (status & ATA_SR_ERR) /*|| (status & 0x20)*/) {err = 1; break;} // If Err, Device is not ATA.
                 if (!(status & ATA_SR_BSY) && (status & ATA_SR_DRQ)) break; // Everything is right.
                 //break;
                 kprintf("%s %x", "ide_read status as hex: 0x", status);
@@ -645,14 +645,13 @@ short es, unsigned int edi) {
         unsigned char err;
         if (ide_devices[drive].type == IDE_ATA) {
             err = ide_ata_access(ATA_READ, drive, lba, numsects, es, edi);
-            kprintf("%s\n", "type is IDE_ATA");
+            //kprintf("%s\n", "type is IDE_ATA");
 
         }
         else if (ide_devices[drive].type == IDE_ATAPI) {
             for (uint64_t i = 0; i < numsects; i++)
                 err = ide_atapi_read(drive, lba + i, 1, es, edi + (i * 2048));
-
-            kprintf("%s\n", "type is IDE_ATAPI");
+            //kprintf("%s\n", "type is IDE_ATAPI");
 
         }
         package[0] = ide_print_error(drive, err);
@@ -678,9 +677,10 @@ short es, unsigned int edi) {
         if (ide_devices[drive].type == IDE_ATA)
             err = ide_ata_access(ATA_WRITE, drive, lba, numsects, es, edi);
 
-        else if (ide_devices[drive].type == IDE_ATAPI)
+        else if (ide_devices[drive].type == IDE_ATAPI) {
             err = 4; // Write-Protected.
             kprintf("%s\n", "error code 4: write protected");
+        }
         package[0] = ide_print_error(drive, err);
     }
 }

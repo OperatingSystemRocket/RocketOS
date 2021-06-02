@@ -25,3 +25,10 @@ size_t kstrlen(const char* str);
 char* kint_to_string(int64_t input, char* string_ret, size_t ret_size, uint32_t base, bool lowercase);
 void kuint_to_string(uint64_t input, char* const string_ret, const size_t ret_size);
 char kint_to_char(int8_t);
+int8_t kchar_to_int(char c);
+const char* kstrstr(const char* haystack, const char* needle);
+const char* kstrstr_end(const char* haystack, const char* needle);
+
+///Non-standard functions
+const char* get_string_between_substrings(const char* haystack, const char* lhs, const char* rhs);
+

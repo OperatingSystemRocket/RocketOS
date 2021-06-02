@@ -27,3 +27,7 @@ void* krealloc(void* ptr, size_t new_size);
 void* zeroed_out_krealloc(void* ptr, size_t new_size);
 
 uint32_t* get_head(void);
+
+/// Doesn't do anything with endptr at the moment
+int64_t kstrtol(const char* src, char** endptr, int8_t base);
+
