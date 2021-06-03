@@ -449,7 +449,6 @@ int64_t kstrtol(const char* src, char** endptr, int8_t base) {
     int64_t result = 0;
     for(int64_t i = 0; i < src_len; ++i) {
         result += kchar_to_int(src[i]) * kpow(base, src_len - i - 1);
-        kprintf("%s %i %s %i\n", "multiple: ", kchar_to_int(src[i]), "kpow: ", kpow(base, src_len - i - 1));
     }
     return result;
 }

@@ -44,6 +44,7 @@ inline void serial_write(const char *const text, const size_t size) {
     }
 }
 
+
 inline void serial_writestring(const char *const text) {
     serial_write(text, kstrlen(text));
 }

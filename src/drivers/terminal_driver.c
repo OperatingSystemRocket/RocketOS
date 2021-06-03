@@ -1,6 +1,6 @@
 #include "terminal_driver.h"
 
-#define MAX_NUMBER_OF_ARGS 5
+#define MAX_NUMBER_OF_ARGS 10
 #define MAX_ARGUMENT_SIZE 64
 
 char test_file[16] = "\0ELF\0\0\0\0\0\0\0\0\0\0\0\0";
@@ -12,6 +12,7 @@ char disk_dest_buf[512] = "don't want this";
 char command_arguments[MAX_NUMBER_OF_ARGS][MAX_ARGUMENT_SIZE];
 
 /// Expects just arguments. Use kstrstr_end to remove the command
+/*
 void parse_command_args(const char* args) {
     size_t args_len = kstrlen(args);
 
@@ -44,6 +45,50 @@ void parse_command_args(const char* args) {
         }
     }
 }
+ */
+
+size_t get_char_location(const char* src, char c, size_t start, size_t end) {
+    for(size_t i = start; i < kmin(end, kstrlen(src)); ++i) {
+        if(src[i] == c) {
+            return i;
+        }
+    }
+}
+
+void get_string_slice(const char* src, char* const dest, size_t start, size_t end) {
+    kmemcpy(dest,src+start, end-start);
+    dest[end-start] = '\0';
+}
+
+void get_string_between_chars(const char* src, char* const dest, char open, char close) {
+    size_t src_len = kstrlen(src);
+    size_t start = get_char_location(src, open, 0, src_len-1);
+    size_t end = get_char_location(src, close, start+1, src_len-1);
+
+    get_string_slice(src,dest,start+1,end);
+
+}
+
+void parse_command_args(const char* args) {
+    size_t arg_index = 0;
+    for(size_t i = 0; i < kstrlen(args); ++i) {
+        if(args[i] == ' ') {
+            if(args[i+1] == '\"') {
+                size_t end_location = get_char_location(args,'\"', i+2, kstrlen(args));
+                get_string_slice(args,command_arguments[arg_index], i+2, end_location);
+                i = end_location;
+            }
+            else {
+                size_t end_location = get_char_location(args, ' ', i+1, kstrlen(args));
+                get_string_slice(args,command_arguments[arg_index], i+1, end_location);
+                i = end_location-1;
+
+            }
+            ++arg_index;
+        }
+    }
+}
+
 
 // puts the rest of a string after the first occurrence of search_term into dest. Returns 0 for success, -1 for string not found
 int8_t get_string_section_after(const char* const src, char* const dest, const char* const search_term) {
@@ -68,6 +113,8 @@ int8_t get_string_section_after(const char* const src, char* const dest, const c
 }
 
 void run_command(char *const command) {
+    parse_command_args(command);
+
     if(kstrncmp(command, "echo", 4) == 0) {
         if(kstrlen(command) > 5) {
             kprintf(kstrcat(command + 5, "\n"));
@@ -92,18 +139,23 @@ void run_command(char *const command) {
             kprintf("%s\n", "wrtdsk requires arguments");
         }
         else {
-            kstrcpy(disk_src_buf, kstrstr_end(command, "wrtdsk "));
-            ide_write_sectors(0, 1, 0, 0, (unsigned int) disk_src_buf);
+            uint64_t lba = kstrtol(command_arguments[0],NULL, 10);
+            kstrcpy(disk_src_buf, command_arguments[1]);
+            ide_write_sectors(0, 1, lba, 0, (unsigned int) disk_src_buf);
         }
     } else if(kstrncmp(command, "prntdsk", 6) == 0) {
-        ide_read_sectors(0,1,0,0, (unsigned int)disk_dest_buf);
+        uint64_t lba = kstrtol(command_arguments[0],NULL, 10);
+        ide_read_sectors(0,1,lba,0, (unsigned int)disk_dest_buf);
         terminal_writestring(disk_dest_buf);
         terminal_putchar('\n');
     }
     else if(kstrncmp(command, "test", 4) == 0) {
-        parse_command_args(kstrstr_end(command, "test "));
         kprintf("%s\n", "Command args: ");
-        kprintf("%s\n%s\n%s\n", command_arguments[0], command_arguments[1], command_arguments[2]);
+        for(uint8_t i = 0; i < 10; ++i) {
+            if(command_arguments[i][0] != 0) {
+                kprintf("%s\n", command_arguments[i]);
+            }
+        }
     }
     else {
         kprintf("Invalid command! Try 'help'\n");
