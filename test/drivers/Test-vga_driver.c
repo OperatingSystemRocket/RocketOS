@@ -345,6 +345,7 @@ void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboo
 }
 
 void kernel_main(void) {
+    serial_init();
     UNITY_BEGIN();
     RUN_TEST(test_terminal_clear);
     RUN_TEST(test_terminal_setcolor);

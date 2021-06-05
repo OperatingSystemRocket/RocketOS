@@ -22,6 +22,7 @@
 
 
 void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
+    kassert_void(serial_init());
     terminal_initialize();
     if (mboot_magic != MULTIBOOT_BOOTLOADER_MAGIC) {
         terminal_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
@@ -43,73 +44,69 @@ void kernel_main(void) {
     kdynamic_memory_init();
 
 
-    if(serial_init()) { //fails if serial is faulty
-        serial_writestring("hello, this is \n a test \n of serial strings \n containing \n newlines\n");
-    }
 
-
-
-    freelist_dump(true);
+    //freelist_dump(true);
 
     char *const ptr = zeroed_out_kmalloc(100);
     uint16_t *const ptr2 = zeroed_out_kmalloc(37);
     kfree(ptr);
-    freelist_dump(true);
+    //freelist_dump(true);
     uint8_t *const ptr3 = zeroed_out_kmalloc(43);
     uint32_t *const ptr4 = zeroed_out_kmalloc(1000);
     kfree(ptr4);
-    freelist_dump(true);
+    //freelist_dump(true);
     uint32_t *const ptr5 = zeroed_out_kmalloc(5);
     uint32_t *const ptr6 = zeroed_out_kmalloc(19);
     kfree(ptr2);
-    freelist_dump(true);
+    //freelist_dump(true);
     kfree(ptr3);
-    freelist_dump(true);
+    //freelist_dump(true);
     kfree(ptr5);
-    freelist_dump(true);
+    //freelist_dump(true);
     kfree(ptr6);
 
-    freelist_dump(true);
+    //freelist_dump(true);
 
     char *const ptr7 = zeroed_out_kmalloc(100);
     uint16_t *const ptr8 = zeroed_out_kmalloc(37);
     kfree(ptr7);
-    freelist_dump(true);
+    //freelist_dump(true);
     kfree(ptr8);
-    freelist_dump(true);
+    //freelist_dump(true);
 
     //terminal_start();
 
 
     freelist_dump(true);
+    uint32_t *const big_ptr = zeroed_out_kmalloc(4197);
+    kfree(big_ptr);
 
-    heap_dump(2u);
+    //freelist_dump(true);
 
+    //heap_dump(2u);
+
+
+    kprintf("\n\n\n");
 
 
     uint32_t* realloc_ptr = zeroed_out_kmalloc(576);
-    kprintf("ptr: %p, (((uint32_t*)get_first_nonreserved_address())+3): %p\n", ptr, (((uint32_t*)get_first_nonreserved_address())+3));
-    kassert_void(ptr == (((uint32_t*)get_first_nonreserved_address())+3));
-    kassert_void(realloc_ptr == ptr);
-    kprintf("before pointer: %p\n", realloc_ptr);
-    kprintf("before size: %u\n", bytes_to_words(576));
-    //for(int32_t i = -3; i <= bytes_to_words(576); ++i) {
-    //    if(i >= 0 && i < bytes_to_words(576)) {
-    //        realloc_ptr[i] = 1;
-    //    }
-    //    kprintf("%u\n", (realloc_ptr[i]&0x7fffffffu));
-    //}
+    kprintf("malloc'ed size: %u\n", bytes_to_words(576)+4);
+
+    uint32_t *const malloced_ptr = zeroed_out_kmalloc(1000);
+
+    kprintf("realloc_ptr: %X, malloced_ptr: %X\n", realloc_ptr, malloced_ptr);
+    freelist_dump(true);
+    //heap_dump(2u);
+
     realloc_ptr = zeroed_out_krealloc(realloc_ptr, 87);
-    kprintf("after pointer: %p\n", realloc_ptr);
-    kprintf("after size: %u\n", bytes_to_words(87));
-    //for(int32_t i = -3; i <= bytes_to_words(87); ++i) {
-    //    kprintf("%u\n", (realloc_ptr[i]&0x7fffffffu));
-    //}
-    //kprintf("memory block dump of first 1004 words\n");
-    //for(int32_t i = -3; i <= 643; ++i) {
-    //    kprintf("%u\n", (realloc_ptr[i]&0x7fffffffu));
-    //}
+    kprintf("realloc'ed size: %u\n", bytes_to_words(87)+4);
+
+    kprintf("realloc_ptr: %X, malloced_ptr: %X\n", realloc_ptr, malloced_ptr);
+    freelist_dump(true);
+    //heap_dump(2u);
+
     kfree(realloc_ptr);
+    kfree(malloced_ptr);
 
     freelist_dump(true);
     heap_dump(2u);
