@@ -15,6 +15,9 @@ uint32_t* head;
 
 int32_t bytes_to_words(uint32_t bytes);
 
+void print_freelist(void);
+void dump_heap(void);
+
 
 uint32_t get_size(const uint32_t size_word) {
     return size_word & 0x7fffffff;
@@ -445,6 +448,8 @@ uint32_t* get_head(void) {
     return head;
 }
 
+
+//TODO: put this in kstring.c instead
 int64_t kstrtol(const char* src, char** endptr, int8_t base) {
     size_t src_len = kstrlen(src);
     int64_t result = 0;

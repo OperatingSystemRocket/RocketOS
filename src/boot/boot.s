@@ -28,34 +28,11 @@ align 4
 ; undefined behavior.
 section .bss
 align 16
+global stack_bottom
 stack_bottom:
 resb 16384 ; 16 KiB
+global stack_top
 stack_top:
-
-section .rodata
-gdt:
-.null:
-	dq 0x0
-.code:
-	dw 0xffff
-	dw 0x0000
-	db 0x00
-	db 10011010b
-	db 11001111b
-	db 0x00
-.data:
-	dw 0xffff
-	dw 0x0000
-	db 0x00
-	db 10010010b
-	db 11001111b
-	db 0x00
-.end:
-.descriptor:
-	dw .end - gdt - 1
-	dd gdt
-code_segment equ gdt.code - gdt
-data_segment equ gdt.data - gdt
 
 ; The linker script specifies _start as the entry point to the kernel and the
 ; bootloader will jump to this position once the kernel has been loaded. It
@@ -64,20 +41,6 @@ data_segment equ gdt.data - gdt
 section .text
 global _start:function (_start.end - _start)
 global load_idt
-
-gdt_load:
-    push eax
-    lgdt [gdt.descriptor]
-    jmp 0x08:.loaded_cs
-.loaded_cs:
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    pop eax
-    ret
 
 _start:
 	; The bootloader has loaded us into 32-bit protected mode on a x86
@@ -103,7 +66,6 @@ _start:
 	; yet. The GDT should be loaded here. Paging should be enabled here.
 	; C++ features such as global constructors and exceptions will require
 	; runtime support to work as well.
-	call gdt_load
 
 
 	; Enter the high-level kernel. The ABI requires the stack is 16-byte

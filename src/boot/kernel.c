@@ -14,16 +14,20 @@
 #include "physical_mem_allocator.h"
 #include "paging.h"
 #include "kstdlib.h"
-#include "src/storage/storage.h"
+#include "storage.h"
+#include "gdt.h"
 
 
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
 
-
 void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
-    kassert_void(serial_init());
+    if(serial_init()) { //fails if serial is faulty
+        serial_writestring("Serial driver works\n");
+    }
+
     terminal_initialize();
+    
     if (mboot_magic != MULTIBOOT_BOOTLOADER_MAGIC) {
         terminal_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
     } else {
@@ -32,10 +36,18 @@ void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboo
 }
 
 void kernel_main(void) {
+    init_gdt();
+	gdt_load();
+
     pic_init();
     isr_install();
 
     enable_time();
+    write_tss();
+    jump_usermode();
+
+
+    //enable_time();
     enable_keyboard();
 
 
@@ -87,6 +99,7 @@ void kernel_main(void) {
 
 
     kprintf("\n\n\n");
+
 
 
     uint32_t* realloc_ptr = zeroed_out_kmalloc(576);
