@@ -38,6 +38,9 @@ inline void serial_putchar(const char a) {
     outb(COM1, a);
 }
 
+
+size_t kstrlen(const char* str);
+
 inline void serial_write(const char *const text, const size_t size) {
     for(size_t i = 0u; i < size; ++i) {
         serial_putchar(text[i]);
