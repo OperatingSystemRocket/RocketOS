@@ -16,7 +16,7 @@ https://web.archive.org/web/20151025081259/http://www.intel.com/content/dam/www/
 uint32_t* page_directory;
 
 
-void identity_map_page(const uint32_t page_directory, const uint32_t address, const uint32_t pt_flags, const uint32_t pd_flags) {
+static void identity_map_page(const uint32_t page_directory, const uint32_t address, const uint32_t pt_flags, const uint32_t pd_flags) {
     const uint32_t page_index = address / PAGE_SIZE;
     const uint32_t table_index = page_index / 1024;
     const uint32_t page_index_in_table = page_index % 1024;
@@ -51,7 +51,7 @@ void paging_init(void) {
     serial_writestring("page_directory created successfully\n");
 
     for(uint32_t i = 0u; i < get_first_nonreserved_address(); i += PAGE_SIZE) {
-        identity_map_page((uint32_t)page_directory, i, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+        identity_map_page((uint32_t)page_directory, i, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     }
     serial_writestring("indentity mapping done successfully\n");
 
@@ -59,14 +59,14 @@ void paging_init(void) {
     uint32_t *const first_page_table = allocate_page(CRITICAL_KERNEL_USE);
     for(uint32_t i = 0u; i < 1024u; ++i) {
         // As the address is page aligned, it will always leave 12 bits zeroed.
-        // Those bits are used by the attributes ;)
-        first_page_table[i] = (i * 4096u) | 3u; // attributes: supervisor level, read/write, present.
+        // Those bits are used by the attributes
+        first_page_table[i] = (i * 4096u) | (PT_PRESENT | PT_RW | PT_USER); // attributes: user level, read/write, present.
     }
     serial_writestring("page table created successfully\n");
 
 
-    // attributes: supervisor level, read/write, present
-    page_directory[0] = ((uint32_t)first_page_table) | 3u;
+    // attributes: user level, read/write, present
+    page_directory[0] = ((uint32_t)first_page_table) | (PT_PRESENT | PT_RW | PT_USER);
     serial_writestring("page table set successfully\n");
 
 

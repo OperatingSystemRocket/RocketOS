@@ -104,88 +104,87 @@ void pic_init(void) {
 }
 
 __attribute__((interrupt)) static void isr0(struct interrupt_frame *const frame) {
-    terminal_writestring("Division By Zero\n");
+    kprintf("Division By Zero\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr1(struct interrupt_frame *const frame) {
-    terminal_writestring("Debug\n");
+    kprintf("Debug\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr2(struct interrupt_frame *const frame) {
-    terminal_writestring("Non Maskable Interrupt\n");
+    kprintf("Non Maskable Interrupt\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr3(struct interrupt_frame *const frame) {
-    terminal_writestring("Breakpoint\n");
+    kprintf("Breakpoint\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr4(struct interrupt_frame *const frame) {
-    terminal_writestring("Into Detected Overflow\n");
+    kprintf("Into Detected Overflow\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr5(struct interrupt_frame *const frame) {
-    terminal_writestring("Out of Bounds\n");
+    kprintf("Out of Bounds\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr6(struct interrupt_frame *const frame) {
-    terminal_writestring("Invalid Opcode\n");
+    kprintf("Invalid Opcode\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr7(struct interrupt_frame *const frame) {
-    terminal_writestring("No Coprocessor\n");
+    kprintf("No Coprocessor\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr8(struct interrupt_frame *const frame) {
-    terminal_writestring("Double Fault\n");
+    kprintf("Double Fault\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr9(struct interrupt_frame *const frame) {
-    terminal_writestring("Coprocessor Segment Overrun\n");
+    kprintf("Coprocessor Segment Overrun\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr10(struct interrupt_frame *const frame) {
-    terminal_writestring("Bad TSS\n");
+    kprintf("Bad TSS\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr11(struct interrupt_frame *const frame) {
-    terminal_writestring("Segment Not Present\n");
+    kprintf("Segment Not Present\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr12(struct interrupt_frame *const frame) {
-    terminal_writestring("Stack Fault\n");
+    kprintf("Stack Fault\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr13(struct interrupt_frame *const frame) {
-    //terminal_writestring("General Protection Fault\n");
     kprintf("General Protection Fault\n");
 
-    //terminal_writestring("heres some info:\n");
+    kprintf("heres some info:\n");
 
     kprintf("error_code: %X\n", frame->error_code);
     kprintf("eip: %X\n", frame->eip);
@@ -202,41 +201,52 @@ __attribute__((interrupt)) static void isr13(struct interrupt_frame *const frame
 }
 
 __attribute__((interrupt)) static void isr14(struct interrupt_frame *const frame) {
-    terminal_writestring("Page Fault\n");
+    kprintf("Page Fault\n");
 
-    terminal_writestring("heres some info:\n");
+    kprintf("heres some info:\n");
 
-    kprintf("address in cr2: %x\n", get_faulting_address());
+    kprintf("error_code: %X\n", frame->error_code);
+    kprintf("eip: %X\n", frame->eip);
+    kprintf("cs: %X\n", frame->cs);
+    kprintf("eflags: %X\n", frame->eflags);
+    kprintf("esp: %X\n", frame->esp);
+    kprintf("ss: %X\n", frame->ss);
+    kprintf("es: %X\n", frame->es);
+    kprintf("ds: %X\n", frame->ds);
+    kprintf("fs: %X\n", frame->fs);
+    kprintf("gs: %X\n", frame->gs);
+
+    kprintf("address in cr2: %X\n", get_faulting_address());
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr15(struct interrupt_frame *const frame) {
-    terminal_writestring("Unknown Interrupt\n");
+    kprintf("Unknown Interrupt\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr16(struct interrupt_frame *const frame) {
-    terminal_writestring("Coprocessor Fault\n");
+    kprintf("Coprocessor Fault\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr17(struct interrupt_frame *const frame) {
-    terminal_writestring("Alignment Check\n");
+    kprintf("Alignment Check\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr18(struct interrupt_frame *const frame) {
-    terminal_writestring("Machine Check\n");
+    kprintf("Machine Check\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr_reserved(struct interrupt_frame *const frame) {
-    terminal_writestring("Reserved\n");
+    kprintf("Reserved\n");
 
     asm("hlt");
 }
@@ -295,7 +305,7 @@ void enable_keyboard(void) {
 }
 
 __attribute__((interrupt)) static void system_call(struct interrupt_frame *const frame) {
-    terminal_writestring("system_call triggered\n");
+    kprintf("system_call triggered\n");
 }
 
 void isr_install(void) {
@@ -313,7 +323,7 @@ void isr_install(void) {
     idt_register_handler(11, (uint32_t)isr11);
     idt_register_handler(12, (uint32_t)isr12);
     idt_register_handler(13, (uint32_t)isr13);
-    
+
     idt_register_handler(14, (uint32_t)isr14);
     idt[14].type_attr = IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT;
 

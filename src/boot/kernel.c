@@ -44,16 +44,17 @@ void kernel_main(void) {
 
     enable_time();
     write_tss();
+
+    allocate_init();
+    paging_init();
+    kdynamic_memory_init();
+
     jump_usermode();
 
 
     //enable_time();
     enable_keyboard();
 
-
-    allocate_init();
-    paging_init();
-    kdynamic_memory_init();
 
 
 
