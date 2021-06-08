@@ -37,6 +37,9 @@ enum page_fault_error_flags {
 };
 
 
+extern uintptr_t get_cr3(void);
+
+
 void paging_init(void);
 void* get_physical_memory(void* virtual_address);
 void map_page(void* virtual_address, uint32_t phys_frame, uint32_t pt_flags, uint32_t pd_flags);

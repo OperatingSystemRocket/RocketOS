@@ -19,12 +19,35 @@ static uint8_t pic2_mask = 0xff;
 #define KERNEL_CODE_SEGMENT_OFFSET 0x08
 #define INTERRUPT_GATE 0x8e
 
+enum IDTFlags {
+    IDT_PRESENT = 1 << 7,
+    IDT_RING_0 = 0 << 5,
+    IDT_RING_1 = 1 << 5,
+    IDT_RING_2 = 2 << 5,
+    IDT_RING_3 = 3 << 5,
+    IDT_SS = 1 << 4,
+    IDT_INTERRUPT = 0xE,
+    IDT_TRAP = 0xF,
+};
+
 struct interrupt_frame {
-    uintptr_t ip;
-    uintptr_t cs;
-    uintptr_t flags;
-    uintptr_t sp;
-    uintptr_t ss;
+    uint16_t error_code;
+    uint16_t reserved1;
+    uint32_t eip;
+    uint16_t cs;
+    uint16_t reserved2;
+    uint32_t eflags;
+    uint32_t esp;
+    uint16_t ss;
+    uint16_t reserved3;
+    uint16_t es;
+    uint16_t reserved4;
+    uint16_t ds;
+    uint16_t reserved5;
+    uint16_t fs;
+    uint16_t reserved6;
+    uint16_t gs;
+    uint16_t reserved7;
 };
 
 struct IDT_entry{
@@ -159,13 +182,21 @@ __attribute__((interrupt)) static void isr12(struct interrupt_frame *const frame
 }
 
 __attribute__((interrupt)) static void isr13(struct interrupt_frame *const frame) {
-    terminal_writestring("General Protection Fault\n");
+    //terminal_writestring("General Protection Fault\n");
+    kprintf("General Protection Fault\n");
 
-    terminal_writestring("heres some info:\n");
+    //terminal_writestring("heres some info:\n");
 
-    kprintf("ip: %i\n", frame->ip);
-    kprintf("sp: %i\n", frame->sp);
-    kprintf("cs: %i\n", frame->cs);
+    kprintf("error_code: %X\n", frame->error_code);
+    kprintf("eip: %X\n", frame->eip);
+    kprintf("cs: %X\n", frame->cs);
+    kprintf("eflags: %X\n", frame->eflags);
+    kprintf("esp: %X\n", frame->esp);
+    kprintf("ss: %X\n", frame->ss);
+    kprintf("es: %X\n", frame->es);
+    kprintf("ds: %X\n", frame->ds);
+    kprintf("fs: %X\n", frame->fs);
+    kprintf("gs: %X\n", frame->gs);
 
     asm("hlt");
 }
@@ -176,12 +207,6 @@ __attribute__((interrupt)) static void isr14(struct interrupt_frame *const frame
     terminal_writestring("heres some info:\n");
 
     kprintf("address in cr2: %x\n", get_faulting_address());
-
-    kprintf("ip: %i\n", frame->ip);
-    kprintf("cs: %i\n", frame->cs);
-    kprintf("flags: %i\n", frame->flags);
-    kprintf("sp: %i\n", frame->sp);
-    kprintf("ss: %i\n", frame->ss);
 
     asm("hlt");
 }
@@ -269,6 +294,10 @@ void enable_keyboard(void) {
     idt_register_handler(33, (uint32_t)keyboard_irq);
 }
 
+__attribute__((interrupt)) static void system_call(struct interrupt_frame *const frame) {
+    terminal_writestring("system_call triggered\n");
+}
+
 void isr_install(void) {
     idt_register_handler(0, (uint32_t)isr0);
     idt_register_handler(1, (uint32_t)isr1);
@@ -284,7 +313,10 @@ void isr_install(void) {
     idt_register_handler(11, (uint32_t)isr11);
     idt_register_handler(12, (uint32_t)isr12);
     idt_register_handler(13, (uint32_t)isr13);
+    
     idt_register_handler(14, (uint32_t)isr14);
+    idt[14].type_attr = IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT;
+
     idt_register_handler(15, (uint32_t)isr15);
     idt_register_handler(16, (uint32_t)isr16);
     idt_register_handler(17, (uint32_t)isr17);
@@ -302,6 +334,9 @@ void isr_install(void) {
     idt_register_handler(29, (uint32_t)isr_reserved);
     idt_register_handler(30, (uint32_t)isr_reserved);
     idt_register_handler(31, (uint32_t)isr_reserved);
+
+    idt_register_handler(128, (uint32_t)system_call); //system call, 0x80
+    idt[128].type_attr = IDT_PRESENT | IDT_RING_3 | IDT_INTERRUPT;
 
     idt_init();
 }

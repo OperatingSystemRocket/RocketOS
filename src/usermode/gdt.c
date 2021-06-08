@@ -1,9 +1,13 @@
 #include "gdt.h"
 
 
-void test_user_function() {
+void test_user_function(void) {
     //kprintf("test_user_function() called\n");
 	//asm volatile("hlt");
+	//volatile int32_t n = 0;
+	//volatile int32_t y = 7;
+	//volatile int32_t t = y/n;
+	trigger_interrupt();
 	for(volatile int i = 0; ;++i);
 }
 

@@ -5,6 +5,8 @@
 #include "kstring.h"
 #include "kstdio.h"
 
+#include "system_call_implementations.h"
+
 
 extern void gdt_load(void);
 extern jump_usermode(void);

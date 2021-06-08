@@ -1,8 +1,8 @@
 #include "paging.h"
 
 
-extern void loadPageDirectory(uint32_t* page_directory);
-extern void enablePaging(void);
+extern void load_page_directory(uint32_t* page_directory);
+extern void enable_paging(void);
 
 extern void enable_ring0_write_protect(void);
 
@@ -70,7 +70,7 @@ void paging_init(void) {
     serial_writestring("page table set successfully\n");
 
 
-    loadPageDirectory(page_directory);
+    load_page_directory(page_directory);
     serial_writestring("page directory loaded successfully\n");
 
 
@@ -78,7 +78,7 @@ void paging_init(void) {
     enable_ring0_write_protect();
 
 
-    enablePaging();
+    enable_paging();
     serial_writestring("paging enabled successfully\n");
 }
 
