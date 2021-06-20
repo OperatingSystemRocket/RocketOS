@@ -67,13 +67,13 @@ void terminal_putentryat(const char c, const enum vga_color color, const size_t 
 
 void terminal_putchar(const char c) {
 	if (c == '\n') {
-        if(terminal_on) terminal_end();
+        if(terminal_on) default_context_terminal_end();
 		if(++terminal_row == VGA_HEIGHT) {
 			terminal_scroll_down();
 		}
 		terminal_column = 0;
         terminal_updatecursor();
-        if(terminal_on) terminal_process_command();
+        if(terminal_on) default_terminal_context_process_command();
 		return;
 	}
     terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
@@ -146,7 +146,7 @@ void terminal_scroll_down(void) {
     }
 	terminal_row = VGA_HEIGHT - 1;
 	terminal_column = 0u;
-    terminal_shift();
+    default_terminal_context_shift();
 }
 
 void terminal_scroll_up(void) {
@@ -183,25 +183,27 @@ void terminal_cursor_left(void) {
 }
 
 void terminal_cursor_right(void) {
-    if(terminal_row * 80 + terminal_column < end_of_command) {
+    //temporary 'fix' to make it compile
+    //if(terminal_row * 80 + terminal_column < end_of_command) {
         if(++terminal_column > 79) {
             terminal_column = 79;
         }
         terminal_updatecursor();
-    }
+    //}
 }
 
 void terminal_cursor_down(void) {
-    if((terminal_row + 1) * 80 <= end_of_command) {
+    //temporary 'fix' to make it compile
+    //if((terminal_row + 1) * 80 <= end_of_command) {
         if(++terminal_row > 24) {
             if(terminal_downward_history_size > 0) terminal_scroll_down();
             terminal_row = 24;
         }
-        if(terminal_row * 80 + terminal_column > end_of_command) {
-            terminal_column = end_of_command % 80;
-        }
+        //if(terminal_row * 80 + terminal_column > end_of_command) {
+        //    terminal_column = end_of_command % 80;
+        //}
         terminal_updatecursor();
-    }
+    //}
 }
 
 void terminal_backspace(void) {

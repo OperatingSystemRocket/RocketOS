@@ -19,7 +19,8 @@ extern size_t terminal_column;
 extern enum vga_color terminal_color;
 extern volatile uint16_t* terminal_buffer;
 
-/* Hardware text mode color constants. */
+
+//hardware text mode color constants
 enum vga_color {
     VGA_COLOR_BLACK = 0,
     VGA_COLOR_BLUE = 1,
@@ -40,6 +41,15 @@ enum vga_color {
 };
 
 
+struct vga_driver_context {
+    bool terminal_on;
+    size_t terminal_row;
+    size_t terminal_column;
+    enum vga_color terminal_color;
+    volatile uint16_t* terminal_buffer;
+};
+
+
 //these two functions are correct by inspection:
 inline uint8_t vga_entry_color(const enum vga_color fg, const enum vga_color bg) {
     return fg | bg << 4u;
@@ -52,48 +62,26 @@ inline uint16_t vga_entry(const char uc, const enum vga_color color) {
 
 //should be used for actual code
 void terminal_initialize(void);
-
 //dependency injection for writing tests for the vga driver or writing tests for code that has asserts/logging
 void terminal_initialize_test(uint16_t* terminal_buffer_address);
-
 void terminal_clear(void);
-
 void terminal_scroll_clear(void);
-
 void terminal_setcolor(enum vga_color color);
-
 void terminal_resetcolor(void);
-
 void terminal_putentryat(char c, enum vga_color color, size_t x, size_t y);
-
 void terminal_putchar(char c);
-
 void terminal_putchar_color(char c, enum vga_color color);
-
 void terminal_swapchar(const char c);
-
 void terminal_swapchar_color(const char c, const enum vga_color color);
-
 void terminal_write(const char* text, size_t size);
-
 void terminal_writestring(const char* text);
-
 void terminal_write_color(const char* text, size_t size, enum vga_color color);
-
 void terminal_writestring_color(const char* text, enum vga_color color);
-
 void terminal_scroll_down(void);
-
 void terminal_scroll_up(void);
-
 void terminal_cursor_up(void);
-
 void terminal_cursor_left(void);
-
 void terminal_cursor_right(void);
-
 void terminal_cursor_down(void);
-
 void terminal_backspace(void);
-
 void terminal_updatecursor(void);

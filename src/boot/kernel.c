@@ -16,7 +16,12 @@
 #include "kstdlib.h"
 #include "storage.h"
 #include "gdt.h"
+#include "default_keyboard_logic.h"
 
+#include "terminal_driver.h"
+#include "default_terminal_functions.h"
+#include "default_terminal_system.h"
+#include "keyboard_callbacks.h"
 
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
@@ -37,7 +42,7 @@ void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboo
 
 void kernel_main(void) {
     init_gdt();
-	gdt_load();
+    gdt_load();
 
     pic_init();
     isr_install();
@@ -49,15 +54,22 @@ void kernel_main(void) {
     paging_init();
     kdynamic_memory_init();
 
-    jump_usermode();
+    //jump_usermode();
 
+
+    default_keyboard_map_state_init();
 
     //enable_time();
+    set_default_functions();
     enable_keyboard();
+    struct default_terminal_context data = {0};
+    struct GET_OBSERVER_TYPENAME(key_message) observer = { &data, catch_keycode };
+    ADD_OBSERVER(128, key_message, get_subject(), &observer);
+    default_context_terminal_start();
 
 
 
-
+/*
     //freelist_dump(true);
 
     char *const ptr = zeroed_out_kmalloc(100);
@@ -87,7 +99,6 @@ void kernel_main(void) {
     kfree(ptr8);
     //freelist_dump(true);
 
-    //terminal_start();
 
 
     freelist_dump(true);
@@ -148,6 +159,8 @@ void kernel_main(void) {
 
 
     terminal_writestring(dest_buf);
+*/
+
 
 
     for(;;) {

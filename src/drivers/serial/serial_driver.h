@@ -8,6 +8,7 @@
 #include "hardware_io.h"
 
 
+//TODO: put these in an enum with a `serial_` prefix on the names
 #define COM1 0x3F8
 #define COM2 0x2F8
 #define COM3 0x3E8
@@ -17,6 +18,8 @@
 //returns whether or not the serial is faulty. true = serial works properly. false = serial is faulty.
 bool serial_init(void);
 
+
+//TODO: maybe take the performance hit and make these functions externally linked instead for maintainability reasons
 
 inline int8_t serial_received(void) {
     return inb(COM1 + 5) & 1u;

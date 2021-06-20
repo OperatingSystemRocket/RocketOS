@@ -126,6 +126,9 @@ os.bin : $(OBJECTS)
 build/objs/interrupts/interrupts.o : src/interrupts/interrupts.c
 	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) -mgeneral-regs-only $(WARNING_FLAGS) $(FLAGS) -I. $(H_FILES_INCLUDE)
 
+build/objs/drivers/keyboard/keyboard_driver.o : src/drivers/keyboard/keyboard_driver.c
+	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) -mgeneral-regs-only $(WARNING_FLAGS) $(FLAGS) -I. $(H_FILES_INCLUDE)
+
 
 test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS_WITHOUT_MAIN) $(TEST_C_OBJECT_EXECUTABLES)
 	@echo "\n"
@@ -170,10 +173,4 @@ $(PATHOT)%.o : test/%.c
 
 clean :
 	-rm -rf isodir/
-	-rm -f $(PATHD)*
-	-rm -f $(PATHO)*
-	-rm -f $(PATHR)*
-	-rm -f $(PATHOT)*
-	-rm -f $(C_DIR_WITH_STAR)
-	-rm -f $(AS_OBJS_DIR_WITH_STAR)
 	-rm -rf build/
