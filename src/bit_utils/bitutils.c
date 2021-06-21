@@ -7,11 +7,11 @@ void print_bits(const size_t size, const void *const ptr) {
     for(int32_t i = size-1; i >= 0; i--) {
         for(int32_t j = 7; j >= 0; j--) {
             const unsigned char byte = (b[i] >> j) & 1;
-            terminal_putchar(kint_to_char(byte));
+            terminal_context_putchar(kint_to_char(byte));
 
             const int32_t pos = i*8 + j;
             if(pos == 63 || pos == 52) {
-                terminal_putchar(' ');
+                terminal_context_putchar(' ');
             }
         }
     }
@@ -19,7 +19,7 @@ void print_bits(const size_t size, const void *const ptr) {
 
 void print_bits_newline(const size_t size, const void *const ptr) {
     print_bits(size, ptr);
-    terminal_putchar('\n');
+    terminal_context_putchar('\n');
 }
 
 void print_double_bits(const double *const ptr) {
@@ -28,11 +28,11 @@ void print_double_bits(const double *const ptr) {
     for(int32_t i = 0; i < sizeof(double); ++i) {
         for(int32_t j = 0; j < 8; ++j) {
             const unsigned char byte = (b[i] >> j) & 1;
-            terminal_putchar(kint_to_char(byte));
+            terminal_context_putchar(kint_to_char(byte));
 
             const int32_t pos = i*8 + j;
             if(pos == 62 || pos == 51) {
-                terminal_putchar(' ');
+                terminal_context_putchar(' ');
             }
         }
     }

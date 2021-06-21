@@ -4,7 +4,7 @@
 
 #include "hardware_io.h"
 #include "kstdio.h"
-#include "vga_driver.h"
+#include "default_vga_driver.h"
 #include "interrupt_types.h"
 
 #include "system_call_implementations.h"

@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "vga_driver.h"
+#include "default_vga_driver.h"
 
 
 extern void trigger_interrupt(void);

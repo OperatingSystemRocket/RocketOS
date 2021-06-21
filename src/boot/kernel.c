@@ -31,12 +31,12 @@ void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboo
         serial_writestring("Serial driver works\n");
     }
 
-    terminal_initialize();
+    terminal_context_initialize();
     
     if (mboot_magic != MULTIBOOT_BOOTLOADER_MAGIC) {
-        terminal_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
+        terminal_context_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
     } else {
-        terminal_writestring("The multiboot structure was loaded properly\n");
+        terminal_context_writestring("The multiboot structure was loaded properly\n");
     }
 }
 
@@ -63,6 +63,9 @@ void kernel_main(void) {
     set_default_functions();
     enable_keyboard();
     struct default_terminal_context data = {0};
+    kprintf("before vga_context: %p\n", data.vga_context);
+    data.vga_context = get_default_vga_context();
+    kprintf("after vga_context: %p\n", data.vga_context);
     struct GET_OBSERVER_TYPENAME(key_message) observer = { &data, catch_keycode };
     ADD_OBSERVER(128, key_message, get_subject(), &observer);
     default_context_terminal_start();

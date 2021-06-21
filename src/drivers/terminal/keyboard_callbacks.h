@@ -8,7 +8,7 @@
 #include "kstdio.h"
 
 #include "observer.h"
-#include "vga_driver.h"
+#include "default_vga_driver.h"
 #include "default_keyboard_logic.h"
 #include "default_terminal_functions.h"
 

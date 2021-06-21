@@ -262,7 +262,7 @@ BAR3,unsigned int BAR4) {
     channels[ATA_SECONDARY].bmide = (BAR4 &= 0xFFFFFFFC) + 8; // Bus Master IDE
 
 
-    terminal_writestring("works here\n");
+    terminal_context_writestring("works here\n");
 
     // 2- Disable IRQs:
     ide_write(ATA_PRIMARY , ATA_REG_CONTROL, 2);
@@ -604,7 +604,7 @@ unsigned char ide_print_error(unsigned int drive, unsigned char err) {
 
     if (err == 0) return err;
     kprintf("%s"," IDE:\n");
-    if (err == 1) {terminal_writestring("- Device Fault\n "); err = 19;}
+    if (err == 1) {terminal_context_writestring("- Device Fault\n "); err = 19;}
     else if (err == 2) {
         unsigned char st = ide_read(ide_devices[drive].channel, ATA_REG_ERROR);
         if (st & ATA_ER_AMNF) {kprintf("%s", "- No Address Mark Found\n "); err = 7;}

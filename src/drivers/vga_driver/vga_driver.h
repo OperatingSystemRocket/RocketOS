@@ -13,13 +13,6 @@
 #define VGA_HEIGHT 25
 
 
-extern bool terminal_on;
-extern size_t terminal_row;
-extern size_t terminal_column;
-extern enum vga_color terminal_color;
-extern volatile uint16_t* terminal_buffer;
-
-
 //hardware text mode color constants
 enum vga_color {
     VGA_COLOR_BLACK = 0,
@@ -47,6 +40,11 @@ struct vga_driver_context {
     size_t terminal_column;
     enum vga_color terminal_color;
     volatile uint16_t* terminal_buffer;
+
+    uint16_t terminal_upward_history[VGA_WIDTH * VGA_HEIGHT];
+    uint16_t terminal_downward_history[VGA_WIDTH * VGA_HEIGHT];
+    size_t terminal_upward_history_size;
+    size_t terminal_downward_history_size;
 };
 
 
@@ -60,28 +58,25 @@ inline uint16_t vga_entry(const char uc, const enum vga_color color) {
 }
 
 
-//should be used for actual code
-void terminal_initialize(void);
-//dependency injection for writing tests for the vga driver or writing tests for code that has asserts/logging
-void terminal_initialize_test(uint16_t* terminal_buffer_address);
-void terminal_clear(void);
-void terminal_scroll_clear(void);
-void terminal_setcolor(enum vga_color color);
-void terminal_resetcolor(void);
-void terminal_putentryat(char c, enum vga_color color, size_t x, size_t y);
-void terminal_putchar(char c);
-void terminal_putchar_color(char c, enum vga_color color);
-void terminal_swapchar(const char c);
-void terminal_swapchar_color(const char c, const enum vga_color color);
-void terminal_write(const char* text, size_t size);
-void terminal_writestring(const char* text);
-void terminal_write_color(const char* text, size_t size, enum vga_color color);
-void terminal_writestring_color(const char* text, enum vga_color color);
-void terminal_scroll_down(void);
-void terminal_scroll_up(void);
-void terminal_cursor_up(void);
-void terminal_cursor_left(void);
-void terminal_cursor_right(void);
-void terminal_cursor_down(void);
-void terminal_backspace(void);
-void terminal_updatecursor(void);
+void terminal_initialize(struct vga_driver_context* context);
+void terminal_clear(struct vga_driver_context* context);
+void terminal_scroll_clear(struct vga_driver_context* context);
+void terminal_setcolor(struct vga_driver_context* context, enum vga_color color);
+void terminal_resetcolor(struct vga_driver_context* context);
+void terminal_putentryat(struct vga_driver_context* context, char c, enum vga_color color, size_t x, size_t y);
+void terminal_putchar(struct vga_driver_context* context, char c);
+void terminal_putchar_color(struct vga_driver_context* context, char c, enum vga_color color);
+void terminal_swapchar(struct vga_driver_context* context, char c);
+void terminal_swapchar_color(struct vga_driver_context* context, char c, enum vga_color color);
+void terminal_write(struct vga_driver_context* context, const char* text, size_t size);
+void terminal_writestring(struct vga_driver_context* context, const char* text);
+void terminal_write_color(struct vga_driver_context* context, const char* text, size_t size, enum vga_color color);
+void terminal_writestring_color(struct vga_driver_context* context, const char* text, enum vga_color color);
+void terminal_scroll_down(struct vga_driver_context* context);
+void terminal_scroll_up(struct vga_driver_context* context);
+void terminal_cursor_up(struct vga_driver_context* context);
+void terminal_cursor_left(struct vga_driver_context* context);
+void terminal_cursor_right(struct vga_driver_context* context);
+void terminal_cursor_down(struct vga_driver_context* context);
+void terminal_backspace(struct vga_driver_context* context);
+void terminal_updatecursor(struct vga_driver_context* context);

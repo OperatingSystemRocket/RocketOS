@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #include "kassert.h"
-#include "vga_driver.h"
+#include "default_vga_driver.h"
 #include "kstring.h"
 
 

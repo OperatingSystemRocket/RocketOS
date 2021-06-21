@@ -2,7 +2,7 @@
 
 #include <stdbool.h>
 
-#include "vga_driver.h"
+#include "default_vga_driver.h"
 #include "keyboard_driver.h"
 #include "observer.h"
 

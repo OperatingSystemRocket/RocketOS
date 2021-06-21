@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "vga_driver.h"
+#include "default_vga_driver.h"
 #include "observer.h"
 
 
@@ -18,6 +18,8 @@ struct default_terminal_context {
     size_t end_of_command;
     const char* prompt_symbol;
     char command_arguments[MAX_NUMBER_OF_ARGS][MAX_ARGUMENT_SIZE];
+
+    struct vga_driver_context* vga_context;
 };
 
 

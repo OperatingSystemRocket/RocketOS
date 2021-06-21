@@ -5,9 +5,11 @@
 
 
 void default_init_context(struct default_terminal_context *const terminal_context_ptr) {
-    terminal_context_ptr->start_of_command = terminal_row * 80 + terminal_column;
+    terminal_context_ptr->start_of_command = terminal_context_ptr->vga_context->terminal_row * 80 + terminal_context_ptr->vga_context->terminal_column;
     terminal_context_ptr->end_of_command = terminal_context_ptr->start_of_command;
     terminal_context_ptr->prompt_symbol = DEFAULT_PROMPT;
+
+    terminal_context_ptr->vga_context = get_default_vga_context();
 }
 
 void set_default_functions(void) {
@@ -22,9 +24,9 @@ void default_terminal_start(void *const context) {
 
     default_init_context(terminal_context_ptr);
 
-    terminal_on = true;
+    terminal_context_ptr->vga_context->terminal_on = true;
 
-    terminal_writestring(terminal_context_ptr->prompt_symbol);
+    terminal_writestring(terminal_context_ptr->vga_context, terminal_context_ptr->prompt_symbol);
 
     terminal_context_ptr->start_of_command += kstrlen(terminal_context_ptr->prompt_symbol);
 }
@@ -32,13 +34,13 @@ void default_terminal_start(void *const context) {
 void default_terminal_end(void *const context) {
     struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
 
-    terminal_context_ptr->end_of_command = terminal_row * 80 + terminal_column;
+    terminal_context_ptr->end_of_command = terminal_context_ptr->vga_context->terminal_row * 80 + terminal_context_ptr->vga_context->terminal_column;
 }
 
 void default_terminal_process_command(void *const context) {
     struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
 
-    terminal_on = false;
+    terminal_context_ptr->vga_context->terminal_on = false;
     if(terminal_context_ptr->end_of_command - terminal_context_ptr->start_of_command <= 0) {
         kprintf("Invalid command! Try 'help'\n");
         run_terminal_start(context);
@@ -165,14 +167,14 @@ void default_run_command(void *const context, char *const command) {
     }
 }
 
-void default_get_command(void *const context, char *final) {
+void default_get_command(void *const context, char *const final) {
     struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
 
-    final[0] = (char)terminal_buffer[terminal_context_ptr->start_of_command];
+    final[0] = (char)terminal_context_ptr->vga_context->terminal_buffer[terminal_context_ptr->start_of_command];
     final[1] = '\0';
     char temp[2];
     for(size_t i = terminal_context_ptr->start_of_command + 1u; i < terminal_context_ptr->end_of_command; i++) {
-        temp[0] = (char)terminal_buffer[i];
+        temp[0] = (char)terminal_context_ptr->vga_context->terminal_buffer[i];
         temp[1] = '\0';
         kstrcat(final, temp);
     }
