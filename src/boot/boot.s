@@ -79,7 +79,7 @@ _start:
 
 	; push multiboot header and magic
 	push ebx
-    push eax
+	push eax
 
 
 	extern kernel_early
