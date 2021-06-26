@@ -14,4 +14,4 @@ void default_terminal_context_shift(void);
 
 void default_context_parse_command_args(const char* args);
 void default_context_run_command(char* command);
-void default_context_get_command(char* final);
+void default_context_get_command(char* final, size_t number_of_elements);

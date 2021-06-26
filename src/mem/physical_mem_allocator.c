@@ -39,6 +39,7 @@ void allocate_init(void) {
     //reserve an extra 4 MiB to make sure the multiboot structure is safe
     number_of_pages_used += 1024u;
 
+    const size_t number_of_permanently_reserved_pages = number_of_pages_used;
     number_of_pages_used += NUMBER_OF_PAGES_IN_KERNEL_HEAP; //reserve the memory for the kernel heap so that it isn't allocated in the global heap
     kmemset(internal_kernel_heap, 0, sizeof(uint32_t) * (NUMBER_OF_PAGES_IN_KERNEL_HEAP/32u));
     for(int32_t i = 0; i < 20; ++i) {
@@ -55,6 +56,13 @@ void allocate_init(void) {
     }
     for(uint8_t i = 0u; i < number_of_pages_used%32u; ++i) {
         set_at(number_of_pages_used-i-1u, global_heap, 1);
+    }
+
+    for(int32_t i = 0; i < number_of_permanently_reserved_pages/32u; ++i) {
+        internal_kernel_heap[i] = 0xFFFFFFFF;
+    }
+    for(uint8_t i = 0u; i < number_of_permanently_reserved_pages%32u; ++i) {
+        set_at(number_of_permanently_reserved_pages-i-1u, internal_kernel_heap, 1);
     }
 
     first_nonreserved_address = (void*)(number_of_pages_used*PAGE_SIZE);

@@ -46,3 +46,5 @@ void map_page(void* virtual_address, uint32_t phys_frame, uint32_t pt_flags, uin
 uint32_t allocate_virtual_page(void* virtual_address, uint32_t pt_flags, uint32_t pd_flags);
 uint32_t unmap_page(const void* virtual_address);
 void free_virtual_page(const void* virtual_address);
+
+uint32_t* get_page_directory(void);

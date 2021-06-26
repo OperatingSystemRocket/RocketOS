@@ -28,6 +28,6 @@ void default_context_parse_command_args(const char *const args) {
 void default_context_run_command(char *const command) {
     default_run_command(&terminal_context, command);
 }
-void default_context_get_command(char *const final) {
-    default_get_command(&terminal_context, final);
+void default_context_get_command(char *const final, const size_t number_of_elements) {
+    default_get_command(&terminal_context, final, number_of_elements);
 }

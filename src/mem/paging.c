@@ -13,7 +13,7 @@ https://web.archive.org/web/20151025081259/http://www.intel.com/content/dam/www/
 */
 
 
-uint32_t* page_directory;
+static uint32_t* page_directory;
 
 
 static void identity_map_page(const uint32_t page_directory, const uint32_t address, const uint32_t pt_flags, const uint32_t pd_flags) {
@@ -41,6 +41,7 @@ static void identity_map_page(const uint32_t page_directory, const uint32_t addr
 
 void paging_init(void) {
     page_directory = allocate_page(CRITICAL_KERNEL_USE); //page frame allocator returns page aligned blocks of 4KiB of memory
+
     for(int32_t i = 0; i < 1024; ++i) {
         // This sets the following flags to the pages:
         //   Supervisor: Only kernel-mode can access them
@@ -144,4 +145,8 @@ void free_virtual_page(const void *const virtual_address) {
     kassert_void(phys_frame != 0 && phys_frame % PAGE_SIZE == 0);
 
     free_page(phys_frame, USER_USE);
+}
+
+uint32_t* get_page_directory(void) {
+    return page_directory;
 }
