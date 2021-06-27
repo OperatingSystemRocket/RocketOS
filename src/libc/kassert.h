@@ -5,6 +5,7 @@
 
 //TODO: disable asserts when NDEBUG is defined so that no release runtime performance penalty is kept for asserts
 
+#ifndef NDEBUG
 #define kassert(cond, return_code)  do { \
                                     if(!(cond)) { \
                                         kprintf("%4[file: %s :: line: %i]: ", __FILE__, __LINE__); \
@@ -40,3 +41,12 @@
                                 return; \
                             } \
                         } while(0)
+#else
+#define kassert(cond, return_code)
+
+#define kassert_void(cond)
+
+#define kasser_message(cond, message, return_code)
+
+#define kassert_message_void(cond, message)
+#endif
