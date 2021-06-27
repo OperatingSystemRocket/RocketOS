@@ -123,10 +123,14 @@ os.bin : $(OBJECTS)
 	$(CC) -T linker.ld -o build/results/os.bin $(IMAGE_FLAGS) $(OBJECTS) -lgcc
 
 
+#TODO: fix me
 build/objs/interrupts/interrupts.o : src/interrupts/interrupts.c
 	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) -mgeneral-regs-only $(WARNING_FLAGS) $(FLAGS) -I. $(H_FILES_INCLUDE)
 
 build/objs/drivers/keyboard/keyboard_driver.o : src/drivers/keyboard/keyboard_driver.c
+	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) -mgeneral-regs-only $(WARNING_FLAGS) $(FLAGS) -I. $(H_FILES_INCLUDE)
+
+build/objs/scheduler/scheduler.o : src/scheduler/scheduler.c
 	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) -mgeneral-regs-only $(WARNING_FLAGS) $(FLAGS) -I. $(H_FILES_INCLUDE)
 
 

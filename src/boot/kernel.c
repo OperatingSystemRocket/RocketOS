@@ -44,10 +44,11 @@ void kernel_main(void) {
     init_gdt();
     gdt_load();
 
+    scheduler_init();
+
     pic_init();
     isr_install();
 
-    //enable_time();
     write_tss();
 
     allocate_init();
@@ -73,6 +74,8 @@ void kernel_main(void) {
     ADD_OBSERVER(128, key_message, get_subject(), observer);
     default_context_terminal_start();
 
+
+    enable_time();
 
 
     //jump_usermode();

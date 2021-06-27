@@ -221,12 +221,6 @@ void pic_send_eoi(const uint8_t no) {
 	outb(PIC1_COMMAND, PIC_EOI);
 }
 
-__attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const frame) {
-    increment_time();
-    set_time_in_seconds();
-    pic_send_eoi(1);
-}
-
 
 void idt_init(void) {
     idt_address = (uint32_t)idt;
@@ -238,11 +232,6 @@ void idt_init(void) {
                         "sti\n\t"
                         :
                         : "m"(idt_ptr));
-}
-
-void enable_timer(void) {
-    pic_irq_enable(0);
-    idt_register_handler(32, (uint32_t)timer_irq);
 }
 
 __attribute__((interrupt)) static void system_call(struct interrupt_frame *const frame) {

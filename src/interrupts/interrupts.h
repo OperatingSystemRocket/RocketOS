@@ -12,5 +12,3 @@
 
 void pic_init(void);
 void isr_install(void);
-
-void enable_timer(void);

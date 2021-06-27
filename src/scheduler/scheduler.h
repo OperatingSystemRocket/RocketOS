@@ -2,13 +2,19 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #include "kstring.h"
 #include "paging.h"
 #include "gdt.h"
 #include "kstdlib.h"
+#include "interrupts.h"
+#include "time.h"
 
 #include "kstdio.h"
+
+
+extern bool should_switch_task;
 
 
 struct task_context {
@@ -30,5 +36,11 @@ struct process {
     struct process* next; //circular linked list
 };
 
-extern void context_switch(struct task_context** old, struct task_context* new_context);
+
+extern void switch_to_example_task(void);
+
+void scheduler_init(void);
+void enable_timer(void);
+
+void example_function_task(void);
 

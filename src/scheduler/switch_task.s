@@ -1,22 +1,19 @@
 section .text
-global context_switch
-context_switch:
-    mov eax, [esp+4]
-    mov edx, [esp+8]
+extern example_function_task
+extern new_stack
+extern pic_send_eoi
+global switch_to_example_task
+switch_to_example_task:
+    mov esp, new_stack+4096
+    mov ebp, new_stack
 
-    push ebp
-    push ebx
-    push esi
-    push edi
+    mov eax, 1
+    call pic_send_eoi
 
-    mov [eax], esp
-    mov esp, edx
+    sti
+    pushf
+    push cs
+    push example_function_task
 
-    pop edi
-    pop esi
-    pop ebx
-    pop ebp
-
-    ret
-
+    iret
 
