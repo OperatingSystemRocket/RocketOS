@@ -73,8 +73,8 @@ We do not currently require you to forfeit your individual copyright to your cha
 - [x] Paging and Virtual Memory
 - [x] Dynamic Memory Allocation
 - [x] (PIC) Timer
-- [-] Tasks, Processes, and Scheduling (In Progress)
-- [-] Floating Point Number Support (currently has a partial implementation)
+- [ ] Tasks, Processes, and Scheduling (In Progress)
+- [ ] Floating Point Number Support (currently has a partial implementation)
 - [ ] Time and Calendar
 - [x] Privilege Levels (Protection Rings)
 - [ ] ELF Loader (currently has a partial implementation)
