@@ -63,10 +63,6 @@ We do not currently require you to forfeit your individual copyright to your cha
 
 ## Roadmap
 
-`x` == done
-blank == todo
-`-` == in progress
-
 - [x] Global Descriptor Table
 - [x] CPU Interrupts
 - [x] VGA Driver
@@ -77,11 +73,11 @@ blank == todo
 - [x] Paging and Virtual Memory
 - [x] Dynamic Memory Allocation
 - [x] (PIC) Timer
-- [-] Tasks, Processes, and Scheduling
-- [-] Floating Point Number Support
+- [-] Tasks, Processes, and Scheduling (In Progress)
+- [-] Floating Point Number Support (currently has a partial implementation)
 - [ ] Time and Calendar
 - [x] Privilege Levels (Protection Rings)
-- [-] ELF Loader
+- [ ] ELF Loader (currently has a partial implementation)
 - [x] Disk/HDD Support (ATA driver)
 - [ ] Filesystem
 - [ ] Full libc Implementation
