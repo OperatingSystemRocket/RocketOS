@@ -1,19 +1,43 @@
 section .text
-extern example_function_task
-extern new_stack
-extern pic_send_eoi
-global switch_to_example_task
-switch_to_example_task:
-    mov esp, new_stack+4096
-    mov ebp, new_stack
+global save_current_task
+save_current_task:
+    push ecx
+    mov [eax + (0*4)], ebp
+    mov [eax + (1*4)], esp
+    lea ecx, [done]
+    mov [eax + (2*4)], ecx
+global done
+done:
+    pop ecx
+    ret
 
+
+global load_task
+extern pic_send_eoi
+load_task:
+    mov ebp, [eax + (0*4)]
+    mov esp, [eax + (1*4)]
+
+    push eax
     mov eax, 1
     call pic_send_eoi
+    pop eax
 
     sti
     pushf
     push cs
-    push example_function_task
+    mov ecx, [eax + (2*4)]
+    push ecx
 
     iret
 
+
+global load_old_task
+load_old_task:
+    mov ebp, [eax + (0*4)]
+    mov esp, [eax + (1*4)]
+
+    mov ecx, [eax + (2*4)]
+    push ecx
+
+    ret

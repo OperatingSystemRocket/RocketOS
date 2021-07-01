@@ -275,6 +275,8 @@ void isr_install(void) {
     idt_register_handler(30, (uint32_t)isr_reserved);
     idt_register_handler(31, (uint32_t)isr_reserved);
 
+    enable_time();
+
     idt_register_handler(128, (uint32_t)system_call); //system call, 0x80
     idt[128].type_attr = IDT_PRESENT | IDT_RING_3 | IDT_INTERRUPT;
 

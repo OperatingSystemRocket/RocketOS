@@ -7,6 +7,8 @@
 #include "default_vga_driver.h"
 #include "interrupt_types.h"
 
+#include "time.h"
+
 #include "system_call_implementations.h"
 
 

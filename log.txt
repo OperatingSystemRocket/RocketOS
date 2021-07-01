@@ -1,0 +1,234 @@
+mkdir -p build/
+mkdir -p build/depends/
+mkdir -p build/objs/
+mkdir -p build/results/
+mkdir -p build/tests/
+mkdir -p build/objs/utils/ build/objs/float/ build/objs/scheduler/ build/objs/subsystems/terminal/ build/objs/subsystems/terminal/ build/objs/subsystems/terminal/ build/objs/subsystems/terminal/ build/objs/libc/ build/objs/libc/ build/objs/libc/ build/objs/libc/ build/objs/libc/ build/objs/bit_utils/ build/objs/usermode/ build/objs/usermode/ build/objs/elf_loader/ build/objs/drivers/serial/ build/objs/drivers/port_mapped_io/ build/objs/drivers/keyboard/ build/objs/drivers/keyboard/ build/objs/drivers/vga_driver/ build/objs/drivers/vga_driver/ build/objs/interrupts/ build/objs/time/ build/objs/storage/ build/objs/string_struct/ build/objs/boot/ build/objs/mem/ build/objs/mem/
+mkdir -p build/objs/float/ build/objs/scheduler/ build/objs/usermode/ build/objs/usermode/ build/objs/drivers/port_mapped_io/ build/objs/storage/ build/objs/storage/ build/objs/boot/ build/objs/mem/
+mkdir -p build/tests/libc/ build/tests/libc/ build/tests/libc/ build/tests/drivers/
+build/objs/float/enable_FPU.o build/objs/scheduler/switch_task.o build/objs/usermode/system_call_handler.o build/objs/usermode/gdt_entries.o build/objs/drivers/port_mapped_io/hardware_communication.o build/objs/storage/read_disk.o build/objs/storage/write_disk.o build/objs/boot/boot.o build/objs/mem/enable_paging.o build/objs/utils/bitset.o build/objs/float/float.o build/objs/scheduler/scheduler.o build/objs/subsystems/terminal/default_terminal_functions.o build/objs/subsystems/terminal/terminal_driver.o build/objs/subsystems/terminal/keyboard_callbacks.o build/objs/subsystems/terminal/default_terminal_system.o build/objs/libc/kerrno.o build/objs/libc/kmath.o build/objs/libc/kstdio.o build/objs/libc/kstring.o build/objs/libc/kstdlib.o build/objs/bit_utils/bitutils.o build/objs/usermode/system_call_implementations.o build/objs/usermode/gdt.o build/objs/elf_loader/elf_loader.o build/objs/drivers/serial/serial_driver.o build/objs/drivers/port_mapped_io/hardware_io.o build/objs/drivers/keyboard/default_keyboard_logic.o build/objs/drivers/keyboard/keyboard_driver.o build/objs/drivers/vga_driver/vga_driver.o build/objs/drivers/vga_driver/default_vga_driver.o build/objs/interrupts/interrupts.o build/objs/time/time.o build/objs/storage/storage.o build/objs/string_struct/string_struct.o build/objs/boot/kernel.o build/objs/mem/paging.o build/objs/mem/physical_mem_allocator.o
+i686-elf-gcc -T linker.ld -o build/results/os.bin -ffreestanding -O0 -g -nostdlib build/objs/float/enable_FPU.o build/objs/scheduler/switch_task.o build/objs/usermode/system_call_handler.o build/objs/usermode/gdt_entries.o build/objs/drivers/port_mapped_io/hardware_communication.o build/objs/storage/read_disk.o build/objs/storage/write_disk.o build/objs/boot/boot.o build/objs/mem/enable_paging.o build/objs/utils/bitset.o build/objs/float/float.o build/objs/scheduler/scheduler.o build/objs/subsystems/terminal/default_terminal_functions.o build/objs/subsystems/terminal/terminal_driver.o build/objs/subsystems/terminal/keyboard_callbacks.o build/objs/subsystems/terminal/default_terminal_system.o build/objs/libc/kerrno.o build/objs/libc/kmath.o build/objs/libc/kstdio.o build/objs/libc/kstring.o build/objs/libc/kstdlib.o build/objs/bit_utils/bitutils.o build/objs/usermode/system_call_implementations.o build/objs/usermode/gdt.o build/objs/elf_loader/elf_loader.o build/objs/drivers/serial/serial_driver.o build/objs/drivers/port_mapped_io/hardware_io.o build/objs/drivers/keyboard/default_keyboard_logic.o build/objs/drivers/keyboard/keyboard_driver.o build/objs/drivers/vga_driver/vga_driver.o build/objs/drivers/vga_driver/default_vga_driver.o build/objs/interrupts/interrupts.o build/objs/time/time.o build/objs/storage/storage.o build/objs/string_struct/string_struct.o build/objs/boot/kernel.o build/objs/mem/paging.o build/objs/mem/physical_mem_allocator.o -lgcc
+./is_multiboot.sh build/results/os.bin
+multiboot confirmed
+mkdir -p isodir/boot/grub
+cp build/results/os.bin isodir/boot/os.bin
+cp grub.cfg isodir/boot/grub/grub.cfg
+grub-mkrescue -o build/results/os.iso isodir
+qemu-system-i386 -serial stdio -hda disk.img -cdrom build/results/os.iso
+Serial driver works
+allocated index: 1334
+page_directory created successfully
+allocated index: 1335
+allocated index: 1336
+allocated index: 1337
+allocated index: 1338
+allocated index: 1339
+allocated index: 1340
+indentity mapping done successfully
+allocated index: 1341
+page table created successfully
+page table set successfully
+page directory loaded successfully
+paging enabled successfully
+allocated index: 5430
+Woah, mapping an already mapped page. You should fix this.
+increase_memory_pool
+allocated index: 5431
+Woah, mapping an already mapped page. You should fix this.
+page mapped successfully
+start bigger block
+end bigger block
+last_free_virtual_address: 1538000
+new_stack: 153600C
+time: 1
+kernel.c
+time: 2
+kernel.c
+time: 3
+kernel.c
+time: 4
+kernel.c
+time: 5
+kernel.c
+time: 6
+kernel.c
+time: 7
+kernel.c
+time: 8
+kernel.c
+time: 9
+kernel.c
+time: 10
+kernel.c
+keyboard_irq triggered
+kernel.c
+time: 11
+task switch
+{
+	ebp: 22241292,
+	esp: 22245388,
+	eip: 1051404
+}
+load task
+example_function_task called
+example_function_task called
+time: 12
+example_function_task called
+time: 13
+example_function_task called
+time: 14
+example_function_task called
+time: 15
+example_function_task called
+time: 16
+example_function_task called
+time: 17
+example_function_task called
+time: 18
+example_function_task called
+time: 19
+example_function_task called
+time: 20
+example_function_task called
+time: 21
+example_function_task called
+time: 22
+example_function_task called
+time: 23
+example_function_task called
+time: 24
+example_function_task called
+time: 25
+example_function_task called
+time: 26
+example_function_task called
+time: 27
+example_function_task called
+time: 28
+example_function_task called
+time: 29
+example_function_task called
+time: 30
+example_function_task called
+time: 31
+example_function_task called
+time: 32
+example_function_task called
+time: 33
+example_function_task called
+time: 34
+example_function_task called
+time: 35
+example_function_task called
+time: 36
+example_function_task called
+time: 37
+example_function_task called
+time: 38
+example_function_task called
+time: 39
+example_function_task called
+keyboard_irq triggered
+example_function_task called
+time: 40
+load_old_task
+timer_irq finished
+kernel.c
+kernel.c
+time: 41
+kernel.c
+time: 42
+kernel.c
+time: 43
+kernel.c
+time: 44
+kernel.c
+time: 45
+kernel.c
+time: 46
+kernel.c
+time: 47
+kernel.c
+time: 48
+kernel.c
+time: 49
+kernel.c
+time: 50
+kernel.c
+time: 51
+kernel.c
+time: 52
+kernel.c
+time: 53
+kernel.c
+time: 54
+kernel.c
+keyboard_irq triggered
+kernel.c
+time: 55
+load_old_task
+else if taken
+kernel.c
+kernel.c
+time: 56
+kernel.c
+time: 57
+kernel.c
+time: 58
+kernel.c
+time: 59
+kernel.c
+time: 60
+kernel.c
+time: 61
+kernel.c
+time: 62
+kernel.c
+time: 63
+kernel.c
+time: 64
+kernel.c
+time: 65
+kernel.c
+time: 66
+kernel.c
+time: 67
+kernel.c
+time: 68
+kernel.c
+time: 69
+kernel.c
+time: 70
+kernel.c
+time: 71
+kernel.c
+time: 72
+kernel.c
+time: 73
+kernel.c
+time: 74
+kernel.c
+time: 75
+kernel.c
+time: 76
+kernel.c
+time: 77
+kernel.c
+time: 78
+kernel.c
+time: 79
+kernel.c
+time: 80
+kernel.c
+time: 81
+kernel.c
+time: 82
+kernel.c
+time: 83
+kernel.c
+time: 84
+kernel.c
+time: 85
+kernel.c
+time: 86
+kernel.c

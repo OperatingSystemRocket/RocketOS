@@ -14,14 +14,12 @@
 #include "kstdio.h"
 
 
-extern bool should_switch_task;
+extern volatile bool should_switch_task;
 
 
 struct task_context {
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebx;
     uint32_t ebp;
+    uint32_t esp;
     uint32_t eip;
 };
 
@@ -37,7 +35,9 @@ struct process {
 };
 
 
-extern void switch_to_example_task(void);
+extern void save_current_task(struct task_context* current_task);
+extern void load_task(struct task_context* current_task);
+extern void load_old_task(struct task_context* current_task);
 
 void scheduler_init(void);
 void enable_timer(void);
