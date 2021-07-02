@@ -37,7 +37,7 @@ struct process {
 
 extern void save_current_task(struct task_context* current_task);
 extern void load_task(struct task_context* current_task);
-extern void load_old_task(struct task_context* current_task);
+extern void resume_task(struct task_context* current_task);
 
 void scheduler_init(void);
 void enable_timer(void);

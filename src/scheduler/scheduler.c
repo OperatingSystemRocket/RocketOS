@@ -8,11 +8,13 @@ volatile char* new_stack;
 
 
 static volatile bool first_task_switch;
+static volatile bool first_resume;
 bool volatile should_switch_task;
 
 
 void scheduler_init(void) {
     first_task_switch = true;
+    first_resume = false;
     should_switch_task = false;
 
     //temporarily don't use these as I'm just testing task switching and creation itself
@@ -63,19 +65,29 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
 
         //unreachable, but this is here for debugging purposes:
         kprintf("timer_irq finished\n");
-    } else if(should_switch_task) {
-        kassert_void(should_switch_task == true);
+        first_resume = true;
+    }
+    if((!first_task_switch && should_switch_task) || first_resume) {
+        //kassert_void(should_switch_task == true);
         kprintf("load_old_task\n");
 
         should_switch_task = false;
 
-        //save_current_task(&current_process->register_states);
-        load_old_task(&current_process->next->register_states);
+        if(!first_resume) {
+            struct process* temp = current_process->next;
+            temp->next = current_process;
+            current_process = temp;
+            current_process->next->next = NULL;
+            temp = NULL;
 
-        //struct process* temp = current_process->next;
-        //current_process->next = current_process;
-        //current_process = temp;
-        //temp = NULL;
+            save_current_task(&current_process->next->register_states);
+
+            kprintf("{\n\tebp: %u,\n\tesp: %u,\n\teip: %u\n}\n", current_process->register_states.ebp, current_process->register_states.esp, current_process->register_states.eip);
+
+            resume_task(&current_process->register_states);
+        } else {
+            first_resume = false;
+        }
 
         //unreachable, but this is here for debugging purposes:
         kprintf("else if taken\n");

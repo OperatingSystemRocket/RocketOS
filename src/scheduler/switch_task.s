@@ -32,8 +32,8 @@ load_task:
     iret
 
 
-global load_old_task
-load_old_task:
+global resume_task
+resume_task:
     mov ebp, [eax + (0*4)]
     mov esp, [eax + (1*4)]
 
@@ -41,3 +41,4 @@ load_old_task:
     push ecx
 
     ret
+
