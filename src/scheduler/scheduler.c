@@ -1,20 +1,43 @@
 #include "scheduler.h"
 
 
-volatile struct process* current_process;
-volatile struct process* ready_queue;
+volatile struct process* current_process; //start
+volatile struct process* ready_queue; //end
 
 volatile char* new_stack;
 
 
 static volatile bool first_task_switch;
-static volatile bool first_resume;
 bool volatile should_switch_task;
+
+
+void create_process(void) {
+    kassert_void(current_process != NULL);
+    struct process* process = current_process;
+    for(;;) {
+        if(process->next != NULL) {
+            current_process = process->next;
+        } else {
+            process->next = zeroed_out_kmalloc(sizeof(struct process));
+            struct process *const next_process = process->next;
+
+            next_process->previously_loaded = false;
+            next_process->stack = zeroed_out_kmalloc(4096); //TODO: make 16KiB and be page aligned
+            next_process->id = 0; //TODO: make this an actual value
+
+            next_process->register_states.ebp = (uint32_t) next_process->stack;
+            next_process->register_states.esp = ((uint32_t) next_process->stack)+4096;
+            next_process->register_states.eip = (uint32_t) example_function_task; //today make this passed in
+
+            next_process->page_directory = get_page_directory();
+            next_process->next = NULL;
+        }
+    }
+}
 
 
 void scheduler_init(void) {
     first_task_switch = true;
-    first_resume = false;
     should_switch_task = false;
 
     //temporarily don't use these as I'm just testing task switching and creation itself
@@ -40,6 +63,7 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
 
         current_process = zeroed_out_kmalloc(sizeof(struct process));
 
+        current_process->previously_loaded = false;
         current_process->id = 0;
 
         current_process->register_states.ebp = (uint32_t) new_stack;
@@ -53,6 +77,7 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
 
 
         struct process *const next_process = current_process->next;
+        next_process->previously_loaded = true;
         next_process->id = 1;
         next_process->page_directory = get_page_directory();
         next_process->next = NULL;
@@ -65,15 +90,14 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
 
         //unreachable, but this is here for debugging purposes:
         kprintf("timer_irq finished\n");
-        first_resume = true;
+        current_process->previously_loaded = true;
     }
-    if((!first_task_switch && should_switch_task) || first_resume) {
-        //kassert_void(should_switch_task == true);
+    if((!first_task_switch && should_switch_task) || (current_process != NULL && current_process->previously_loaded)) {
         kprintf("load_old_task\n");
 
         should_switch_task = false;
 
-        if(!first_resume) {
+        if(!current_process->previously_loaded) {
             struct process* temp = current_process->next;
             temp->next = current_process;
             current_process = temp;
@@ -86,7 +110,7 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
 
             resume_task(&current_process->register_states);
         } else {
-            first_resume = false;
+            current_process->previously_loaded = false;
         }
 
         //unreachable, but this is here for debugging purposes:
@@ -104,8 +128,10 @@ void enable_timer(void) {
 
 
 void example_function_task(void) {
+    uint32_t count = 0u;
+
     for(;;) {
-        kprintf("example_function_task called\n");
+        kprintf("example_function_task called with count: %u\n", count++);
         asm volatile("hlt");
     }
 }

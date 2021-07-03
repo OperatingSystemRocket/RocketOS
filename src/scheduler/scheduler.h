@@ -25,6 +25,9 @@ struct task_context {
 
 
 struct process {
+    bool previously_loaded; //used to know whether to use `load_task` or `resume_task`
+    uint32_t* stack; //convenience pointer that is a duplicate of the base pointer
+
     int32_t id; //pid
 
     struct task_context register_states;
@@ -38,6 +41,8 @@ struct process {
 extern void save_current_task(struct task_context* current_task);
 extern void load_task(struct task_context* current_task);
 extern void resume_task(struct task_context* current_task);
+
+void create_process(void);
 
 void scheduler_init(void);
 void enable_timer(void);

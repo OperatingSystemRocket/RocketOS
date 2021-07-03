@@ -55,23 +55,30 @@ void kernel_main(void) {
 
     write_tss();
 
-    //jump_usermode();
-
 
 
     default_keyboard_map_state_init();
 
     set_default_functions();
     enable_keyboard();
-
+    struct default_terminal_context *const data = zeroed_out_kmalloc(sizeof(struct default_terminal_context));
+    kprintf("before vga_context: %p\n", data->vga_context);
+    data->vga_context = get_default_vga_context();
+    kprintf("after vga_context: %p\n", data->vga_context);
+    struct GET_OBSERVER_TYPENAME(key_message) *const observer = sizeof(struct GET_OBSERVER_TYPENAME(key_message));
+    *observer = (struct GET_OBSERVER_TYPENAME(key_message)){ data, catch_keycode };
+    ADD_OBSERVER(128, key_message, get_subject(), observer);
     default_context_terminal_start();
+
 
 
     //jump_usermode();
 
 
+    uint32_t count = 0u;
+
     for(;;) {
+        kprintf("kernel.c with count: %u\n", count++);
         asm volatile("hlt");
-        kprintf("kernel.c\n");
     }
 }
