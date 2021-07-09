@@ -1,51 +1,53 @@
 #include "scheduler.h"
 
 
-volatile struct process* current_process; //start
-volatile struct process* ready_queue; //end
+volatile struct process* current_process;
+volatile struct process* process_queue_begin; //"beginning" of circular linked list
+volatile struct process* process_queue_end; //"end" of circular linked list, used to speed up insertion into list
 
-volatile char* new_stack;
 
-
-static volatile bool first_task_switch;
 bool volatile should_switch_task;
 
 
 void create_process(const void (*entry_point)(void)) {
-    if(current_process == NULL) return;
+    if(process_queue_begin == NULL) return;
 
-    struct process* process = current_process;
-    while(process->next != NULL) {
-        process = process->next;
+    kassert_void(process_queue_end != NULL);
+
+    process_queue_end->next = zeroed_out_kmalloc(sizeof(struct process));
+    process_queue_end = process_queue_end->next;
+
+    process_queue_end->stack = zeroed_out_kmalloc(4096);
+
+    process_queue_end->previously_loaded = false;
+    process_queue_end->id = 1;
+
+    process_queue_end->register_states.ebp = (uint32_t) process_queue_end->stack;
+    process_queue_end->register_states.esp = ((uint32_t) process_queue_end->stack)+4096u;
+    process_queue_end->register_states.eip = (uint32_t) entry_point;
+
+    process_queue_end->page_directory = get_page_directory();
+    process_queue_end->next = process_queue_begin;
+
+    if(process_queue_begin->next == NULL) {
+        process_queue_begin->next = process_queue_end;
     }
-
-    process->next = zeroed_out_kmalloc(sizeof(process));
-    process = process->next;
-
-    process->stack = zeroed_out_kmalloc(4096);
-
-    process->previously_loaded = false;
-    process->id = 1;
-
-    process->register_states.ebp = (uint32_t) process->stack;
-    process->register_states.esp = ((uint32_t) process->stack)+4096;
-    process->register_states.eip = (uint32_t) entry_point;
-
-    process->page_directory = get_page_directory();
-    process->next = NULL;
 }
 
 
 void scheduler_init(void) {
-    first_task_switch = true;
     should_switch_task = false;
 
-    //temporarily don't use these as I'm just testing task switching and creation itself
-    current_process = NULL;
-    ready_queue = NULL;
+    current_process = zeroed_out_kmalloc(sizeof(struct process));
 
-    new_stack = zeroed_out_kmalloc(4096);
-    kprintf("new_stack: %p\n", new_stack);
+    current_process->previously_loaded = true;
+    current_process->stack = NULL;
+    current_process->id = 0;
+    current_process->page_directory = get_page_directory();
+    current_process->next = NULL;
+
+    process_queue_begin = current_process;
+    process_queue_end = current_process;
 }
 
 //TODO: replace __attribute__((interrupt)) as it is garbage
@@ -55,43 +57,7 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
     kprintf("time: %u\n", get_time_in_ticks());
 
 
-    if(first_task_switch && should_switch_task) {
-        kprintf("task switch\n");
-
-        first_task_switch = false;
-        should_switch_task = false;
-
-        current_process = zeroed_out_kmalloc(sizeof(struct process));
-
-        current_process->previously_loaded = true;
-        current_process->id = 0;
-        current_process->page_directory = get_page_directory();
-        current_process->next = NULL;
-
-        save_current_task(&current_process->register_states);
-
-        current_process->stack = current_process->register_states.ebp;
-
-        create_process(&example_function_task);
-
-        kprintf("load task\n");
-
-        struct process* temp = current_process->next;
-        temp->next = current_process;
-        current_process = temp;
-        current_process->next->next = NULL;
-        temp = NULL;
-
-        current_process->previously_loaded = true;
-
-        load_task(&current_process->register_states);
-
-        //unreachable, but this is here for debugging purposes:
-        kprintf("timer_irq finished\n");
-    }
     if(current_process != NULL && should_switch_task && current_process->previously_loaded) {
-        kassert_void(!first_task_switch);
-
         should_switch_task = false;
 
         kprintf("second if taken\n");
@@ -99,15 +65,18 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
         if(current_process->next != NULL) {
             save_current_task(&current_process->register_states);
 
-            struct process* temp = current_process->next;
-            temp->next = current_process;
-            current_process = temp;
-            current_process->next->next = NULL;
-            temp = NULL;
+            kassert_void(current_process->next != current_process);
+
+            current_process = current_process->next;
 
             kprintf("{\n\tebp: %u,\n\tesp: %u,\n\teip: %u\n}\n", current_process->register_states.ebp, current_process->register_states.esp, current_process->register_states.eip);
 
-            resume_task(&current_process->register_states);
+            if(current_process->previously_loaded) {
+                resume_task(&current_process->register_states);
+            } else {
+                current_process->previously_loaded = true;
+                load_task(&current_process->register_states);
+            }
         }
     }
 
@@ -126,6 +95,16 @@ void example_function_task(void) {
 
     for(;;) {
         kprintf("example_function_task called with count: %u\n", count++);
+        asm volatile("hlt");
+    }
+}
+
+
+void foo_function_task(void) {
+    uint32_t count = 0u;
+
+    for(;;) {
+        kprintf("foo_function_task called with count: %u\n", count++);
         asm volatile("hlt");
     }
 }

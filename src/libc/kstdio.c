@@ -202,7 +202,7 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
     return 0;
 }
 
-int kprintf(const char *const format, ...) {
+int32_t kprintf(const char *const format, ...) {
     va_list pargs;
 
     va_start(pargs, format);

@@ -36,7 +36,7 @@ inline int32_t bytes_to_words(const uint32_t bytes) {
 }
 
 
-int kprintf(const char *format, ...);
+int32_t kprintf(const char *format, ...);
 void* get_first_nonreserved_address(void);
 
 inline void print_freelist(void) {

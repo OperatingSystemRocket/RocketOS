@@ -10,4 +10,4 @@
 #include "kstring.h"
 
 
-int kprintf(const char *format, ...);
+int32_t kprintf(const char *format, ...);

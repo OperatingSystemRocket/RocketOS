@@ -11,6 +11,7 @@
 #include "interrupts.h"
 #include "time.h"
 
+#include "kassert.h"
 #include "kstdio.h"
 
 
@@ -48,4 +49,5 @@ void scheduler_init(void);
 void enable_timer(void);
 
 void example_function_task(void);
+void foo_function_task(void);
 

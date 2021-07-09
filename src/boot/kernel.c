@@ -74,6 +74,9 @@ void kernel_main(void) {
 
     //jump_usermode();
 
+    create_process(&example_function_task);
+    create_process(&foo_function_task);
+
 
     uint32_t count = 0u;
 
