@@ -22,11 +22,6 @@ void pic_send_eoi(uint8_t no);
 __attribute__((interrupt)) static void keyboard_irq(struct interrupt_frame *const frame) {
     const unsigned char scancode = inb(0x60);
 
-    if(!(scancode & 128u)) {
-        kprintf("keyboard_irq triggered\n");
-        should_switch_task = true;
-    }
-
     current_process_keystroke_implementation(data_context, scancode);
 
 	pic_send_eoi(1);

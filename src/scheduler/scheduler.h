@@ -15,9 +15,6 @@
 #include "kstdio.h"
 
 
-extern volatile bool should_switch_task;
-
-
 struct task_context {
     uint32_t ebp;
     uint32_t esp;
@@ -27,9 +24,12 @@ struct task_context {
 
 struct process {
     bool previously_loaded; //used to know whether to use `load_task` or `resume_task`
+    bool is_finished;
     uint32_t* stack; //convenience pointer that is a duplicate of the base pointer
 
     int32_t id; //pid
+    uint32_t time_quantum; //number of time clicks that this process can run for during its turn
+    //example: quantum = 10 means that for 10 ticks of the timer irq this process will run before a process/task switch occurs to the next in line
 
     struct task_context register_states;
 

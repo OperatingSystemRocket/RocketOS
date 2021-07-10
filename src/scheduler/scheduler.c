@@ -6,7 +6,7 @@ volatile struct process* process_queue_begin; //"beginning" of circular linked l
 volatile struct process* process_queue_end; //"end" of circular linked list, used to speed up insertion into list
 
 
-bool volatile should_switch_task;
+#define TIME_QUANTUM_VALUE 10u
 
 
 void create_process(const void (*entry_point)(void)) {
@@ -21,6 +21,7 @@ void create_process(const void (*entry_point)(void)) {
 
     process_queue_end->previously_loaded = false;
     process_queue_end->id = 1;
+    process_queue_end->time_quantum = TIME_QUANTUM_VALUE;
 
     process_queue_end->register_states.ebp = (uint32_t) process_queue_end->stack;
     process_queue_end->register_states.esp = ((uint32_t) process_queue_end->stack)+4096u;
@@ -36,13 +37,12 @@ void create_process(const void (*entry_point)(void)) {
 
 
 void scheduler_init(void) {
-    should_switch_task = false;
-
     current_process = zeroed_out_kmalloc(sizeof(struct process));
 
     current_process->previously_loaded = true;
     current_process->stack = NULL;
     current_process->id = 0;
+    current_process->time_quantum = TIME_QUANTUM_VALUE;
     current_process->page_directory = get_page_directory();
     current_process->next = NULL;
 
@@ -57,26 +57,19 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
     kprintf("time: %u\n", get_time_in_ticks());
 
 
-    if(current_process != NULL && should_switch_task && current_process->previously_loaded) {
-        should_switch_task = false;
+    if(current_process != NULL && current_process->next != NULL && (--current_process->time_quantum == 0)) {
+        save_current_task(&current_process->register_states);
+        current_process->time_quantum = TIME_QUANTUM_VALUE;
 
-        kprintf("second if taken\n");
+        kassert_void(current_process->next != current_process);
 
-        if(current_process->next != NULL) {
-            save_current_task(&current_process->register_states);
+        current_process = current_process->next;
 
-            kassert_void(current_process->next != current_process);
-
-            current_process = current_process->next;
-
-            kprintf("{\n\tebp: %u,\n\tesp: %u,\n\teip: %u\n}\n", current_process->register_states.ebp, current_process->register_states.esp, current_process->register_states.eip);
-
-            if(current_process->previously_loaded) {
-                resume_task(&current_process->register_states);
-            } else {
-                current_process->previously_loaded = true;
-                load_task(&current_process->register_states);
-            }
+        if(current_process->previously_loaded) {
+            resume_task(&current_process->register_states);
+        } else {
+            current_process->previously_loaded = true;
+            load_task(&current_process->register_states);
         }
     }
 
