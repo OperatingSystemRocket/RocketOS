@@ -52,13 +52,11 @@ void terminal_putentryat(struct vga_driver_context *const context, const char c,
 
 void terminal_putchar(struct vga_driver_context *const context, const char c) {
 	if (c == '\n') {
-        if(context->terminal_on) default_context_terminal_end();
 		if(++context->terminal_row == VGA_HEIGHT) {
 			terminal_scroll_down(context);
 		}
 		context->terminal_column = 0;
         terminal_updatecursor(context);
-        if(context->terminal_on) default_terminal_context_process_command();
 		return;
 	}
     terminal_putentryat(context, c, context->terminal_color, context->terminal_column, context->terminal_row);

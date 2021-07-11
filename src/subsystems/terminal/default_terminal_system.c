@@ -31,3 +31,8 @@ void default_context_run_command(char *const command) {
 void default_context_get_command(char *const final, const size_t number_of_elements) {
     default_get_command(&terminal_context, final, number_of_elements);
 }
+
+
+struct default_terminal_context* get_default_terminal_context(void) {
+    return &terminal_context;
+}

@@ -4,7 +4,7 @@
 #define DEFAULT_PROMPT "> "
 
 
-void default_init_context(struct default_terminal_context *const terminal_context_ptr) {
+void default_init_context(struct default_terminal_context *const terminal_context_ptr) {    
     terminal_context_ptr->vga_context = get_default_vga_context();
 
     terminal_context_ptr->start_of_command = terminal_context_ptr->vga_context->terminal_row * 80 + terminal_context_ptr->vga_context->terminal_column;
@@ -19,16 +19,12 @@ void set_default_functions(void) {
     set_terminal_shift(default_terminal_shift);
 }
 
+
+//TODO: Refactor this wrapper function out of existance maybe. Though this might be useful to keep in the future possibly.
 void default_terminal_start(void *const context) {
     struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
 
     default_init_context(terminal_context_ptr);
-
-    terminal_context_ptr->vga_context->terminal_on = true;
-
-    terminal_writestring(terminal_context_ptr->vga_context, terminal_context_ptr->prompt_symbol);
-
-    terminal_context_ptr->start_of_command += kstrlen(terminal_context_ptr->prompt_symbol);
 }
 
 void default_terminal_end(void *const context) {
@@ -40,7 +36,6 @@ void default_terminal_end(void *const context) {
 void default_terminal_process_command(void *const context) {
     struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
 
-    terminal_context_ptr->vga_context->terminal_on = false;
     if(terminal_context_ptr->end_of_command - terminal_context_ptr->start_of_command <= 0) {
         kprintf("Invalid command! Try 'help'\n");
         run_terminal_start(context);

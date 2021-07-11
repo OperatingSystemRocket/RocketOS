@@ -105,15 +105,10 @@ void process_keystroke(void *const context, const unsigned char keycode) {
         case 14:
             //backspace
             event = (struct GET_EVENT_TYPENAME(key_message)) {.event_type = KEYBOARD_EVENT, .data = (struct key_message){ .keycode = '\b', .key_type = NORMAL_KEY } };
-            //terminal_backspace();
             break;
         case 15:
             //tab
             event = (struct GET_EVENT_TYPENAME(key_message)) {.event_type = KEYBOARD_EVENT, .data = (struct key_message){ .keycode = '\t', .key_type = NORMAL_KEY } };
-            /*if(terminal_row * 80 + terminal_column >= start_of_command) {
-                terminal_writestring("    ");
-                terminal_end();
-            }*/
             break;
         case 42:
             //left shift
@@ -133,22 +128,18 @@ void process_keystroke(void *const context, const unsigned char keycode) {
         case 72:
             //up arrow
             event = (struct GET_EVENT_TYPENAME(key_message)) { .event_type = KEYBOARD_EVENT, .data = (struct key_message){ .keycode = 0, .key_type = UP_ARROW } };
-            //terminal_cursor_up();
             break;
         case 75:
             //left
             event = (struct GET_EVENT_TYPENAME(key_message)) { .event_type = KEYBOARD_EVENT, .data = (struct key_message){ .keycode = 0, .key_type = LEFT_ARROW } };
-            //terminal_cursor_left();
             break;
         case 77:
             //right
             event = (struct GET_EVENT_TYPENAME(key_message)) { .event_type = KEYBOARD_EVENT, .data = (struct key_message){ .keycode = 0, .key_type = RIGHT_ARROW } };
-            //terminal_cursor_right();
             break;
         case 80:
             //down
             event = (struct GET_EVENT_TYPENAME(key_message)) { .event_type = KEYBOARD_EVENT, .data = (struct key_message){ .keycode = 0, .key_type = DOWN_ARROW } };
-            //terminal_cursor_down();
             break;
         default:
             final = keyboard_map_context->keyboard_map[keycode];
@@ -204,10 +195,6 @@ void process_keystroke(void *const context, const unsigned char keycode) {
             if(final > 0) {
                 event = (struct GET_EVENT_TYPENAME(key_message)) {.event_type = KEYBOARD_EVENT, .data = (struct key_message){ .keycode = final, .key_type = NORMAL_KEY } };
             }
-            /*if(final > 0 && terminal_row * 80 + terminal_column >= start_of_command) {
-                terminal_putchar(final);
-                terminal_end();
-            }*/
             break;
     }
     NOTIFY(128, key_message, &keyboard_map_context->subject, event);

@@ -8,9 +8,22 @@ void catch_keycode(void *const context, struct GET_EVENT_TYPENAME(key_message) e
         if(event.data.key_type == NORMAL_KEY) {
             if(event.data.keycode == '\b') {
                 terminal_backspace(terminal_context_ptr->vga_context);
+                return;
+            } else if(terminal_context_ptr->vga_context->terminal_column == 0) {
+                default_init_context(terminal_context_ptr);
+
+                terminal_writestring(terminal_context_ptr->vga_context, terminal_context_ptr->prompt_symbol);
+
+                terminal_context_ptr->start_of_command += kstrlen(terminal_context_ptr->prompt_symbol);
             }
-            else if(event.data.keycode == '\t' && terminal_context_ptr->vga_context->terminal_row * 80 + terminal_context_ptr->vga_context->terminal_column >= terminal_context_ptr->start_of_command) {
+            
+            if(event.data.keycode == '\t' && terminal_context_ptr->vga_context->terminal_row * 80 + terminal_context_ptr->vga_context->terminal_column >= terminal_context_ptr->start_of_command) {
                 terminal_writestring(terminal_context_ptr->vga_context, "    ");
+                run_terminal_end(context);
+            } else if(event.data.keycode == '\n') {
+                default_context_terminal_end();
+                terminal_putchar(terminal_context_ptr->vga_context, event.data.keycode);
+                default_terminal_context_process_command();
                 run_terminal_end(context);
             } else if(event.data.keycode > 0 && terminal_context_ptr->vga_context->terminal_row * 80 + terminal_context_ptr->vga_context->terminal_column >= terminal_context_ptr->start_of_command) {
                 terminal_putchar(terminal_context_ptr->vga_context, event.data.keycode);

@@ -35,7 +35,6 @@ enum vga_color {
 
 
 struct vga_driver_context {
-    bool terminal_on;
     size_t terminal_row;
     size_t terminal_column;
     enum vga_color terminal_color;

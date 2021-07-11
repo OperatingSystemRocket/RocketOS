@@ -54,7 +54,7 @@ void scheduler_init(void) {
 __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const frame) {
     increment_time();
     set_time_in_seconds();
-    kprintf("time: %u\n", get_time_in_ticks());
+    //kprintf("time: %u\n", get_time_in_ticks());
 
 
     if(current_process != NULL && current_process->next != NULL && (--current_process->time_quantum == 0)) {
@@ -87,7 +87,7 @@ void example_function_task(void) {
     uint32_t count = 0u;
 
     for(;;) {
-        kprintf("example_function_task called with count: %u\n", count++);
+        //kprintf("example_function_task called with count: %u\n", count++);
         asm volatile("hlt");
     }
 }
@@ -97,7 +97,7 @@ void foo_function_task(void) {
     uint32_t count = 0u;
 
     for(;;) {
-        kprintf("foo_function_task called with count: %u\n", count++);
+        //kprintf("foo_function_task called with count: %u\n", count++);
         asm volatile("hlt");
     }
 }
