@@ -18,15 +18,17 @@ bool serial_init(void) {
    return true;
 }
 
-int8_t serial_received(void);
 
-char serial_read(void);
+uint8_t serial_received(void);
 
-int8_t is_transmit_empty(void);
+uint8_t serial_read(void);
+
+uint8_t is_transmit_empty(void);
 
 void serial_putchar(char a);
 
 void serial_write(const char* text, size_t size);
 
 void serial_writestring(const char* text);
+
 

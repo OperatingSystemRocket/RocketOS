@@ -14,7 +14,6 @@
 #include "physical_mem_allocator.h"
 #include "paging.h"
 #include "kstdlib.h"
-#include "storage.h"
 #include "gdt.h"
 #include "default_keyboard_logic.h"
 
@@ -27,6 +26,8 @@
 //TODO: remove all 64 bit integer types as they are bigger than a word size
 
 void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
+    (void) mboot_header; //needed for calling convention reasons, but currently unused
+
     if(serial_init()) { //fails if serial is faulty
         serial_writestring("Serial driver works\n");
     }
@@ -76,7 +77,7 @@ void kernel_main(void) {
     create_process(&foo_function_task);
 
 
-    uint32_t count = 0u;
+    //uint32_t count = 0u;
 
     for(;;) {
         //kprintf("kernel.c with count: %u\n", count++);

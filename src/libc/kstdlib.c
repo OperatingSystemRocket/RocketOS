@@ -13,10 +13,7 @@ uint32_t* head;
 
 
 
-int32_t bytes_to_words(uint32_t bytes);
-
-void print_freelist(void);
-void dump_heap(void);
+uint32_t bytes_to_words(uint32_t bytes);
 
 
 uint32_t get_size(const uint32_t size_word) {
@@ -25,42 +22,6 @@ uint32_t get_size(const uint32_t size_word) {
 
 bool get_allocated_bit(const uint32_t size_word) {
     return (size_word & 0x80000000) > 0;
-}
-
-void heap_dump(const size_t number_of_pages) {
-    kprintf("\n\n\n");
-    kprintf("full heap dump\n");
-
-    for(int32_t i = 0; i < 1024*number_of_pages; ++i) {
-        const uint32_t *const start_of_heap = get_first_nonreserved_address();
-        kprintf("size: %u, is_allocated: %u\n", get_size(start_of_heap[i]), get_allocated_bit(start_of_heap[i]));
-    }
-
-    kprintf("\n\n\n");
-}
-
-void freelist_dump(const bool increment) {
-    static size_t number_of_freelist_dump = 0;
-
-    kprintf("freelist\n");
-
-    uint32_t* current_block = get_head();
-    if(get_head() != NULL) {
-        kprintf("head is not NULL\n");
-    } else {
-        kprintf("head is NULL\n");
-    }
-    while(current_block != NULL) {
-        kprintf("number_of_freelist_dump: %u, address of entry: %X, first word size: %u, first word allocated bit: %u, second word: %X, third word: %X, last word size: %u, last word allocated bit: %u\n",
-        number_of_freelist_dump, &current_block[0], get_size(current_block[0]), get_allocated_bit(current_block[0]), current_block[1], current_block[2], get_size(current_block[get_size(current_block[0])-1]), get_allocated_bit(current_block[get_size(current_block[0])-1]));
-        current_block = current_block[2];
-    }
-
-    if(increment) {
-        ++number_of_freelist_dump;
-
-        kprintf("\n\n\n");
-    }
 }
 
 
@@ -75,7 +36,7 @@ static bool increase_memory_pool(void) {
 
     if(phys_addr) {
         kprintf("page mapped successfully\n");
-        kassert(last_free_virtual_address+WORDS_IN_PAGE > get_first_nonreserved_address(), false);
+        kassert(last_free_virtual_address+WORDS_IN_PAGE > (uint32_t*) get_first_nonreserved_address(), false);
         if(!get_allocated_bit(last_free_virtual_address[-1])) {
             kprintf("start bigger block\n");
 
@@ -91,10 +52,10 @@ static bool increase_memory_pool(void) {
             //front insertion policy
             //TODO: try using end insertion policy
             last_free_virtual_address[0] = 1024u;
-            last_free_virtual_address[1] = NULL;
-            last_free_virtual_address[2] = head;
-            if(last_free_virtual_address[2] != NULL) {
-                ((uint32_t*)last_free_virtual_address[2])[1] = &last_free_virtual_address[0];
+            last_free_virtual_address[1] = (uint32_t) NULL;
+            last_free_virtual_address[2] = (uint32_t) head;
+            if((uint32_t*) last_free_virtual_address[2] != NULL) {
+                ((uint32_t*)last_free_virtual_address[2])[1] = (uint32_t) &last_free_virtual_address[0];
             }
             last_free_virtual_address[1023] = last_free_virtual_address[0];
             head = &last_free_virtual_address[0];
@@ -113,16 +74,16 @@ static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const b
     if(get_size(block[0]) <= 2*MIN_BLOCK_SIZE) {
         block[0] |= 0x80000000;
         block[(get_size(block[0]))-1] |= 0x80000000;
-        if(block[1] != NULL) {
+        if((uint32_t*) block[1] != NULL) {
             ((uint32_t*)block[1])[2] = block[2];
         } else {
-            head = block[2];
+            head = (uint32_t*) block[2];
         }
-        if(block[2] != NULL) {
+        if((uint32_t*) block[2] != NULL) {
             ((uint32_t*)block[2])[1] = block[1];
         }
-        block[1] = NULL;
-        block[2] = NULL;
+        block[1] = (uint32_t) NULL;
+        block[2] = (uint32_t) NULL;
 
         return block+3;
     }
@@ -136,16 +97,16 @@ static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const b
 
     new_split_block[get_size(new_split_block[0])-1] = get_size(new_split_block[0]);
 
-    if(block[1] != NULL) {
-        ((uint32_t*)block[1])[2] = &new_split_block[0];
+    if((uint32_t*) block[1] != NULL) {
+        ((uint32_t*)block[1])[2] = (uint32_t) &new_split_block[0];
     } else {
         head = &new_split_block[0];
     }
-    if(block[2] != NULL) {
-        ((uint32_t*)block[2])[1] = &new_split_block[0];
+    if((uint32_t*) block[2] != NULL) {
+        ((uint32_t*)block[2])[1] = (uint32_t) &new_split_block[0];
     }
-    block[1] = NULL;
-    block[2] = NULL;
+    block[1] = (uint32_t) NULL;
+    block[2] = (uint32_t) NULL;
 
     block[0] = size_to_allocate | 0x80000000;
 
@@ -166,8 +127,8 @@ void kdynamic_memory_init(void) {
     //top bit is whether or not it is allocated
 
     //both of these pointers point to first byte of block
-    head[1] = NULL; //prev pointer
-    head[2] = NULL; //next pointer
+    head[1] = (uint32_t) NULL; //prev pointer
+    head[2] = (uint32_t) NULL; //next pointer
 
     head[WORDS_IN_PAGE-1] = WORDS_IN_PAGE; //duplicate of first word of block
 }
@@ -184,7 +145,7 @@ void* kmalloc(const size_t size) {
                 //first fit policy
                 //TODO: try using best fit policy
                 uint32_t *const ret = allocate_block(size_in_words, current_block)-3;
-                kassert_void(ret[1] == NULL && ret[2] == NULL);
+                kassert((uint32_t*) ret[1] == NULL && (uint32_t*) ret[2] == NULL, NULL);
                 return ret+3;
             }
             current_block = (uint32_t*)current_block[2];
@@ -208,9 +169,18 @@ void kfree(const void *const payload_ptr) {
     kprintf("kfree called\n");
     kprintf("head: %p\n", head);
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+
+    //this const_cast is intentional and legal as all malloc'ed pointers point to mutable memory
     uint32_t* block_ptr = ((uint32_t*)payload_ptr)-3;
 
-    kassert_void(block_ptr[1] == NULL && block_ptr[2] == NULL); //allocated blocks aren't part of the freelist
+#pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
+
+
+    kassert_void((uint32_t*) block_ptr[1] == NULL && (uint32_t*) block_ptr[2] == NULL); //allocated blocks aren't part of the freelist
 
     block_ptr[0] &= 0x7fffffff; //set top bit (is_allocated) to 0, block_ptr[0] now just returns the size of the block
     block_ptr[block_ptr[0]-1] &= 0x7fffffff;
@@ -221,12 +191,12 @@ void kfree(const void *const payload_ptr) {
         uint32_t *const prev = (uint32_t*)block_ptr[block_ptr[0] + 1];
         uint32_t *const next = (uint32_t*)block_ptr[block_ptr[0] + 2];
         if(prev != NULL) {
-            prev[2] = &block_ptr[0];
+            prev[2] = (uint32_t) &block_ptr[0];
         } else {
             head = &block_ptr[0];
         }
         if(next != NULL) {
-            next[1] = &block_ptr[0];
+            next[1] = (uint32_t) &block_ptr[0];
         }
 
         in_freelist = true;
@@ -234,8 +204,8 @@ void kfree(const void *const payload_ptr) {
 
         const uint32_t old_index = block_ptr[0];
 
-        block_ptr[1] = prev;
-        block_ptr[2] = next;
+        block_ptr[1] = (uint32_t) prev;
+        block_ptr[2] = (uint32_t) next;
 
 
         block_ptr[0] += block_ptr[block_ptr[0]];
@@ -247,22 +217,22 @@ void kfree(const void *const payload_ptr) {
         block_ptr[old_index + 2] = 0;
 
         block_ptr[block_ptr[0]-1] = block_ptr[0]; //set last word of the new block to the new coalesced block size
-        kassert_void(block_ptr[1] != &block_ptr[0] && block_ptr[2] != &block_ptr[0]);
+        kassert_void((uint32_t*) block_ptr[1] != &block_ptr[0] && (uint32_t*) block_ptr[2] != &block_ptr[0]);
     }
-    if(block_ptr > get_first_nonreserved_address() && !get_allocated_bit(block_ptr[-1])) { //points to last word of the previous block
+    if(block_ptr > (uint32_t*) get_first_nonreserved_address() && !get_allocated_bit(block_ptr[-1])) { //points to last word of the previous block
         const uint32_t old_size = block_ptr[0];
         uint32_t *const old_block_ptr = block_ptr;
 
-        uint32_t *const prev = block_ptr[1];
-        uint32_t *const next = block_ptr[2];
+        uint32_t *const prev = (uint32_t*) block_ptr[1];
+        uint32_t *const next = (uint32_t*) block_ptr[2];
 
         if(prev != NULL) {
-            prev[2] = next;
+            prev[2] = (uint32_t) next;
         } else if(next != NULL) {
             head = next;
         }
         if(next != NULL) {
-            next[1] = prev;
+            next[1] = (uint32_t) prev;
         }
 
 
@@ -278,21 +248,21 @@ void kfree(const void *const payload_ptr) {
         block_ptr[block_ptr[0]-1] = block_ptr[0];
 
 
-        kassert_void(block_ptr[1] != &block_ptr[0] && block_ptr[2] != &block_ptr[0]);
+        kassert_void((uint32_t*) block_ptr[1] != &block_ptr[0] && (uint32_t*) block_ptr[2] != &block_ptr[0]);
     }
 
 
     if(!in_freelist) {
-        kassert_void(block_ptr[1] == NULL && block_ptr[2] == NULL);
+        kassert_void((uint32_t*) block_ptr[1] == NULL && (uint32_t*) block_ptr[2] == NULL);
         //add to front of freelist
-        block_ptr[1] = NULL;
-        block_ptr[2] = head;
-        if(block_ptr[2] != NULL) {
-            ((uint32_t*)block_ptr[2])[1] = &block_ptr[0];
+        block_ptr[1] = (uint32_t) NULL;
+        block_ptr[2] = (uint32_t) head;
+        if((uint32_t*) block_ptr[2] != NULL) {
+            ((uint32_t*)block_ptr[2])[1] = (uint32_t) &block_ptr[0];
         }
         head = &block_ptr[0];
 
-        kassert_void(block_ptr[1] != &block_ptr[0] && block_ptr[1] != &block_ptr[0]);
+        kassert_void((uint32_t*) block_ptr[1] != &block_ptr[0] && (uint32_t*) block_ptr[1] != &block_ptr[0]);
     }
 }
 
@@ -305,28 +275,27 @@ void* krealloc(void *const ptr, const size_t new_size) {
         return ptr; //do nothing if already the correct size
     }
     else if((bytes_to_words(new_size_in_words)+4) > get_size(block_head[0])) { //grow allocated block
-        uint32_t *const next_block_head = block_head[get_size(block_head[0])];
+        uint32_t *const next_block_head = (uint32_t*) block_head[get_size(block_head[0])];
         if(!get_allocated_bit(next_block_head[0]) && get_size(block_head[0]) + get_size(next_block_head[0]) >= new_size_in_words) {
             const size_t new_next_block_size = next_block_head[0] - (new_size_in_words - get_size(block_head[0]));
             const size_t memory_taken_from_next_block = next_block_head[0] - new_next_block_size;
 
             if(new_next_block_size <= 2*MIN_BLOCK_SIZE) {
                 kprintf("if\n");
-                uint32_t *const prev = next_block_head[1];
-                uint32_t *const next = next_block_head[2];
+                uint32_t *const prev = (uint32_t*) next_block_head[1];
+                uint32_t *const next = (uint32_t*) next_block_head[2];
                 if(prev != NULL) {
-                    prev[2] = next;
+                    prev[2] = (uint32_t) next;
                     kprintf("prev: %u\n", (uint32_t)prev);
                 } else {
                     kprintf("prev is NULL\n");
                 }
                 if(next != NULL) {
-                    next[1] = prev;
+                    next[1] = (uint32_t) prev;
                     kprintf("next: %u\n", (uint32_t)next);
                 } else {
                     kprintf("next is NULL\n");
                 }
-                freelist_dump(false);
 
 
                 block_head[0] += next_block_head[0];
@@ -334,26 +303,28 @@ void* krealloc(void *const ptr, const size_t new_size) {
             }
             else {
                 kprintf("else\n");
-                uint32_t *const start_of_new_next_block = new_next_block_size+new_next_block_size;
+
+                //TODO: investigate if this is correct
+                uint32_t *const start_of_new_next_block = (uint32_t*) (new_next_block_size+new_next_block_size);
+
                 kprintf("start_of_new_next_block: %p\n", start_of_new_next_block);
 
-                uint32_t *const prev = next_block_head[1];
-                start_of_new_next_block[1] = prev;
+                uint32_t *const prev = (uint32_t*) next_block_head[1];
+                start_of_new_next_block[1] = (uint32_t) prev;
                 if(prev != NULL) {
-                    prev[2] = &start_of_new_next_block[0];
+                    prev[2] = (uint32_t) &start_of_new_next_block[0];
                     kprintf("prev: %u\n", (uint32_t)prev);
                 } else {
                     kprintf("prev is NULL\n");
                 }
-                uint32_t *const next = next_block_head[2];
-                start_of_new_next_block[2] = next;
+                uint32_t *const next = (uint32_t*) next_block_head[2];
+                start_of_new_next_block[2] = (uint32_t) next;
                 if(next != NULL) {
-                    next[1] = &start_of_new_next_block[0];
+                    next[1] = (uint32_t) &start_of_new_next_block[0];
                     kprintf("next: %u\n", (uint32_t)next);
                 } else {
                     kprintf("next is NULL\n");
                 }
-                freelist_dump(false);
 
 
                 start_of_new_next_block[0] = new_next_block_size;
@@ -416,9 +387,9 @@ void* krealloc(void *const ptr, const size_t new_size) {
 
                 uint32_t *const new_block_head = block_head + get_size(block_head[0]);
                 new_block_head[0] = difference_in_size;
-                new_block_head[1] = NULL;
-                new_block_head[2] = head;
-                head[1] = &new_block_head[0];
+                new_block_head[1] = (uint32_t) NULL;
+                new_block_head[2] = (uint32_t) head;
+                head[1] = (uint32_t) &new_block_head[0];
                 new_block_head[difference_in_size - 1] = difference_in_size;
                 head = &new_block_head[0];
             }
@@ -448,13 +419,3 @@ uint32_t* get_head(void) {
     return head;
 }
 
-
-//TODO: put this in kstring.c instead
-int64_t kstrtol(const char* src, char** endptr, int8_t base) {
-    size_t src_len = kstrlen(src);
-    int64_t result = 0;
-    for(int64_t i = 0; i < src_len; ++i) {
-        result += kchar_to_int(src[i]) * kpow(base, src_len - i - 1);
-    }
-    return result;
-}

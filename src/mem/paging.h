@@ -47,4 +47,4 @@ uint32_t allocate_virtual_page(void* virtual_address, uint32_t pt_flags, uint32_
 uint32_t unmap_page(const void* virtual_address);
 void free_virtual_page(const void* virtual_address);
 
-uint32_t* get_page_directory(void);
+uint32_t* get_default_page_directory(void);

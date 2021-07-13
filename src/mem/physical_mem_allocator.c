@@ -17,7 +17,7 @@ bool has_filled_freed_pages_list = false;
 int32_t most_recently_freed_pages[20u]; //store a cache of 20 pages so that we only have to do expensive allocation every 20 pages
 
 
-uint32_t internal_kernel_heap[NUMBER_OF_PAGES_IN_KERNEL_HEAP/32u]; __attribute__((aligned(PAGE_SIZE)));
+uint32_t internal_kernel_heap[NUMBER_OF_PAGES_IN_KERNEL_HEAP/32u] __attribute__((aligned(PAGE_SIZE)));
 bool kernel_page_cache_seached = false;
 int32_t internal_kernel_free_page_cache[20u];
 
@@ -51,18 +51,18 @@ void allocate_init(void) {
     //Marks all pages that are used by the kernel and below as used in the page table cache and never frees them.
     //This also protects some mmio addresses/ports.
     //TODO: replace with call to kmemset at some point
-    for(int32_t i = 0; i < number_of_pages_used/32u; ++i) {
-        global_heap[i] = 0xFFFFFFFF;
+    for(uint32_t i = 0u; i < number_of_pages_used/32u; ++i) {
+        global_heap[i] = 0xFFFFFFFFu;
     }
     for(uint8_t i = 0u; i < number_of_pages_used%32u; ++i) {
-        set_at(number_of_pages_used-i-1u, global_heap, 1);
+        set_at(number_of_pages_used-i-1u, global_heap, true);
     }
 
-    for(int32_t i = 0; i < number_of_permanently_reserved_pages/32u; ++i) {
+    for(uint32_t i = 0u; i < number_of_permanently_reserved_pages/32u; ++i) {
         internal_kernel_heap[i] = 0xFFFFFFFF;
     }
     for(uint8_t i = 0u; i < number_of_permanently_reserved_pages%32u; ++i) {
-        set_at(number_of_permanently_reserved_pages-i-1u, internal_kernel_heap, 1);
+        set_at(number_of_permanently_reserved_pages-i-1u, internal_kernel_heap, true);
     }
 
     first_nonreserved_address = (void*)(number_of_pages_used*PAGE_SIZE);
@@ -89,13 +89,13 @@ void* allocate_page_impl(uint32_t *const bookkeeping_bitset, const size_t number
     }
 
     //page table cache is empty, must do expensive allocation:
-    for(int32_t i = 0, number_of_free_pages = 0; i < 1024 && number_of_free_pages < 20; ++i) {
+    for(uint32_t i = 0u, number_of_free_pages = 0u; i < 1024u && number_of_free_pages < 20u; ++i) {
         const uint32_t current_pages = bookkeeping_bitset[i];
         //at least one bit is 0
         if(current_pages != 0xFFFFFFFF) {
-            for(uint8_t j = 0u; j < 32u && number_of_free_pages < 20; ++j) {
-                if(at((i*32u)+j, bookkeeping_bitset) == 0) {
-                    page_cache[number_of_free_pages++] = (i*32u)+j;
+            for(uint8_t j = 0u; j < 32u && number_of_free_pages < 20u; ++j) {
+                if(!at((i*32u)+j, bookkeeping_bitset)) {
+                    page_cache[number_of_free_pages++] = (int32_t) ((i*32u)+j);
                 }
             }
         }

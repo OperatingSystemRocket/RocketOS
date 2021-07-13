@@ -1,12 +1,12 @@
 #include "bitutils.h"
 
 
-void print_bits(const size_t size, const void *const ptr) {
-    unsigned char *const b = (unsigned char*) ptr;
+void print_bits(const int32_t size, const void *const ptr) {
+    const char *const b = ptr;
 
-    for(int32_t i = size-1; i >= 0; i--) {
+    for(int32_t i = size-1; i >= 0; --i) {
         for(int32_t j = 7; j >= 0; j--) {
-            const unsigned char byte = (b[i] >> j) & 1;
+            const char byte = (b[i] >> j) & 1;
             terminal_context_putchar(kint_to_char(byte));
 
             const int32_t pos = i*8 + j;
@@ -17,17 +17,17 @@ void print_bits(const size_t size, const void *const ptr) {
     }
 }
 
-void print_bits_newline(const size_t size, const void *const ptr) {
+void print_bits_newline(const int32_t size, const void *const ptr) {
     print_bits(size, ptr);
     terminal_context_putchar('\n');
 }
 
 void print_double_bits(const double *const ptr) {
-    unsigned char *const b = (unsigned char*) ptr;
+    const char *const b = (const char*) ptr;
 
-    for(int32_t i = 0; i < sizeof(double); ++i) {
+    for(int32_t i = 0; i < (int32_t) sizeof(double); ++i) {
         for(int32_t j = 0; j < 8; ++j) {
-            const unsigned char byte = (b[i] >> j) & 1;
+            const char byte = (b[i] >> j) & 1;
             terminal_context_putchar(kint_to_char(byte));
 
             const int32_t pos = i*8 + j;
@@ -39,7 +39,7 @@ void print_double_bits(const double *const ptr) {
 }
 
 uint8_t get_bit_at(const size_t position, const void *const ptr) {
-    const uint64_t *const b = (uint64_t*) ptr;
+    const uint64_t *const b = ptr;
 
     return (((*b) >> position) & 1);
 }
@@ -62,21 +62,21 @@ void set_bit_at_far(const size_t position, const uint8_t value, void *const ptr)
     const uint64_t byte_number = position/8u;
     char *const byte_ptr = (char*)ptr;
 
-    set_bit_at(7u-(position-(byte_number*8u)), value, byte_ptr + byte_number);
+    set_bit_at((size_t) (7u-(position-(byte_number*8u))), value, byte_ptr + byte_number);
 }
 
 void set_bit_at_far_LTR(const size_t position, const uint8_t value, void *const ptr) {
     const uint64_t byte_number = position/8u;
     char *const byte_ptr = (char*)ptr;
 
-    set_bit_at(position-(byte_number*8u), value, byte_ptr + byte_number);
+    set_bit_at((size_t) (position-(byte_number*8u)), value, byte_ptr + byte_number);
 }
 
-uint8_t get_bit_at_far(const size_t position, void *const ptr) {
+uint8_t get_bit_at_far(const size_t position, const void *const ptr) {
     const uint64_t byte_number = position/8u;
-    char *const byte_ptr = (char*)ptr;
+    const char *const byte_ptr = ptr;
 
-    return get_bit_at(position-(byte_number*8u), byte_ptr + byte_number);
+    return get_bit_at((size_t) (position-(byte_number*8u)), byte_ptr + byte_number);
 
 }
 
@@ -84,23 +84,21 @@ uint8_t get_bit_at_far_LTR(const size_t position, void *const ptr) {
     const uint64_t byte_number = position/8u;
     char *const byte_ptr = (char*)ptr;
 
-    get_bit_at(7u-(position-(byte_number*8u)), byte_ptr + byte_number);
-
+    return get_bit_at((size_t) (7u-(position-(byte_number*8u))), byte_ptr + byte_number);
 }
 
 void set_bits_in_range(const size_t start_bit, const size_t end_bit, const uint8_t value, void *const location) {
-    char *const ptr = (char*) location;
-    const size_t width_in_bits = end_bit - start_bit;
+    char *const ptr = location;
 
-    for(int32_t i = 0; i < end_bit; ++i) {
-        const int32_t byte_number = i/8;
+    for(uint32_t i = 0u; i < end_bit; ++i) {
+        const uint32_t byte_number = i/8;
         if(i >= start_bit) {
             set_bit_at(7u-(i-(byte_number*8u)), value, ptr + byte_number);
         }
     }
 }
 
-void mirror_bits_in_range(const size_t start, const size_t end, const void *const ptr) {
+void mirror_bits_in_range(const size_t start, const size_t end, void *const ptr) {
     uint32_t number_of_zeros = 0;
     uint32_t number_of_ones = 0;
     uint32_t number_of_errors = 0;

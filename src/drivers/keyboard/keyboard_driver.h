@@ -6,6 +6,7 @@
 
 #include "default_vga_driver.h"
 #include "interrupt_types.h"
+#include "interrupts.h"
 
 #include "scheduler.h"
 

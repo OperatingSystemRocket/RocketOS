@@ -9,7 +9,7 @@ volatile struct process* process_queue_end; //"end" of circular linked list, use
 #define TIME_QUANTUM_VALUE 10u
 
 
-void create_process(const void (*entry_point)(void)) {
+void create_process(void (*const entry_point)(void)) {
     if(process_queue_begin == NULL) return;
 
     kassert_void(process_queue_end != NULL);
@@ -27,7 +27,7 @@ void create_process(const void (*entry_point)(void)) {
     process_queue_end->register_states.esp = ((uint32_t) process_queue_end->stack)+4096u;
     process_queue_end->register_states.eip = (uint32_t) entry_point;
 
-    process_queue_end->page_directory = get_page_directory();
+    process_queue_end->page_directory = get_default_page_directory();
     process_queue_end->next = process_queue_begin;
 
     if(process_queue_begin->next == NULL) {
@@ -43,7 +43,7 @@ void scheduler_init(void) {
     current_process->stack = NULL;
     current_process->id = 0;
     current_process->time_quantum = TIME_QUANTUM_VALUE;
-    current_process->page_directory = get_page_directory();
+    current_process->page_directory = get_default_page_directory();
     current_process->next = NULL;
 
     process_queue_begin = current_process;
@@ -52,6 +52,8 @@ void scheduler_init(void) {
 
 //TODO: replace __attribute__((interrupt)) as it is garbage
 __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     increment_time();
     set_time_in_seconds();
     //kprintf("time: %u\n", get_time_in_ticks());
@@ -84,7 +86,7 @@ void enable_timer(void) {
 
 
 void example_function_task(void) {
-    uint32_t count = 0u;
+    //uint32_t count = 0u;
 
     for(;;) {
         //kprintf("example_function_task called with count: %u\n", count++);
@@ -94,7 +96,7 @@ void example_function_task(void) {
 
 
 void foo_function_task(void) {
-    uint32_t count = 0u;
+    //uint32_t count = 0u;
 
     for(;;) {
         //kprintf("foo_function_task called with count: %u\n", count++);

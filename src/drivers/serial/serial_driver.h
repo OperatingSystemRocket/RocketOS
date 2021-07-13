@@ -21,24 +21,24 @@ bool serial_init(void);
 
 //TODO: maybe take the performance hit and make these functions externally linked instead for maintainability reasons
 
-inline int8_t serial_received(void) {
+inline uint8_t serial_received(void) {
     return inb(COM1 + 5) & 1u;
 }
 
-inline char serial_read(void) {
+inline uint8_t serial_read(void) {
     while (serial_received() == 0);
 
     return inb(COM1);
 }
 
-inline int8_t is_transmit_empty(void) {
+inline uint8_t is_transmit_empty(void) {
     return inb(COM1 + 5) & 0x20u;
 }
 
-inline void serial_putchar(const char a) {
+inline void serial_putchar(const char c) {
     while (is_transmit_empty() == 0);
 
-    outb(COM1, a);
+    outb(COM1, (uint8_t)c);
 }
 
 

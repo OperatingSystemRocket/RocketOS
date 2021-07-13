@@ -1,11 +1,11 @@
 #include "kmath.h"
 
 int8_t ksignbit(const int8_t val) {
-    return (val >= 0) ? 0 : 1;
+    return !(val >= 0);
 }
 
-uint32_t kabs(const int64_t val) {
-    return (val >= 0) ? val : -val;
+uint32_t kabs(const int32_t val) {
+    return (uint32_t) ((val >= 0) ? val : -val);
 }
 
 int8_t ksign(const int8_t val) {
@@ -42,8 +42,8 @@ uint64_t kpow_u(uint64_t base, uint64_t exponent) {
 }
 
 double kpow_d(double base, double exponent) { /// doesn't yet support fractional exponents
-    double result = 1;
-    if(get_signbit(&exponent)) {
+    double result = 1.;
+    if(get_bit_at_far(63, &exponent)) {
         base = 1/base;
         exponent = kabs(((int16_t)(exponent)));
     }

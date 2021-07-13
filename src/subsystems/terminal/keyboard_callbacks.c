@@ -21,9 +21,9 @@ void catch_keycode(void *const context, struct GET_EVENT_TYPENAME(key_message) e
                 terminal_writestring(terminal_context_ptr->vga_context, "    ");
                 run_terminal_end(context);
             } else if(event.data.keycode == '\n') {
-                default_context_terminal_end();
+                run_terminal_end(context);
                 terminal_putchar(terminal_context_ptr->vga_context, event.data.keycode);
-                default_terminal_context_process_command();
+                run_terminal_process_command(context);
                 run_terminal_end(context);
             } else if(event.data.keycode > 0 && terminal_context_ptr->vga_context->terminal_row * 80 + terminal_context_ptr->vga_context->terminal_column >= terminal_context_ptr->start_of_command) {
                 terminal_putchar(terminal_context_ptr->vga_context, event.data.keycode);

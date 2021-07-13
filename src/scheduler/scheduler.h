@@ -35,13 +35,13 @@ struct process {
 
     uint32_t* page_directory;
 
-    struct process* next; //circular linked list
+    volatile struct process* next; //circular linked list
 };
 
 
-extern void save_current_task(struct task_context* current_task);
-extern void load_task(struct task_context* current_task);
-extern void resume_task(struct task_context* current_task);
+extern void save_current_task(volatile struct task_context* current_task);
+extern void load_task(volatile struct task_context* current_task);
+extern void resume_task(volatile struct task_context* current_task);
 
 void create_process(void (*entry_point)(void));
 

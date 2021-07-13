@@ -2,5 +2,5 @@
 
 
 void print(const char *const str) {
-    //terminal_writestring(str);
+    terminal_context_writestring(str);
 }

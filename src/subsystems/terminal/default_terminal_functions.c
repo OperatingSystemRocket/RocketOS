@@ -76,7 +76,7 @@ void default_terminal_shift(void *const context) {
 int32_t get_char_location(const char *const src, const char c, const size_t start, const size_t end) {
     for(size_t i = start; i < kmin(end, kstrlen(src)); ++i) {
         if(src[i] == c) {
-            return i;
+            return (int32_t) i;
         }
     }
     return -1; //failure
@@ -89,10 +89,14 @@ void get_string_slice(const char *const src, char *const dest, const size_t star
 
 void get_string_between_chars(const char *const src, char *const dest, const char open, const char close) {
     const size_t src_len = kstrlen(src);
-    const size_t start = get_char_location(src, open, 0, src_len-1);
-    const size_t end = get_char_location(src, close, start+1, src_len-1);
 
-    get_string_slice(src, dest, start+1, end);
+    const int32_t start = get_char_location(src, open, 0, src_len-1);
+    kassert_void(start != -1);
+
+    const int32_t end = get_char_location(src, close, (size_t)(start+1), src_len-1u);
+    kassert_void(end != -1);
+
+    get_string_slice(src, dest, (size_t)(start+1), (size_t)end);
 }
 
 void default_parse_command_args(void *const context, const char *const args) {
@@ -104,15 +108,15 @@ void default_parse_command_args(void *const context, const char *const args) {
             if(args[i+1] == '\"') {
                 const int32_t end_location = get_char_location(args, '\"', i+2, kstrlen(args));
                 if(end_location != -1) {
-                    get_string_slice(args, terminal_context_ptr->command_arguments[arg_index], i+2, end_location);
-                    i = end_location;
+                    get_string_slice(args, terminal_context_ptr->command_arguments[arg_index], i+2, (size_t)end_location);
+                    i = (size_t) end_location;
                 }
             }
             else {
                 const int32_t end_location = get_char_location(args, ' ', i+1, kstrlen(args));
                 if(end_location != -1) {
-                    get_string_slice(args, terminal_context_ptr->command_arguments[arg_index], i+1, end_location);
-                    i = end_location-1;
+                    get_string_slice(args, terminal_context_ptr->command_arguments[arg_index], i+1, (size_t)end_location);
+                    i = (size_t) (end_location-1);
                 }
             }
             ++arg_index;

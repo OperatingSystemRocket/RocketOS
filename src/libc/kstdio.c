@@ -89,9 +89,9 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
             switch (format[(*index) + 1]) {
                 case 'c':
                     if(color_setting == -1) {
-                        print_char(va_arg(*variadic_args, int32_t));
+                        print_char((char) va_arg(*variadic_args, int32_t));
                     } else {
-                        print_char_color(va_arg(*variadic_args, int32_t), color_setting);
+                        print_char_color((char) va_arg(*variadic_args, int32_t), color_setting);
                     }
                     *index += 1u;
                     return 1;

@@ -14,3 +14,7 @@
 
 void pic_init(void);
 void isr_install(void);
+
+void pic_send_eoi(uint8_t no);
+void pic_irq_enable(uint8_t no);
+void idt_register_handler(uint8_t interrupt, uint32_t address);

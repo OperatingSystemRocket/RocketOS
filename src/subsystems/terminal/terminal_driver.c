@@ -8,16 +8,16 @@ static void (*terminal_process_command)(void*);
 static void (*terminal_shift)(void*);
 
 
-void set_terminal_start(const void (*new_terminal_start)(void*)) {
+void set_terminal_start(void (*const new_terminal_start)(void*)) {
     terminal_start = new_terminal_start;
 }
-void set_terminal_end(const void (*new_terminal_end)(void*)) {
+void set_terminal_end(void (*const new_terminal_end)(void*)) {
     terminal_end = new_terminal_end;
 }
-void set_terminal_process_command(const void (*new_terminal_process_command)(void*)) {
+void set_terminal_process_command(void (*const new_terminal_process_command)(void*)) {
     terminal_process_command = new_terminal_process_command;
 }
-void set_terminal_shift(const void (*new_terminal_shift)(void*)) {
+void set_terminal_shift(void (*const new_terminal_shift)(void*)) {
     terminal_shift = new_terminal_shift;
 }
 

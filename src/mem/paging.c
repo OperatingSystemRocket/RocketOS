@@ -13,7 +13,7 @@ https://web.archive.org/web/20151025081259/http://www.intel.com/content/dam/www/
 */
 
 
-static uint32_t* page_directory;
+static uint32_t* default_page_directory;
 
 
 static void identity_map_page(const uint32_t page_directory, const uint32_t address, const uint32_t pt_flags, const uint32_t pd_flags) {
@@ -33,26 +33,26 @@ static void identity_map_page(const uint32_t page_directory, const uint32_t addr
     }
 
     // Get a virtual pointer to the parent page table
-    uint32_t *const pt_virt = (uint32_t)((pd_virt[table_index]) & 0xFFFFF000u);
+    uint32_t *const pt_virt = (uint32_t*) (pd_virt[table_index] & 0xFFFFF000u);
 
     // Update page in page table
     pt_virt[page_index_in_table] = page;
 }
 
 void paging_init(void) {
-    page_directory = allocate_page(CRITICAL_KERNEL_USE); //page frame allocator returns page aligned blocks of 4KiB of memory
+    default_page_directory = allocate_page(CRITICAL_KERNEL_USE); //page frame allocator returns page aligned blocks of 4KiB of memory
 
     for(int32_t i = 0; i < 1024; ++i) {
         // This sets the following flags to the pages:
         //   Supervisor: Only kernel-mode can access them
         //   Write Enabled: It can be both read from and written to
         //   Not Present: The page table is not present
-        page_directory[i] = 0x00000002u;
+        default_page_directory[i] = 0x00000002u;
     }
-    serial_writestring("page_directory created successfully\n");
+    serial_writestring("default_page_directory created successfully\n");
 
-    for(uint32_t i = 0u; i < get_first_nonreserved_address(); i += PAGE_SIZE) {
-        identity_map_page((uint32_t)page_directory, i, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    for(uint32_t i = 0u; i < (uint32_t) get_first_nonreserved_address(); i += PAGE_SIZE) {
+        identity_map_page((uint32_t)default_page_directory, i, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     }
     serial_writestring("indentity mapping done successfully\n");
 
@@ -67,11 +67,11 @@ void paging_init(void) {
 
 
     // attributes: user level, read/write, present
-    page_directory[0] = ((uint32_t)first_page_table) | (PT_PRESENT | PT_RW | PT_USER);
+    default_page_directory[0] = ((uint32_t)first_page_table) | (PT_PRESENT | PT_RW | PT_USER);
     serial_writestring("page table set successfully\n");
 
 
-    load_page_directory(page_directory);
+    load_page_directory(default_page_directory);
     serial_writestring("page directory loaded successfully\n");
 
 
@@ -90,7 +90,7 @@ void map_page(void *const virtual_address, const uint32_t phys_frame, const uint
     const uint32_t table_index = page_index / 1024;
     const uint32_t page_index_in_table = page_index % 1024;
 
-    uint32_t *const virt_page_directory = page_directory;
+    uint32_t *const virt_page_directory = default_page_directory;
     if((virt_page_directory[table_index] & PD_PRESENT) == 0) {
         const uint32_t phys_page_table = (uint32_t)allocate_page(CRITICAL_KERNEL_USE); //will be identity mapped
 
@@ -125,7 +125,7 @@ uint32_t unmap_page(const void *const virtual_address) {
     const uint32_t table_index = page_index / 1024;
     const uint32_t page_index_in_table = page_index % 1024;
 
-    uint32_t *const virt_page_directory = page_directory;
+    uint32_t *const virt_page_directory = default_page_directory;
 
     uint32_t *const virt_page_table = (uint32_t*)((virt_page_directory[table_index]) & 0xFFFFF000u);
 
@@ -144,9 +144,9 @@ void free_virtual_page(const void *const virtual_address) {
 
     kassert_void(phys_frame != 0 && phys_frame % PAGE_SIZE == 0);
 
-    free_page(phys_frame, USER_USE);
+    free_page(phys_frame, (void*) USER_USE);
 }
 
-uint32_t* get_page_directory(void) {
-    return page_directory;
+uint32_t* get_default_page_directory(void) {
+    return default_page_directory;
 }

@@ -86,8 +86,6 @@ struct GET_SUBJECT_TYPENAME(128, key_message)* get_subject(void) {
 }
 
 
-void pic_send_eoi(uint8_t no);
-
 void process_keystroke(void *const context, const unsigned char keycode) {
     struct default_keyboard_map_state *const keyboard_map_context = (struct default_keyboard_map_state*) context;
 

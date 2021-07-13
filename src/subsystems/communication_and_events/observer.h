@@ -31,7 +31,7 @@ void notify_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS(struct subject_##TYPE_OF_DAT
 
 #define GENERATE_SUBJECT_DEFINITION(MAX_NUM_OF_OBSERVERS, TYPE_OF_DATA) \
 bool add_observer_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS(struct subject_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS *const subject, struct TYPE_OF_DATA##_observer *const observer) { \
-    if(subject->num_of_active_observers == MAX_NUM_OF_OBSERVERS) { \
+    if(subject->num_of_active_observers == (uint32_t) MAX_NUM_OF_OBSERVERS) { \
         return false; /*can't add it since it is full*/ \
     } \
 \
@@ -39,7 +39,7 @@ bool add_observer_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS(struct subject_##TYPE_
     return true; \
 } \
 bool remove_observer_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS(struct subject_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS *const subject, const struct TYPE_OF_DATA##_observer *const observer) { \
-    for(int32_t i = 0; i < subject->num_of_active_observers; ++i) { \
+    for(uint32_t i = 0u; i < subject->num_of_active_observers; ++i) { \
         if(subject->observers[i] == observer) { \
             subject->observers[i] = subject->observers[--subject->num_of_active_observers]; \
             return true; \

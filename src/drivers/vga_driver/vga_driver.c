@@ -108,6 +108,9 @@ void terminal_writestring_color(struct vga_driver_context *const context, const 
     terminal_write_color(context, text, kstrlen(text), color);
 }
 
+//TODO: fix this weird coupling
+void default_terminal_context_shift(void);
+
 void terminal_scroll_down(struct vga_driver_context *const context) {
     for(size_t x = 0u; x < VGA_WIDTH; x++) {
         if(context->terminal_upward_history_size >= VGA_WIDTH * VGA_HEIGHT) context->terminal_upward_history_size = 0;
@@ -129,6 +132,8 @@ void terminal_scroll_down(struct vga_driver_context *const context) {
     }
 	context->terminal_row = VGA_HEIGHT - 1;
 	context->terminal_column = 0u;
+
+    //TODO: fix this weird coupling
     default_terminal_context_shift();
 }
 
@@ -192,7 +197,7 @@ void terminal_backspace(struct vga_driver_context *const context) {
 void terminal_updatecursor(struct vga_driver_context *const context) {
 	const size_t pos = context->terminal_row * VGA_WIDTH + context->terminal_column;
 	outb(0x3D4, 14);
-	outb(0x3D5, pos >> 8u);
+	outb(0x3D5, (uint8_t)(pos >> 8u));
 	outb(0x3D4, 15);
-	outb(0x3D5, pos);
+	outb(0x3D5, (uint8_t)pos);
 }

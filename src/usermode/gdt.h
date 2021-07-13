@@ -45,8 +45,8 @@ extern struct tss_entry_struct tss_entry;
 
 
 extern void gdt_load(void);
-extern jump_usermode(void);
-extern flush_tss(void);
+extern void jump_usermode(void);
+extern void flush_tss(void);
 
 void init_gdt(void);
 void write_tss(void);

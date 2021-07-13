@@ -1,8 +1,6 @@
 #pragma once
 
 #include "default_vga_driver.h"
-#include "elf_loader.h"
-#include "storage.h"
 #include "kstdlib.h"
 
 

@@ -29,16 +29,16 @@ void idt_register_handler(const uint8_t interrupt, const uint32_t address) {
     idt[interrupt].selector = KERNEL_CODE_SEGMENT_OFFSET;
     idt[interrupt].zero = 0;
     idt[interrupt].type_attr = INTERRUPT_GATE;
-    idt[interrupt].offset_higherbits = (address & 0xffff0000) >> 16;
+    idt[interrupt].offset_higherbits = (uint16_t)((address & 0xffff0000) >> 16);
 }
 
 void pic_irq_enable(uint8_t no) {
 	if (no >= 8) {
 		no -= 8;
-		pic2_mask &= ~(1 << no);
+		pic2_mask &= (uint8_t) ~(1u << no);
 		outb(PIC2_DATA, pic2_mask);
 	} else {
-		pic1_mask &= ~(1 << no);
+		pic1_mask &= (uint8_t) ~(1u << no);
 		outb(PIC1_DATA, pic1_mask);
 	}
 }
@@ -66,84 +66,112 @@ void pic_init(void) {
 }
 
 __attribute__((interrupt)) static void isr0(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Division By Zero\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr1(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Debug\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr2(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Non Maskable Interrupt\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr3(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Breakpoint\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr4(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Into Detected Overflow\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr5(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Out of Bounds\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr6(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Invalid Opcode\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr7(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("No Coprocessor\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr8(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Double Fault\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr9(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Coprocessor Segment Overrun\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr10(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Bad TSS\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr11(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Segment Not Present\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr12(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Stack Fault\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr13(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("General Protection Fault\n");
 
     kprintf("heres some info:\n");
@@ -163,6 +191,8 @@ __attribute__((interrupt)) static void isr13(struct interrupt_frame *const frame
 }
 
 __attribute__((interrupt)) static void isr14(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Page Fault\n");
 
     kprintf("heres some info:\n");
@@ -184,30 +214,40 @@ __attribute__((interrupt)) static void isr14(struct interrupt_frame *const frame
 }
 
 __attribute__((interrupt)) static void isr15(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Unknown Interrupt\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr16(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Coprocessor Fault\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr17(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Alignment Check\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr18(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Machine Check\n");
 
     asm("hlt");
 }
 
 __attribute__((interrupt)) static void isr_reserved(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("Reserved\n");
 
     asm("hlt");
@@ -235,6 +275,8 @@ void idt_init(void) {
 }
 
 __attribute__((interrupt)) static void system_call(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     kprintf("system_call triggered\n");
 }
 

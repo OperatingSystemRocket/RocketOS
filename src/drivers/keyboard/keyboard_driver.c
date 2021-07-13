@@ -12,14 +12,14 @@ void set_data_context(void *const new_context) {
     data_context = new_context;
 }
 
-void set_process_keystroke_implementation(const void(*new_implementation)(void*, unsigned char)) {
+void set_process_keystroke_implementation(void(*const new_implementation)(void*, unsigned char)) {
     current_process_keystroke_implementation = new_implementation;
 }
 
 
-void pic_send_eoi(uint8_t no);
-
 __attribute__((interrupt)) static void keyboard_irq(struct interrupt_frame *const frame) {
+    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+
     const unsigned char scancode = inb(0x60);
 
     current_process_keystroke_implementation(data_context, scancode);
@@ -27,8 +27,6 @@ __attribute__((interrupt)) static void keyboard_irq(struct interrupt_frame *cons
 	pic_send_eoi(1);
 }
 
-
-void pic_irq_enable(uint8_t no);
 
 void enable_keyboard(void) {
     pic_irq_enable(1);

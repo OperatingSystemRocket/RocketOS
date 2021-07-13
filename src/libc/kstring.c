@@ -12,7 +12,7 @@ void* kmemcpy(void *restrict const destination, const void *restrict const sourc
 void* kmemmove(void *const destination, const void *const source, const size_t num) {
     kassert(destination != NULL && source != NULL, NULL);
 
-    char temp[num]; //TODO: Replace with fixed size array or *maybe* do a heap allocation. Probably the former option
+    char temp[num]; //TODO: Get rid of this disgusting VLA
 
     for(size_t len = 0u; len < num; ++len) {
         temp[len] = ((const char*)source)[len];
@@ -25,21 +25,21 @@ void* kmemmove(void *const destination, const void *const source, const size_t n
     return destination;
 }
 
-void* kmemchr(const void *const ptr, const int32_t value, const size_t num) {
+void* kmemchr(void *const ptr, const int32_t value, const size_t num) {
     kassert(ptr != NULL, 0);
 
     for(size_t len = 0u; len < num; ++len) {
-        if(((const char*)ptr)[len] == value) return ptr + len;
+        if(((char*)ptr)[len] == value) return ((char*) ptr) + len;
     }
     return NULL;
 }
 
-int kmemcmp(const void *const ptr1, const void *const ptr2, const size_t num) {
+int32_t kmemcmp(const void *const ptr1, const void *const ptr2, const size_t num) {
     kassert(ptr1 != NULL && ptr2 != NULL, 0);
 
     for(size_t len = 0u; len < num; ++len) {
-        if(((unsigned char*)ptr1)[len] < ((unsigned char*)ptr2)[len]) return -1;
-        if(((unsigned char*)ptr1)[len] > ((unsigned char*)ptr2)[len]) return 1;
+        if(((const unsigned char*)ptr1)[len] < ((const unsigned char*)ptr2)[len]) return -1;
+        if(((const unsigned char*)ptr1)[len] > ((const unsigned char*)ptr2)[len]) return 1;
     }
 
     return 0;
@@ -47,7 +47,7 @@ int kmemcmp(const void *const ptr1, const void *const ptr2, const size_t num) {
 
 void* kmemset(void *const ptr, const int32_t value, const size_t num) {
     char *const ptr_char = ptr; //so we can set each byte
-    const int8_t value_byte = value & 0xFFu; //this is to only grab the lowest byte and discard the rest as we are writing to chars
+    const int8_t value_byte = (int8_t)(((uint32_t )value) & 0xFFu); //this is to only grab the lowest byte and discard the rest as we are writing to chars
 
     for(size_t i = 0u; i < num; ++i) {
         ptr_char[i] = value_byte;
@@ -146,10 +146,6 @@ int32_t kstrncmp(const char *const lhs, const char *const rhs, const size_t sz) 
 	return 0;
 }
 
-int kstrcoll(const char* str1, const char* str2) {
-    //TODO
-}
-
 char* kstrcpy(char* destination, const char* source) {
     kassert(destination != NULL && source != NULL, NULL);
 
@@ -176,10 +172,6 @@ char* kstrncpy(char* destination, const char* source, size_t num) {
     return destination;
 }
 
-char* kstrerror(int errnum) {
-    //TODO
-}
-
 size_t kstrspn(const char *const str1, const char *const str2) {
     bool cont = 0;
     for(size_t i = 0; i < kstrlen(str1); i++) {
@@ -195,15 +187,7 @@ size_t kstrspn(const char *const str1, const char *const str2) {
     return kstrlen(str1);
 }
 
-size_t kstrcspn(const char* str1, const char* str2) {
-    //TODO
-}
-
-const char* kstrpbrk(const char* str1, const char* str2) {
-    //TODO
-}
-
-const char* kstrstr_impl(const char* haystack, const char* needle, uint8_t mode) {
+static const char* kstrstr_impl(const char* haystack, const char* needle, uint8_t mode) {
     size_t needle_len = kstrlen(needle);
     for(size_t i = 0; i < kstrlen(haystack); ++i) {
         if(haystack[i] == needle[0]) {
@@ -217,14 +201,6 @@ const char* kstrstr_impl(const char* haystack, const char* needle, uint8_t mode)
 
 const char* kstrstr(const char* haystack, const char* needle) {
     return kstrstr_impl(haystack, needle, 0);
-}
-
-char* kstrtok(char* str, const char* delimiters) {
-    //TODO
-}
-
-size_t kstrxfrm(char* destination, const char* source, size_t num) {
-    //TODO
 }
 
 size_t kstrlen(const char *const str) {
@@ -243,15 +219,15 @@ char* kint_to_string(int64_t input, char *const string_ret, const size_t ret_siz
         input *= -1;
     }
     do {
-        const size_t current_input = input % base;
+        const size_t current_input = (size_t) (((uint64_t) input) % base);
         input /= base;
         char current_char;
-        if(current_input >= 0u && current_input < 10u) {
-            current_char = current_input + 48u;
+        if(current_input < 10u) {
+            current_char = (char) (current_input + 48u);
         } else if(!lowercase) {
-            current_char = current_input + 55u;
+            current_char = (char) (current_input + 55u);
         } else {
-            current_char = current_input + 87u;
+            current_char = (char) (current_input + 87u);
         }
         if(index < ret_size) {
             string_ret[index++] = current_char;
@@ -273,9 +249,9 @@ char* kint_to_string(int64_t input, char *const string_ret, const size_t ret_siz
 void kuint_to_string(uint64_t input, char* const string_ret, const size_t ret_size) {
     size_t index = 0u;
     do {
-        size_t current_input = input % 10u;
+        size_t current_input = (size_t) (input % 10u);
         input /= 10u;
-        const char current_char = current_input + 48u;
+        const char current_char = (char) (current_input + 48u);
         if(index < ret_size) {
             string_ret[index++] = current_char;
         }
@@ -291,20 +267,16 @@ void kuint_to_string(uint64_t input, char* const string_ret, const size_t ret_si
     }
 }
 
-char kint_to_char(int8_t i) {
+char kint_to_char(const int8_t i) {
     return '0' + i;
 }
 
-int8_t kchar_to_int(char c) {
+int8_t kchar_to_int(const char c) {
     return c-'0';
 }
 
 ///NOTE: nonstandard, but useful. Works like strstr, but returns a pointer to the END of needle found within haystack
 const char* kstrstr_end(const char* haystack, const char* needle) {
     return kstrstr_impl(haystack, needle, 1);
-}
-
-const char* get_string_between_substrings(const char* haystack, const char* lhs, const char* rhs) {
-    // TODO (maybe)
 }
 

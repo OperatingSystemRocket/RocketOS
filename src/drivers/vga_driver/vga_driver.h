@@ -49,11 +49,11 @@ struct vga_driver_context {
 
 //these two functions are correct by inspection:
 inline uint8_t vga_entry_color(const enum vga_color fg, const enum vga_color bg) {
-    return fg | bg << 4u;
+    return (uint8_t) (fg | bg << 4u);
 }
 
 inline uint16_t vga_entry(const char uc, const enum vga_color color) {
-    return (uint16_t) uc | (uint16_t) color << 8u;
+    return (uint16_t) ((uint16_t) uc | (uint16_t) color << 8u);
 }
 
 

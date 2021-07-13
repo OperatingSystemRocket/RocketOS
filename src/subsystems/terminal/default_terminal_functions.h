@@ -6,6 +6,7 @@
 
 #include "default_vga_driver.h"
 #include "observer.h"
+#include "kmath.h"
 
 
 //TODO: consider making this user tweakable
