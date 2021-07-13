@@ -3,8 +3,8 @@ AS := nasm -felf32
 
 WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Wstrict-prototypes -Wcast-qual -Wconversion -Wunreachable-code \
-                  -Wwrite-strings -Wnested-externs \
-                  -Winline -Wno-long-long -Wpedantic -Werror
+                  -Wwrite-strings -Wnested-externs -Winline \
+                  -Wno-long-long -Wpedantic -Werror
 
 KERNEL_FLAGS := -std=gnu17 -ffreestanding
 

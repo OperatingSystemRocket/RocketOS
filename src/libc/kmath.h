@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "bitutils.h"
+#include "bitset.h"
 
 
 int8_t ksignbit(int8_t val);

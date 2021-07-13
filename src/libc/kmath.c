@@ -43,12 +43,12 @@ uint64_t kpow_u(uint64_t base, uint64_t exponent) {
 
 double kpow_d(double base, double exponent) { /// doesn't yet support fractional exponents
     double result = 1.;
-    if(get_bit_at_far(63, &exponent)) {
+    if(at(63, &exponent)) {
         base = 1/base;
         exponent = kabs(((int16_t)(exponent)));
     }
 
-    uint8_t exponent_u = (uint8_t)(exponent);
+    const uint8_t exponent_u = (uint8_t)(exponent);
     for(uint8_t i = 0; i < exponent_u; ++i) {
         result *= base;
     }
