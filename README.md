@@ -73,12 +73,13 @@ We do not currently require you to forfeit your individual copyright to your cha
 - [x] Paging and Virtual Memory
 - [x] Dynamic Memory Allocation
 - [x] (PIC) Timer
-- [ ] Tasks, Processes, and Scheduling (In Progress)
-- [ ] Floating Point Number Support (currently has a partial implementation)
+- [x] Tasks and Scheduling
+- [ ] Full Process support (in progress)
+- [ ] Floating Point Number Support
 - [ ] Time and Calendar
 - [x] Privilege Levels (Protection Rings)
-- [ ] ELF Loader (currently has a partial implementation)
-- [x] Disk/HDD Support (ATA driver)
+- [ ] ELF Loader
+- [ ] Disk/HDD Support (ATA driver)
 - [ ] Filesystem
 - [ ] Full libc Implementation
 - [ ] Basic GUI Support

@@ -11,6 +11,10 @@ void setUp(void) {}
 void tearDown(void) {}
 
 
+void test_memcpy(void) {
+    
+}
+
 void test_cstrlen(void) {
     TEST_ASSERT_EQUAL_UINT32(1, kstrlen("f"));
     TEST_ASSERT_EQUAL_UINT32(5, kstrlen("hello"));
