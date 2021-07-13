@@ -147,7 +147,7 @@ test: create_directory_structure $(TEST_C_OBJECTS_OUT) $(PATHD)unity.o $(OBJECTS
 
 
 $(PATHD)%.o : Unity/src/%.c
-	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(DEBUG_FLAGS)
+	$(CC) $(CFLAGS) -c $^ -o $@ $(KERNEL_FLAGS) $(DEBUG_FLAGS)
 
 
 $(PATHOT)%.o : test/%.c
