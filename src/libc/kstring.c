@@ -9,33 +9,42 @@ void* kmemcpy(void *restrict const destination, const void *restrict const sourc
     return destination;
 }
 
-void* kmemmove(void *const destination, const void *const source, const size_t num) {
+void* kmemmove(void *const destination, const void *const source, size_t num) {
     kassert(destination != NULL && source != NULL, NULL);
 
-    char temp[num]; //TODO: Get rid of this disgusting VLA
+    if(destination == source || num == 0u) return destination;
 
-    for(size_t len = 0u; len < num; ++len) {
-        temp[len] = ((const char*)source)[len];
-    }
+    char* dest = (char*)destination;
+    const char* src = (const char*)source;
 
-    for(size_t len = 0u; len < num; ++len) {
-        ((char*)destination)[len] = temp[len];
+    if(dest < src) {
+        while(num--) {
+            *dest++ = *src++;
+        }
+    } else {
+        src += num;
+        dest += num;
+        while(num--) {
+            *--dest = *--src;
+        }
     }
 
     return destination;
 }
 
 void* kmemchr(void *const ptr, const int32_t value, const size_t num) {
-    kassert(ptr != NULL, 0);
+    kassert(ptr != NULL, NULL);
+
+    char *const ptr_char = (char*)ptr;
 
     for(size_t len = 0u; len < num; ++len) {
-        if(((char*)ptr)[len] == value) return ((char*) ptr) + len;
+        if(ptr_char[len] == value) return ptr_char + len;
     }
     return NULL;
 }
 
 int32_t kmemcmp(const void *const ptr1, const void *const ptr2, const size_t num) {
-    kassert(ptr1 != NULL && ptr2 != NULL, 0);
+    kassert(ptr1 != NULL && ptr2 != NULL, -2);
 
     for(size_t len = 0u; len < num; ++len) {
         if(((const unsigned char*)ptr1)[len] < ((const unsigned char*)ptr2)[len]) return -1;
