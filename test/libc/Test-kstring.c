@@ -159,15 +159,117 @@ void test_kmemcmp_normal_greater_than(void) {
     TEST_ASSERT_EQUAL(1, result);
 }
 
+void test_kmemcmp_null_str1(void) {
+    const char *const str2 = "abc";
 
-void test_cstrlen_normal(void) {
-    TEST_ASSERT_EQUAL_UINT32(0, kstrlen(""));
-    TEST_ASSERT_EQUAL_UINT32(1, kstrlen("f"));
-    TEST_ASSERT_EQUAL_UINT32(5, kstrlen("hello"));
+    const int32_t result = kmemcmp(NULL, str2, kstrlen(str2));
+
+    TEST_ASSERT_EQUAL(-2, result);
 }
 
-void test_cstrlen_null(void) {
-    TEST_ASSERT_EQUAL_UINT32(0, kstrlen(NULL));
+void test_kmemcmp_null_str2(void) {
+    const char *const str1 = "cde";
+
+    const int32_t result = kmemcmp(str1, NULL, kstrlen(str1));
+
+    TEST_ASSERT_EQUAL(-2, result);
+}
+
+
+void test_kmemset_normal(void) {
+    uint32_t buffer[] = {0xDEAD, 0xBEEF, 0x10, 0x54, 0x97, 0x83, 0x12, 0x10};
+
+    const uint32_t *const result = kmemset(buffer, 0xFF, sizeof(buffer));
+
+    TEST_ASSERT_EACH_EQUAL_UINT8(0xFF, buffer, sizeof(buffer));
+    TEST_ASSERT_EACH_EQUAL_UINT8(0xFF, result, sizeof(buffer));
+}
+
+void test_kmemset_null_buffer(void) {
+    const size_t number_of_elements = 15u;
+
+    const uint32_t *const result = kmemset(NULL, 0xFF, number_of_elements);
+
+    TEST_ASSERT_NULL(result);
+}
+
+
+void test_kstrcat_empty(void) {
+    char buffer[32];
+    buffer[0] = '\0';
+    const char *const result = kstrcat(buffer, "abc");
+
+    TEST_ASSERT_EQUAL_STRING("abc", (const char*)buffer);
+    TEST_ASSERT_EQUAL_STRING("abc", (const char*)result);
+}
+
+void test_kstrcat_normal(void) {
+    char buffer[32] = "abc";
+    const char *const result = kstrcat(buffer, "cdef");
+
+    TEST_ASSERT_EQUAL_STRING("abccdef", (const char*)buffer);
+    TEST_ASSERT_EQUAL_STRING("abccdef", (const char*)result);
+}
+
+void test_kstrcat_null_destination(void) {
+    const char *const result = kstrcat(NULL, "abc");
+
+    TEST_ASSERT_NULL(result);
+}
+
+void test_kstrcat_null_source(void) {
+    char buffer[32] = "abc";
+    const char *const result = kstrcat(buffer, NULL);
+
+    TEST_ASSERT_NULL(result);
+}
+
+
+void test_kstrncat_empty(void) {
+    char buffer[32];
+    buffer[0] = '\0';
+    const char *const result = kstrncat(buffer, "abc", 32u);
+
+    TEST_ASSERT_EQUAL_STRING("abc", (const char*)buffer);
+    TEST_ASSERT_EQUAL_STRING("abc", (const char*)result);
+}
+
+void test_kstrncat_normal(void) {
+    char buffer[32] = "abc";
+    const char *const result = kstrncat(buffer, "cdef", 32u);
+
+    TEST_ASSERT_EQUAL_STRING("abccdef", (const char*)buffer);
+    TEST_ASSERT_EQUAL_STRING("abccdef", (const char*)result);
+}
+
+void test_kstrncat_empty_overflow(void) {
+    char buffer[2];
+    buffer[0] = '\0';
+    const char *const result = kstrncat(buffer, "abc", 2u);
+
+    TEST_ASSERT_EQUAL_STRING("a", (const char*)buffer);
+    TEST_ASSERT_EQUAL_STRING("a", (const char*)result);
+}
+
+void test_kstrncat_normal_overflow(void) {
+    char buffer[6] = "abc";
+    const char *const result = kstrncat(buffer, "cdef", 6u);
+
+    TEST_ASSERT_EQUAL_STRING("abccd", (const char*)buffer);
+    TEST_ASSERT_EQUAL_STRING("abccd", (const char*)result);
+}
+
+void test_kstrncat_null_destination(void) {
+    const char *const result = kstrncat(NULL, "abc", 32u);
+
+    TEST_ASSERT_NULL(result);
+}
+
+void test_kstrncat_null_source(void) {
+    char buffer[32] = "abc";
+    const char *const result = kstrncat(buffer, NULL, 32u);
+
+    TEST_ASSERT_NULL(result);
 }
 
 
@@ -209,9 +311,23 @@ void kernel_main(void) {
     RUN_TEST(test_kmemcmp_normal_less_than);
     RUN_TEST(test_kmemcmp_normal_equal);
     RUN_TEST(test_kmemcmp_normal_greater_than);
+    RUN_TEST(test_kmemcmp_null_str1);
+    RUN_TEST(test_kmemcmp_null_str2);
 
-    RUN_TEST(test_cstrlen_normal);
-    RUN_TEST(test_cstrlen_null);
+    RUN_TEST(test_kmemset_normal);
+    RUN_TEST(test_kmemset_null_buffer);
+
+    RUN_TEST(test_kstrcat_empty);
+    RUN_TEST(test_kstrcat_normal);
+    RUN_TEST(test_kstrcat_null_destination);
+    RUN_TEST(test_kstrcat_null_source);
+
+    RUN_TEST(test_kstrncat_empty);
+    RUN_TEST(test_kstrncat_normal);
+    RUN_TEST(test_kstrncat_empty_overflow);
+    RUN_TEST(test_kstrncat_normal_overflow);
+    RUN_TEST(test_kstrncat_null_destination);
+    RUN_TEST(test_kstrncat_null_source);
 
 
     UNITY_END();

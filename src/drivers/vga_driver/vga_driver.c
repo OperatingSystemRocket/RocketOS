@@ -88,7 +88,7 @@ void terminal_swapchar_color(struct vga_driver_context *const context, const cha
 }
 
 void terminal_write(struct vga_driver_context *const context, const char *const text, const size_t size) {
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; ++i) {
         terminal_putchar(context, text[i]);
     }
 }

@@ -55,8 +55,10 @@ int32_t kmemcmp(const void *const ptr1, const void *const ptr2, const size_t num
 }
 
 void* kmemset(void *const ptr, const int32_t value, const size_t num) {
+    kassert(ptr != NULL, NULL);
+
     char *const ptr_char = ptr; //so we can set each byte
-    const int8_t value_byte = (int8_t)(((uint32_t )value) & 0xFFu); //this is to only grab the lowest byte and discard the rest as we are writing to chars
+    const int8_t value_byte = (int8_t)(((uint32_t)value) & 0xFFu); //this is to only grab the lowest byte and discard the rest as we are writing to chars
 
     for(size_t i = 0u; i < num; ++i) {
         ptr_char[i] = value_byte;
@@ -66,8 +68,8 @@ void* kmemset(void *const ptr, const int32_t value, const size_t num) {
 }
 
 char* kstrcat(char *const destination, const char* source) {
-    kassert(destination != NULL && source != NULL, 0);
-    
+    kassert(destination != NULL && source != NULL, NULL);
+
     char* ptr = destination + kstrlen(destination);
     while(*source != '\0') {
         *ptr = *source;
@@ -81,9 +83,12 @@ char* kstrcat(char *const destination, const char* source) {
 }
 
 char* kstrncat(char *const destination, const char* source, size_t num) {
-    kassert(destination != NULL && source != NULL, 0);
-    
-    char* ptr = destination + kstrlen(destination);
+    kassert(destination != NULL && source != NULL, NULL);
+
+    const size_t length_of_str = kstrlen(destination);
+    num -= length_of_str + 1u; //+1 for the null terminator
+
+    char* ptr = destination + length_of_str;
     while(*source != '\0' && num > 0) {
         *ptr = *source;
         ptr++;
@@ -96,8 +101,8 @@ char* kstrncat(char *const destination, const char* source, size_t num) {
     return destination;
 }
 
-char* kstrchr(char* str, int32_t character) {
-    kassert(str != NULL, 0);
+char* kstrchr(char *const str, const int32_t character) {
+    kassert(str != NULL, NULL);
 
     const size_t len = kstrlen(str);
 
@@ -110,8 +115,8 @@ char* kstrchr(char* str, int32_t character) {
     return NULL;
 }
 
-char* kstrrchr(char* str, int character) {
-    kassert(str != NULL, 0);
+char* kstrrchr(char *const str, const int32_t character) {
+    kassert(str != NULL, NULL);
 
     size_t len = kstrlen(str);
 
@@ -124,7 +129,7 @@ char* kstrrchr(char* str, int character) {
 }
 
 int32_t kstrcmp(const char *const lhs, const char *const rhs) {
-    kassert(lhs != NULL && rhs != NULL, 0);
+    kassert(lhs != NULL && rhs != NULL, -2);
 
 	size_t index = 0u;
 	while (lhs[index]) {
@@ -140,7 +145,7 @@ int32_t kstrcmp(const char *const lhs, const char *const rhs) {
 }
 
 int32_t kstrncmp(const char *const lhs, const char *const rhs, const size_t sz) {
-    kassert(lhs != NULL && rhs != NULL, 0);
+    kassert(lhs != NULL && rhs != NULL, -2);
 
 	size_t index = 0u;
 	while (index < sz) {
@@ -166,26 +171,29 @@ char* kstrcpy(char* destination, const char* source) {
     return destination;
 }
 
-char* kstrncpy(char* destination, const char* source, size_t num) {
-    kassert(destination != NULL && source != NULL, 0);
+char* kstrncpy(char *const destination, const char *const source, size_t num) {
+    kassert(destination != NULL && source != NULL, NULL);
 
-    size_t size = kstrlen(source);
-    char* temp = destination;
-    for(size_t len = 0u; len < num; ++len) {
-        if(len < size) {
-            *(temp++) = source[len];
-        } else {
-            *(temp++) = '\0';
-        }
+    if(num == 0u) return destination;
+
+    --num;
+
+    const size_t size = kstrlen(source);
+    size_t len = 0u;
+    for(; len < num && len < size; ++len) {
+        destination[len] = source[len];
     }
+    destination[len] = '\0';
+
     return destination;
 }
 
-size_t kstrspn(const char *const str1, const char *const str2) {
-    bool cont = 0;
-    for(size_t i = 0; i < kstrlen(str1); i++) {
-        cont = false;
-        for(size_t j = 0; j < kstrlen(str2); j++) {
+int32_t kstrspn(const char *const str1, const char *const str2) {
+    kassert(str1 != NULL && str2 != NULL, -1);
+
+    for(int32_t i = 0; i < (int32_t)kstrlen(str1); ++i) {
+        bool cont = false;
+        for(int32_t j = 0; j < (int32_t)kstrlen(str2); ++j) {
             if(str1[i] == str2[j]) {
                 cont = true;
                 break;
@@ -193,7 +201,7 @@ size_t kstrspn(const char *const str1, const char *const str2) {
         }
         if(!cont) return i;
     }
-    return kstrlen(str1);
+    return (int32_t)kstrlen(str1);
 }
 
 static const char* kstrstr_impl(const char* haystack, const char* needle, uint8_t mode) {
@@ -209,7 +217,7 @@ static const char* kstrstr_impl(const char* haystack, const char* needle, uint8_
 }
 
 const char* kstrstr(const char* haystack, const char* needle) {
-    return kstrstr_impl(haystack, needle, 0);
+    return kstrstr_impl(haystack, needle, NULL);
 }
 
 size_t kstrlen(const char *const str) {
