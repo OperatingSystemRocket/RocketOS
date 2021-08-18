@@ -204,7 +204,7 @@ int32_t kstrspn(const char *const str1, const char *const str2) {
     return (int32_t)kstrlen(str1);
 }
 
-static const char* kstrstr_impl(const char* haystack, const char* needle, uint8_t mode) {
+static const char* kstrstr_impl(const char *const haystack, const char *const needle, const uint8_t mode) {
     size_t needle_len = kstrlen(needle);
     for(size_t i = 0; i < kstrlen(haystack); ++i) {
         if(haystack[i] == needle[0]) {
@@ -217,11 +217,11 @@ static const char* kstrstr_impl(const char* haystack, const char* needle, uint8_
 }
 
 const char* kstrstr(const char* haystack, const char* needle) {
-    return kstrstr_impl(haystack, needle, NULL);
+    return kstrstr_impl(haystack, needle, 0);
 }
 
 size_t kstrlen(const char *const str) {
-    kassert(str != NULL, 0);
+    kassert(str != NULL, 0u);
 
     size_t len = 0;
     while (str[len])
