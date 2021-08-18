@@ -8,8 +8,8 @@ kstring
 This module has 17 functions that are defined as
 follows:
 
-void* kmemcpy(void* destination, const void* source, size_t num);
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+void* kmemcpy(void\* restrict destination, const void\* restrict source, size_t num);
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This function should be used
 to copy memory of size num from
@@ -79,8 +79,8 @@ TODO
 
 |br|
 
-void* kmemset(void *const ptr, const int32_t value, size_t num);
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+void* kmemset(void \*const ptr, const int32_t value, size_t num);
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 TODO
 

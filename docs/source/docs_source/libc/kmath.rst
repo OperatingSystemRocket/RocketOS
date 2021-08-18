@@ -30,14 +30,14 @@ Returns the absolute value of the argument ``val``.
 |br|
 
 ``int64_t kmin(int64_t x, int64_t y)``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Returns whichever argument has the lowest value.
 
 |br|
 
 ``int64_t kmax(int64_t x, int64_t y)``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Returns whichever argument has the highest value.
 

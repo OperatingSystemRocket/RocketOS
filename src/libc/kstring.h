@@ -7,7 +7,7 @@
 #include "kassert.h"
 
 
-void* kmemcpy(void *restrict destination, const void *restrict source, size_t num);
+void* kmemcpy(void* restrict destination, const void* restrict source, size_t num);
 void* kmemmove(void* destination, const void* source, size_t num);
 void* kmemchr(void* ptr, int32_t value, size_t num);
 int32_t kmemcmp(const void* ptr1, const void* ptr2, size_t num);
