@@ -204,22 +204,6 @@ int32_t kstrspn(const char *const str1, const char *const str2) {
     return (int32_t)kstrlen(str1);
 }
 
-static const char* kstrstr_impl(const char *const haystack, const char *const needle, const uint8_t mode) {
-    size_t needle_len = kstrlen(needle);
-    for(size_t i = 0; i < kstrlen(haystack); ++i) {
-        if(haystack[i] == needle[0]) {
-            if(kstrncmp(haystack+i, needle, needle_len) == 0) {
-                return haystack + i + (mode == 0 ? 0 : needle_len);
-            }
-        }
-    }
-    return NULL;
-}
-
-const char* kstrstr(const char* haystack, const char* needle) {
-    return kstrstr_impl(haystack, needle, 0);
-}
-
 size_t kstrlen(const char *const str) {
     kassert(str != NULL, 0u);
 
@@ -230,6 +214,8 @@ size_t kstrlen(const char *const str) {
 }
 
 char* kint_to_string(int64_t input, char *const string_ret, const size_t ret_size, const uint32_t base, const bool lowercase) {
+    kassert(string_ret != NULL, NULL);
+
     size_t index = 0u;
     if(0u < ret_size && input < 0u) {
         string_ret[index++] = '-';
@@ -263,37 +249,12 @@ char* kint_to_string(int64_t input, char *const string_ret, const size_t ret_siz
     return string_ret;
 }
 
-void kuint_to_string(uint64_t input, char* const string_ret, const size_t ret_size) {
-    size_t index = 0u;
-    do {
-        size_t current_input = (size_t) (input % 10u);
-        input /= 10u;
-        const char current_char = (char) (current_input + 48u);
-        if(index < ret_size) {
-            string_ret[index++] = current_char;
-        }
-    } while(input);
-    if(index < ret_size) {
-        string_ret[index] = '\0';
-    }
-    const size_t start_index = (string_ret[0u] == '-') ? 1u : 0u;
-    for(size_t i = 0u; i < index/2u; ++i) {
-        const char temp = string_ret[i+start_index];
-        string_ret[i+start_index] = string_ret[index-i-1u];
-        string_ret[index-i-1u] = temp;
-    }
-}
-
 char kint_to_char(const int8_t i) {
+    kassert(i >= 0 && i <= 9, '\0');
+
     return '0' + i;
 }
 
 int8_t kchar_to_int(const char c) {
     return c-'0';
 }
-
-///NOTE: nonstandard, but useful. Works like strstr, but returns a pointer to the END of needle found within haystack
-const char* kstrstr_end(const char* haystack, const char* needle) {
-    return kstrstr_impl(haystack, needle, 1);
-}
-

@@ -201,6 +201,93 @@ void test_kint_to_string_base_10_normal_zero(void) {
     TEST_ASSERT_EQUAL_STRING(expected_str, result);
 }
 
+void test_kint_to_string_base_10_normal_positive(void) {
+    char buffer[32];
+    const char *const expected_str = "123456789";
+
+    const char *const result = kint_to_string(123456789, buffer, 32u, 10u, false); //last param doesn't matter here
+
+    TEST_ASSERT_EQUAL_STRING(expected_str, buffer);
+    TEST_ASSERT_EQUAL_STRING(expected_str, result);
+}
+
+void test_kint_to_string_base_10_normal_negative(void) {
+    char buffer[32];
+    const char *const expected_str = "-123456789";
+
+    const char *const result = kint_to_string(-123456789, buffer, 32u, 10u, false); //last param doesn't matter here
+
+    TEST_ASSERT_EQUAL_STRING(expected_str, buffer);
+    TEST_ASSERT_EQUAL_STRING(expected_str, result);
+}
+
+void test_kint_to_string_base_16_normal_positive_uppercase(void) {
+    char buffer[32];
+    const char *const expected_str = "123456789ABCDEF";
+
+    const char *const result = kint_to_string(0x123456789ABCDEF, buffer, 32u, 16u, false);
+
+    TEST_ASSERT_EQUAL_STRING(expected_str, buffer);
+    TEST_ASSERT_EQUAL_STRING(expected_str, result);
+}
+
+void test_kint_to_string_base_16_normal_positive_lowercase(void) {
+    char buffer[32];
+    const char *const expected_str = "123456789abcdef";
+
+    const char *const result = kint_to_string(0x123456789abcdef, buffer, 32u, 16u, true);
+
+    TEST_ASSERT_EQUAL_STRING(expected_str, buffer);
+    TEST_ASSERT_EQUAL_STRING(expected_str, result);
+}
+
+void test_kint_to_string_base_16_normal_negative_uppercase(void) {
+    char buffer[32];
+    const char *const expected_str = "-123456789ABCDEF";
+
+    const char *const result = kint_to_string(-0x123456789ABCDEF, buffer, 32u, 16u, false);
+
+    TEST_ASSERT_EQUAL_STRING(expected_str, buffer);
+    TEST_ASSERT_EQUAL_STRING(expected_str, result);
+}
+
+void test_kint_to_string_base_16_normal_negative_lowercase(void) {
+    char buffer[32];
+    const char *const expected_str = "-123456789abcdef";
+
+    const char *const result = kint_to_string(-0x123456789abcdef, buffer, 32u, 16u, true);
+
+    TEST_ASSERT_EQUAL_STRING(expected_str, buffer);
+    TEST_ASSERT_EQUAL_STRING(expected_str, result);
+}
+
+void test_kint_to_string_null_buffer(void) {
+    const char *const result = kint_to_string(123456789, NULL, 32u, 10u, false); //last param doesn't matter here
+
+    TEST_ASSERT_NULL(result);    
+}
+
+void test_kint_to_string_zero_buffer_size(void) {
+    char buffer[32];
+    kmemset(buffer, 0xFFu, sizeof(buffer));
+
+    const char *const result = kint_to_string(123456789, buffer, 0u, 10u, false); //last param doesn't matter here
+
+    TEST_ASSERT_EACH_EQUAL_UINT8(0xFFu, buffer, sizeof(buffer));
+    TEST_ASSERT_EQUAL(buffer, result);
+}
+
+void test_kint_to_string_buffer_too_small(void) {
+    char buffer[32];
+    kmemset(buffer, 0x0u, sizeof(buffer));
+    const char *const expected_str = "6789";
+
+    const char *const result = kint_to_string(123456789, buffer, 4u, 10u, false); //last param doesn't matter here
+
+    TEST_ASSERT_EQUAL_STRING(expected_str, buffer);
+    TEST_ASSERT_EQUAL_STRING(expected_str, result);
+}
+
 
 
 
@@ -254,6 +341,15 @@ void kernel_main(void) {
     RUN_TEST(test_kstrlen_null);
 
     RUN_TEST(test_kint_to_string_base_10_normal_zero);
+    RUN_TEST(test_kint_to_string_base_10_normal_positive);
+    RUN_TEST(test_kint_to_string_base_10_normal_negative);
+    RUN_TEST(test_kint_to_string_base_16_normal_positive_uppercase);
+    RUN_TEST(test_kint_to_string_base_16_normal_positive_lowercase);
+    RUN_TEST(test_kint_to_string_base_16_normal_negative_uppercase);
+    RUN_TEST(test_kint_to_string_base_16_normal_negative_lowercase);
+    RUN_TEST(test_kint_to_string_null_buffer);
+    RUN_TEST(test_kint_to_string_zero_buffer_size);
+    RUN_TEST(test_kint_to_string_buffer_too_small);
 
 
     UNITY_END();
