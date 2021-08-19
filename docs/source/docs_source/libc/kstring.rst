@@ -5,7 +5,7 @@ kstring
 
     <br/>
 
-This module has 17 functions that are defined as
+This module has 18 functions that are defined as
 follows:
 
 ``void* kmemcpy(void *restrict destination, const void *restrict source, size_t num);``
