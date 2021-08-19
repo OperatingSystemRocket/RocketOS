@@ -11,11 +11,11 @@ follows:
 ``void* kmemcpy(void *restrict destination, const void *restrict source, size_t num);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function should be used
-to copy memory of size num from
+This function copies
+memory of size num from
 memory location source to the 
-destination. Memory should not
-overlap.
+destination. Source and destination
+memory cannot overlap.
 
 **Example Usage**::
 
@@ -41,11 +41,11 @@ Hello world!
 ``void* kmemmove(void* destination, const void* source, size_t num);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function should be used
-to copy memory of size num from
+This function copies
+memory of size num from
 memory location source to the 
-destination. Memory can
-overlap.
+destination. Source and destination
+memory can overlap.
 
 **Example Usage**::
 
@@ -70,8 +70,8 @@ Hellllo rld!
 ``void* kmemchr(void* ptr, int32_t value, size_t num);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function should be used
-to find the first occurrence of
+This function
+finds the first occurrence of
 value in memory of size num.
 
 **Example Usage**::
@@ -97,8 +97,9 @@ value in memory of size num.
 ``int32_t kmemcmp(const void* ptr1, const void* ptr2, size_t num);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function should be used
-to compare memory of size num.
+This function compares
+two blocks of memory
+of size num.
 
 **Example Usage**::
 
@@ -124,8 +125,8 @@ to compare memory of size num.
 ``void* kmemset(void* ptr, int32_t value, size_t num);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function should be used
-to set memory of size num to
+This function
+sets memory of size num to
 value.
 
 **Example Usage**::
@@ -160,8 +161,8 @@ ffffffff
 ``char* kstrcat(char* destination, const char* source);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function should be used
-to concatenate two strings
+This function
+concatenates two strings
 (without bounds checking).
 
 **Example Usage**::
@@ -187,8 +188,8 @@ abccdef
 ``char* kstrncat(char* destination, const char* source, size_t num);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function should be used
-to concatenate two strings
+This function
+concatenates two strings
 (with bounds checking).
 
 **Example Usage**::
@@ -214,10 +215,10 @@ abccd
 ``char* kstrchr(char* str, int32_t character);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function should be used
-to find the first occurrence of
+This function
+finds the first occurrence of
 character in string str
-(searches from start of string).
+(searching from start of string).
 
 **Example Usage**::
 
@@ -244,10 +245,10 @@ character in string str
 ``char* kstrrchr(char* str, int32_t character);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function should be used
-to find the first occurrence of
+This function
+finds the first occurrence of
 character in string str
-(searches from end of string).
+(searching from end of string).
 
 **Example Usage**::
 
