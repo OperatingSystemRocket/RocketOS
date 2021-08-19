@@ -236,7 +236,7 @@ void test_kstrncat_empty(void) {
 
 void test_kstrncat_normal(void) {
     char buffer[32] = "abc";
-    const char *const result = kstrncat(buffer, "cdef", 32u);
+    const char *const result = kstrncat(buffer, "cdef", sizeof(buffer)/sizeof(char));
 
     TEST_ASSERT_EQUAL_STRING("abccdef", (const char*)buffer);
     TEST_ASSERT_EQUAL_STRING("abccdef", (const char*)result);
@@ -245,7 +245,7 @@ void test_kstrncat_normal(void) {
 void test_kstrncat_empty_overflow(void) {
     char buffer[2];
     buffer[0] = '\0';
-    const char *const result = kstrncat(buffer, "abc", 2u);
+    const char *const result = kstrncat(buffer, "abc", sizeof(buffer)/sizeof(char));
 
     TEST_ASSERT_EQUAL_STRING("a", (const char*)buffer);
     TEST_ASSERT_EQUAL_STRING("a", (const char*)result);
@@ -253,7 +253,7 @@ void test_kstrncat_empty_overflow(void) {
 
 void test_kstrncat_normal_overflow(void) {
     char buffer[6] = "abc";
-    const char *const result = kstrncat(buffer, "cdef", 6u);
+    const char *const result = kstrncat(buffer, "cdef", sizeof(buffer)/sizeof(char));
 
     TEST_ASSERT_EQUAL_STRING("abccd", (const char*)buffer);
     TEST_ASSERT_EQUAL_STRING("abccd", (const char*)result);
@@ -267,7 +267,7 @@ void test_kstrncat_null_destination(void) {
 
 void test_kstrncat_null_source(void) {
     char buffer[32] = "abc";
-    const char *const result = kstrncat(buffer, NULL, 32u);
+    const char *const result = kstrncat(buffer, NULL, sizeof(buffer)/sizeof(char));
 
     TEST_ASSERT_NULL(result);
 }

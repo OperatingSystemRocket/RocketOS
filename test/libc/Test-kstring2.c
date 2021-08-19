@@ -23,6 +23,16 @@ void test_kstrchr_normal_success(void) {
     TEST_ASSERT_EQUAL_PTR(expected, result);
 }
 
+void test_kstrchr_normal_duplicate_chars(void) {
+    char source[] = "aba";
+    const char c = 'a';
+    const char *const expected = source;
+
+    const char *const result = kstrchr(source, c);
+
+    TEST_ASSERT_EQUAL_PTR(expected, result);
+}
+
 void test_kstrchr_normal_fail(void) {
     char source[] = "abcdefghijklmnopqrstuvwxyz";
     const char c = '2';
@@ -54,6 +64,16 @@ void test_kstrrchr_normal_success(void) {
     char source[] = "abcdefghijklmnopqrstuvwxyz";
     const char c = 'f';
     const char *const expected = source + 5;
+
+    const char *const result = kstrrchr(source, c);
+
+    TEST_ASSERT_EQUAL_PTR(expected, result);
+}
+
+void test_kstrrchr_normal_duplicate_chars(void) {
+    char source[] = "aba";
+    const char c = 'a';
+    const char *const expected = source + 2;
 
     const char *const result = kstrrchr(source, c);
 
@@ -297,11 +317,13 @@ void kernel_main(void) {
 
 
     RUN_TEST(test_kstrchr_normal_success);
+    RUN_TEST(test_kstrchr_normal_duplicate_chars);
     RUN_TEST(test_kstrchr_normal_fail);
     RUN_TEST(test_kstrchr_empty_fail);
     RUN_TEST(test_kstrchr_null);
 
     RUN_TEST(test_kstrrchr_normal_success);
+    RUN_TEST(test_kstrrchr_normal_duplicate_chars);
     RUN_TEST(test_kstrrchr_normal_fail);
     RUN_TEST(test_kstrrchr_empty_fail);
     RUN_TEST(test_kstrrchr_null);
