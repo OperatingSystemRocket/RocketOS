@@ -11,7 +11,7 @@ void* kmemcpy(void* restrict destination, const void* restrict source, size_t nu
 void* kmemmove(void* destination, const void* source, size_t num);
 void* kmemchr(void* ptr, int32_t value, size_t num);
 int32_t kmemcmp(const void* ptr1, const void* ptr2, size_t num);
-void* kmemset(void* ptr, int32_t value, size_t num);
+void* kmemset(void* ptr, uint32_t value, size_t num);
 char* kstrcat(char* destination, const char* source);
 char* kstrncat(char* destination, const char* source, size_t num);
 char* kstrchr(char* str, int32_t character); //searches from start of string

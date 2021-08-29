@@ -1,9 +1,6 @@
 #include "kstdlib.h"
 
-
-#define BYTES_IN_WORD 4
-#define MIN_BLOCK_SIZE 8 //4 words for bookkeeping and 4 word payload 
-#define WORDS_IN_PAGE (PAGE_SIZE/BYTES_IN_WORD)
+#include "kstdlib_constants.h"
 
 
 uint32_t* first_free_virtual_address; //points to start of first page
@@ -15,40 +12,24 @@ uint32_t* head;
 
 uint32_t bytes_to_words(uint32_t bytes);
 
-
-uint32_t get_size(const uint32_t size_word) {
-    return size_word & 0x7fffffff;
-}
-
-bool get_allocated_bit(const uint32_t size_word) {
-    return (size_word & 0x80000000) > 0;
-}
+uint32_t get_size(uint32_t size_word);
+bool get_allocated_bit(uint32_t size_word);
 
 
 //TODO: do this in a way to where it can increase by more than a page at a time (implement brk and sbrk in `paging`)
 //asks OS for an extra page
 static bool increase_memory_pool(void) {
-    kprintf("increase_memory_pool\n");
-
-
     const uint32_t phys_addr = allocate_virtual_page(last_free_virtual_address, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
 
 
     if(phys_addr) {
-        kprintf("page mapped successfully\n");
         kassert(last_free_virtual_address+WORDS_IN_PAGE > (uint32_t*) get_first_nonreserved_address(), false);
         if(!get_allocated_bit(last_free_virtual_address[-1])) {
-            kprintf("start bigger block\n");
-
             uint32_t *const new_block_ptr = last_free_virtual_address-last_free_virtual_address[-1];
 
             new_block_ptr[0] += WORDS_IN_PAGE;
             new_block_ptr[new_block_ptr[0]-1] = new_block_ptr[0];
-
-            kprintf("end bigger block\n");
         } else {
-            kprintf("no coalescing\n");
-
             //front insertion policy
             //TODO: try using end insertion policy
             last_free_virtual_address[0] = 1024u;
@@ -64,8 +45,6 @@ static bool increase_memory_pool(void) {
         ++number_of_pages_allocated;
         last_free_virtual_address += WORDS_IN_PAGE;
     }
-
-    kprintf("last_free_virtual_address: %p\n", last_free_virtual_address);
 
     return phys_addr;
 }
@@ -135,6 +114,8 @@ void kdynamic_memory_init(void) {
 
 //TODO: ask OS if no suitable memory found
 void* kmalloc(const size_t size) {
+    if(size == 0u) return NULL;
+
     const uint32_t size_in_words = (size/BYTES_IN_WORD) + (size%BYTES_IN_WORD > 0) + 4; //the +4 is for the 4 bookkeeping words in a block
 
 
@@ -166,8 +147,7 @@ void* zeroed_out_kmalloc(const size_t size) {
 }
 
 void kfree(const void *const payload_ptr) {
-    kprintf("kfree called\n");
-    kprintf("head: %p\n", head);
+    if(payload_ptr == NULL) return;
 
 
 #pragma GCC diagnostic push
@@ -281,20 +261,13 @@ void* krealloc(void *const ptr, const size_t new_size) {
             const size_t memory_taken_from_next_block = next_block_head[0] - new_next_block_size;
 
             if(new_next_block_size <= 2*MIN_BLOCK_SIZE) {
-                kprintf("if\n");
                 uint32_t *const prev = (uint32_t*) next_block_head[1];
                 uint32_t *const next = (uint32_t*) next_block_head[2];
                 if(prev != NULL) {
                     prev[2] = (uint32_t) next;
-                    kprintf("prev: %u\n", (uint32_t)prev);
-                } else {
-                    kprintf("prev is NULL\n");
                 }
                 if(next != NULL) {
                     next[1] = (uint32_t) prev;
-                    kprintf("next: %u\n", (uint32_t)next);
-                } else {
-                    kprintf("next is NULL\n");
                 }
 
 
@@ -302,28 +275,18 @@ void* krealloc(void *const ptr, const size_t new_size) {
                 block_head[get_size(block_head[0]) - 1] = block_head[0];
             }
             else {
-                kprintf("else\n");
-
                 //TODO: investigate if this is correct
                 uint32_t *const start_of_new_next_block = (uint32_t*) (new_next_block_size+new_next_block_size);
-
-                kprintf("start_of_new_next_block: %p\n", start_of_new_next_block);
 
                 uint32_t *const prev = (uint32_t*) next_block_head[1];
                 start_of_new_next_block[1] = (uint32_t) prev;
                 if(prev != NULL) {
                     prev[2] = (uint32_t) &start_of_new_next_block[0];
-                    kprintf("prev: %u\n", (uint32_t)prev);
-                } else {
-                    kprintf("prev is NULL\n");
                 }
                 uint32_t *const next = (uint32_t*) next_block_head[2];
                 start_of_new_next_block[2] = (uint32_t) next;
                 if(next != NULL) {
                     next[1] = (uint32_t) &start_of_new_next_block[0];
-                    kprintf("next: %u\n", (uint32_t)next);
-                } else {
-                    kprintf("next is NULL\n");
                 }
 
 
@@ -336,7 +299,6 @@ void* krealloc(void *const ptr, const size_t new_size) {
             return ptr;
         }
         else {
-            kprintf("resize\n");
             uint32_t *const new_memory_block = zeroed_out_kmalloc(new_size);
             kmemcpy(new_memory_block, ptr, get_size(block_head[0])-4);
             kfree(ptr);
@@ -344,15 +306,11 @@ void* krealloc(void *const ptr, const size_t new_size) {
         }
     } else { //shrink allocated block
         uint32_t *const next_block_head = &block_head[get_size(block_head[0])];
-        kprintf("next_block_head: %u\n", next_block_head[0]);
         const size_t difference_in_size = get_size(block_head[0])-new_size_in_words-4;
-        kprintf("difference_in_size: %u\n", difference_in_size);
 
-        kprintf("next_block_head: %X, last_free_virtual_address: %X\n", next_block_head, last_free_virtual_address);
 
         if(difference_in_size > 2*MIN_BLOCK_SIZE) {
             if(next_block_head < last_free_virtual_address && !get_allocated_bit(next_block_head[0])) {
-                kprintf("split\n");
                 uint32_t *const new_split_block = next_block_head - difference_in_size;
                 next_block_head[0] += difference_in_size;
                 block_head[get_size(block_head[0]) - 1] = 0;
@@ -364,7 +322,6 @@ void* krealloc(void *const ptr, const size_t new_size) {
                 new_split_block[new_split_block[0]-1] = new_split_block[0];
                 next_block_head[0] = 0;
 
-                kprintf("new_split_block[0]: %u\n", get_size(new_split_block[0]));
 
                 uint32_t *const prev = (uint32_t*)block_head[1];
                 uint32_t *const next = (uint32_t*)block_head[2];
@@ -378,8 +335,6 @@ void* krealloc(void *const ptr, const size_t new_size) {
                 if(next != NULL) {
                     next[1] = (uint32_t)&new_split_block[0];
                 }
-
-                kprintf("realloc finished\n");
             }
             else {
                 block_head[0] -= difference_in_size;
@@ -415,7 +370,14 @@ void* zeroed_out_krealloc(void *const ptr, const size_t new_size) {
     }
 }
 
+void* kcalloc(const size_t num, const size_t size) {
+    return zeroed_out_kmalloc(num*size);
+}
+
+void* uninitialized_kcalloc(const size_t num, const size_t size) {
+    return kmalloc(num*size);
+}
+
 uint32_t* get_head(void) {
     return head;
 }
-

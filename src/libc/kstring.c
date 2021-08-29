@@ -54,7 +54,7 @@ int32_t kmemcmp(const void *const ptr1, const void *const ptr2, const size_t num
     return 0;
 }
 
-void* kmemset(void *const ptr, const int32_t value, const size_t num) {
+void* kmemset(void *const ptr, const uint32_t value, const size_t num) {
     kassert(ptr != NULL, NULL);
 
     char *const ptr_char = ptr; //so we can set each byte

@@ -1,8 +1,4 @@
-#include <multiboot.h>
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stddef.h>
+#include "test_kernel_early.h"
 
 #include "unity.h"
 
@@ -290,23 +286,6 @@ void test_kstrncmp_null_str1_str2(void) {
     const int32_t result = kstrncmp(str1, str2, n);
 
     TEST_ASSERT_EQUAL(-2, result);
-}
-
-
-void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
-    (void) mboot_header; //needed for calling convention reasons, but currently unused
-
-    if(serial_init()) { //fails if serial is faulty
-        serial_writestring("Serial driver works\n");
-    }
-
-    terminal_context_initialize();
-
-    if (mboot_magic != MULTIBOOT_BOOTLOADER_MAGIC) {
-        terminal_context_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
-    } else {
-        terminal_context_writestring("The multiboot structure was loaded properly\n");
-    }
 }
 
 
