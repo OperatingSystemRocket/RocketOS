@@ -130,6 +130,7 @@ void test_kfree_single_kmalloced_four_byte_block(void) {
     TEST_ASSERT_NOT_EQUAL_UINT32(last_word, payload_ptr[get_size(first_word-4)]);
 }
 
+//TODO: finish implementing this function and test multiple kmalloc allocations in one test
 void test_kfree_two_kmalloced_four_byte_blocks(void) {
     uint32_t *const first_allocation_payload_ptr = kmalloc(4u);
     uint32_t *const second_allocation_payload_ptr = kmalloc(4u);
