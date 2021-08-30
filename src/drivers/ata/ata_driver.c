@@ -12,6 +12,4 @@ struct ata_driver_data* ata_driver_init(void) {
     return data;
 }
 
-void write_to_disk(struct ata_driver_data* ata_data, const char* datastream) {
-    
-}
+
