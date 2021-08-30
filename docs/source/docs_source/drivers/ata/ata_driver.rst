@@ -39,7 +39,7 @@ is a predeclared private struct.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This function appends a null
-terminated string to the current data
+terminated string of the current data
 of the hard drive (including the
 null terminator). It requires a
 pointer to a mutable
@@ -108,7 +108,7 @@ Hello
 ``const char* read_from_disk(struct ata_driver_data* ata_data);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function returns a null terminated
+This function returns a null terminated string
 of what was written at the current location
 in the HDD (stored in ``ata_data``) without
 removing it from the HDD. This string is
