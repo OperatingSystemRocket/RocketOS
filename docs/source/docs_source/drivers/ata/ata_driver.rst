@@ -24,7 +24,7 @@ is a predeclared private struct.
     #include "ata_driver.h"
 
     int main(void) {
-        struct ata_driver_data \*const ata_data = ata_driver_init();
+        struct ata_driver_data *const ata_data = ata_driver_init();
 
         //call any ata driver functions you want to using ``ata_data``
 
@@ -53,7 +53,7 @@ inside of ``ata_data``.
     #include "ata_driver.h"
 
     int main(void) {
-        struct ata_driver_data \*const ata_data = ata_driver_init();
+        struct ata_driver_data *const ata_data = ata_driver_init();
 
         write_to_disk(ata_data, "Hello World!");
 
@@ -85,10 +85,10 @@ inside of ``ata_data``.
     #include "kstdio.h"
 
     int main(void) {
-        struct ata_driver_data \*const ata_data = ata_driver_init();
+        struct ata_driver_data *const ata_data = ata_driver_init();
 
         write_to_disk_n(ata_data, "Hello World!", 6);
-        const char \*const first_written_string = read_from_disk(ata_data, 5);
+        const char *const first_written_string = read_from_disk(ata_data, 5);
 
         ata_driver_destroy(ata_data);
 
@@ -121,10 +121,10 @@ via normal ``kfree()``.
     #include "kstdio.h"
 
     int main(void) {
-        struct ata_driver_data \*const ata_data = ata_driver_init();
+        struct ata_driver_data *const ata_data = ata_driver_init();
 
         write_to_disk(ata_driver, "Hello World!");
-        const char \*const first_written_string = read_from_disk(ata_driver);
+        const char *const first_written_string = read_from_disk(ata_driver);
 
         ata_driver_destroy(ata_data);
 
@@ -159,10 +159,10 @@ via normal ``kfree()``.
     #include "kstdio.h"
 
     int main(void) {
-        struct ata_driver_data \*const ata_data = ata_driver_init();
+        struct ata_driver_data *const ata_data = ata_driver_init();
 
         write_to_disk(ata_driver, "Hello World!");
-        const char \*const first_written_string = read_from_disk_n(ata_driver, 5);
+        const char *const first_written_string = read_from_disk_n(ata_driver, 5);
 
         ata_driver_destroy(ata_data);
 
@@ -195,11 +195,11 @@ returned from ``ata_driver_init()``.
     #include "kstdio.h"
 
     int main(void) {
-        struct ata_driver \*const ata_data = ata_driver_init();
+        struct ata_driver *const ata_data = ata_driver_init();
 
         write_to_disk(ata_driver, "Hello World!");
         ata_driver_seek(ata_driver, 1);
-        const char \*const first_written_string = read_from_disk(ata_driver);
+        const char *const first_written_string = read_from_disk(ata_driver);
 
         ata_driver_destroy(ata_data);
 
@@ -231,7 +231,7 @@ returned from ``ata_driver_init()``.
     #include "ata_driver.h"
 
     int main(void) {
-        struct ata_driver_data \*const ata_data = ata_driver_init();
+        struct ata_driver_data *const ata_data = ata_driver_init();
 
         ata_driver_destroy(ata_data);
 
