@@ -18,6 +18,7 @@ returns a pointer to a heap
 allocated ata object. The
 ata data structure's type
 is a predeclared private struct.
+The HDD position starts at 0.
 
 **Example Usage**::
 
@@ -41,7 +42,9 @@ is a predeclared private struct.
 This function appends a null
 terminated string of the current data
 of the hard drive (including the
-null terminator). It requires a
+null terminator) starting at
+the current HDD location.
+It requires a
 pointer to a mutable
 ``struct ata_driver_data`` object
 returned from ``ata_driver_init()``.
@@ -72,11 +75,12 @@ bytes of data to the current
 data of the hard drive
 (not including a null
 terminator unless in
-the datastream). It
+the datastream) starting at
+the current HDD location. It
 requires a pointer to a mutable
 ``struct ata_driver_data`` object
 returned from ``ata_driver_init()``.
-It also updates teh location of the HDD
+It also updates the location of the HDD
 inside of ``ata_data``.
 
 **Example Usage**::
@@ -87,7 +91,9 @@ inside of ``ata_data``.
     int main(void) {
         struct ata_driver_data *const ata_data = ata_driver_init();
 
-        write_to_disk_n(ata_data, "Hello World!", 6);
+        write_to_disk_n(ata_data, "Hello World!", 6u);
+        //set the hdd position back to the beginning of the hdd
+        ata_driver_seek(ata_data, 0u);
         const char *const first_written_string = read_from_disk(ata_data, 5);
 
         ata_driver_destroy(ata_data);
@@ -124,6 +130,7 @@ via normal ``kfree()``.
         struct ata_driver_data *const ata_data = ata_driver_init();
 
         write_to_disk(ata_driver, "Hello World!");
+        ata_driver_seek(ata_data, 0u);
         const char *const first_written_string = read_from_disk(ata_driver);
 
         ata_driver_destroy(ata_data);
@@ -162,6 +169,7 @@ via normal ``kfree()``.
         struct ata_driver_data *const ata_data = ata_driver_init();
 
         write_to_disk(ata_driver, "Hello World!");
+        ata_driver_seek(ata_data, 0u);
         const char *const first_written_string = read_from_disk_n(ata_driver, 5);
 
         ata_driver_destroy(ata_data);
