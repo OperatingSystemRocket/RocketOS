@@ -5,83 +5,75 @@ ata_driver
 
     <br/>
 
-This module has 7 functions that are defined as
+This module has 4 functions that are defined as
 follows:
 
-``struct ata_driver_data* ata_driver_init(void);``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``void ata_driver_init(void);``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This function initializes the
 internal data structures of
-a ata driver object. It
-returns a pointer to a heap
-allocated ata object. The
-ata data structure's type
-is a predeclared private struct.
-The HDD position starts at 0.
+the ata driver and must be
+called before any other ata
+driver functions.
 
 **Example Usage**::
 
     #include "ata_driver.h"
 
     int main(void) {
-        struct ata_driver_data *const ata_data = ata_driver_init();
+        ata_driver_init();
 
-        //call any ata driver functions you want to using ``ata_data``
-
-        ata_driver_destroy(ata_data);
+        //call any ata driver functions you want
 
         return 0;
     }
 
 |br|
 
-``void write_to_disk(struct ata_driver_data* ata_data, const char* datastream);``
+``void ata_driver_write_n(const char* data_stream, size_t byte_location, size_t data_stream_size);``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function writes ``data_stream_size``
+amount of bytes from ``data_stream``
+to the HDD at location ``byte_location``.
+
+**Example Usage**::
+
+    #include "ata_driver.h"
+
+    int main(void) {
+        ata_driver_init();
+
+        ata_driver_write_n("Hello World!", 0u, 5u); //only wrote "Hello" to the HDD
+    }
+
+``void ata_driver_write(const char* data_stream, size_t byte_location);``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This function is a utility function that is equivalent to calling
+``ata_driver_write_n(data_stream, byte_location, strlen(data_stream));``.
+``data_stream`` must be a null terminated string.
+
+**Example Usage**::
+
+    #include "ata_driver.h"
+
+    int main(void) {
+        ata_driver_init();
+
+        ata_driver_write("Hello", 0u); //"Hello" is written to HDD
+    }
+
+|br|
+
+``void ata_driver_read_n(char* bufffer, size_t byte_location, size_t byte_count);``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This function appends a null
-terminated string of the current data
-of the hard drive (including the
-null terminator) starting at
-the current HDD location.
-It requires a
-pointer to a mutable
-``struct ata_driver_data`` object
-returned from ``ata_driver_init()``.
-It also updates the location inside of the HDD
-inside of ``ata_data``.
-
-**Example Usage**::
-
-    #include "ata_driver.h"
-
-    int main(void) {
-        struct ata_driver_data *const ata_data = ata_driver_init();
-
-        write_to_disk(ata_data, "Hello World!");
-
-        ata_driver_destroy(ata_data);
-
-        return 0;
-    }
-
-|br|
-
-``void write_to_disk_n(struct ata_driver_data* ata_data, const char* datastream, size_t n);``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This function appends ``n``
-bytes of data to the current
-data of the hard drive
-(not including a null
-terminator unless in
-the datastream) starting at
-the current HDD location. It
-requires a pointer to a mutable
-``struct ata_driver_data`` object
-returned from ``ata_driver_init()``.
-It also updates the location of the HDD
-inside of ``ata_data``.
+This function reads ``byte_count``
+bytes from the HDD starting
+at ``byte_location`` into the user
+allocated buffer ``buffer``.
 
 **Example Usage**::
 
@@ -89,18 +81,14 @@ inside of ``ata_data``.
     #include "kstdio.h"
 
     int main(void) {
-        struct ata_driver_data *const ata_data = ata_driver_init();
+        ata_driver_init();
 
-        write_to_disk_n(ata_data, "Hello World!", 6u);
-        //set the hdd position back to the beginning of the hdd
-        ata_driver_seek(ata_data, 0u);
-        const char *const first_written_string = read_from_disk(ata_data, 5);
+        void ata_driver_write("Hello", 0u);
+        char buffer[10];
+        ata_driver_read_n(buffer, 0u, 5u);
+        buffer[5] = '\0'; //ata_driver_read doesn't null terminate the buffer
 
-        ata_driver_destroy(ata_data);
-
-        kprintf(first_written_string);
-
-        kfree(first_written_string);
+        kprintf("%s\n", buffer);
 
         return 0;
     }
@@ -110,139 +98,4 @@ inside of ``ata_data``.
 Hello
 
 |br|
-
-``const char* read_from_disk(struct ata_driver_data* ata_data);``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This function returns a null terminated string
-of what was written at the current location
-in the HDD (stored in ``ata_data``) without
-removing it from the HDD. This string is
-heap allocated and can be freed
-via normal ``kfree()``.
-
-**Example Usage**::
-
-    #include "ata_driver.h"
-    #include "kstdio.h"
-
-    int main(void) {
-        struct ata_driver_data *const ata_data = ata_driver_init();
-
-        write_to_disk(ata_driver, "Hello World!");
-        ata_driver_seek(ata_data, 0u);
-        const char *const first_written_string = read_from_disk(ata_driver);
-
-        ata_driver_destroy(ata_data);
-
-        kprintf(first_written_string);
-
-        kfree(first_written_string);
-
-        return 0;
-    }
-
-**Output**:
-
-Hello world!
-
-|br|
-
-``const char* read_from_disk_n(struct ata_driver_data* ata_data, size_t n);``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This function reads ``n``
-bytes from the HDD and returns
-a null terminated string of ``n``
-bytes from the current location
-in the HDD (stored in ``ata_data``)
-without removing it from the HDD.
-This string is heap allocated and can be freed
-via normal ``kfree()``.
-
-**Example Usage**::
-
-    #include "ata_driver.h"
-    #include "kstdio.h"
-
-    int main(void) {
-        struct ata_driver_data *const ata_data = ata_driver_init();
-
-        write_to_disk(ata_driver, "Hello World!");
-        ata_driver_seek(ata_data, 0u);
-        const char *const first_written_string = read_from_disk_n(ata_driver, 5);
-
-        ata_driver_destroy(ata_data);
-
-        kprintf(first_written_string);
-
-        kfree(first_written_string);
-
-        return 0;
-    }
-
-**Output**:
-
-Hello
-
-|br|
-
-``void ata_driver_seek(struct ata_driver_data* ata_data, size_t byte_location_on_hdd);``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This function sets the ata_driver
-object's hdd location to byte
-``byte_location_on_hdd`` (zero indexed).
-It requires a pointer to a mutable
-``struct ata_driver_data`` object
-returned from ``ata_driver_init()``.
-
-**Example Usage**::
-
-    #include "ata_driver.h"
-    #include "kstdio.h"
-
-    int main(void) {
-        struct ata_driver *const ata_data = ata_driver_init();
-
-        write_to_disk(ata_driver, "Hello World!");
-        ata_driver_seek(ata_driver, 1);
-        const char *const first_written_string = read_from_disk(ata_driver);
-
-        ata_driver_destroy(ata_data);
-
-        kprintf(first_written_string);
-
-        kfree(first_written_string);
-
-        return 0;
-
-    }
-
-**Output**:
-
-ello World!
-
-|br|
-
-``void ata_driver_destroy(struct ata_driver_data* ata_data);``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This function frees the memory
-allocated by ``ata_driver_init()``.
-It requires a pointer to a mutable
-``struct ata_driver_data`` object
-returned from ``ata_driver_init()``.
-
-**Example Usage**::
-
-    #include "ata_driver.h"
-
-    int main(void) {
-        struct ata_driver_data *const ata_data = ata_driver_init();
-
-        ata_driver_destroy(ata_data);
-
-        return 0;
-    }
 
