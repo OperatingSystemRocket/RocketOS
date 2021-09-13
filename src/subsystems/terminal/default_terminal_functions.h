@@ -41,7 +41,7 @@ void get_string_slice(const char* src, char* dest, size_t start, size_t end);
 void get_string_between_chars(const char* src, char* dest, char open, char close);
 int8_t get_string_section_after(const char* src, char* dest, const char* search_term);
 
-void default_parse_command_args(void* context, const char* args);
+bool default_parse_command_args(void* context, const char* args);
 void default_run_command(void* context, char* command);
 void default_get_command(void* context, char* final, size_t number_of_elements);
 

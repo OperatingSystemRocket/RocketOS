@@ -99,13 +99,16 @@ void get_string_between_chars(const char *const src, char *const dest, const cha
     get_string_slice(src, dest, (size_t)(start+1), (size_t)end);
 }
 
-void default_parse_command_args(void *const context, const char *const args) {
+bool default_parse_command_args(void *const context, const char *const args) {
     struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
+
+    bool found_space = false;
 
     size_t arg_index = 0u;
     for(size_t i = 0u; i < kstrlen(args); ++i) {
         if(args[i] == ' ') {
             if(args[i+1] == '\"') {
+                kprintf("quotation mark\n");
                 const int32_t end_location = get_char_location(args, '\"', i+2, kstrlen(args));
                 if(end_location != -1) {
                     get_string_slice(args, terminal_context_ptr->command_arguments[arg_index], i+2, (size_t)end_location);
@@ -113,6 +116,7 @@ void default_parse_command_args(void *const context, const char *const args) {
                 }
             }
             else {
+                kprintf("not quotation mark\n");
                 const int32_t end_location = get_char_location(args, ' ', i+1, kstrlen(args));
                 if(end_location != -1) {
                     get_string_slice(args, terminal_context_ptr->command_arguments[arg_index], i+1, (size_t)end_location);
@@ -120,8 +124,11 @@ void default_parse_command_args(void *const context, const char *const args) {
                 }
             }
             ++arg_index;
+            found_space = true;
         }
     }
+
+    return found_space;
 }
 
 
@@ -131,11 +138,7 @@ int8_t get_string_section_after(const char *const src, char *const dest, const c
     size_t search_term_len = kstrlen(search_term);
     for(size_t i = 0; i < src_len; ++i) {
         if(src[i] == search_term[0]) {
-            //kprintf("%s", "found search term first char at location: ");
-            //kprintf("%i\n", i);
-            int32_t cmp_status = kstrncmp(src+i, search_term, search_term_len);
-            if(cmp_status == 0) {
-                //kprintf("%s %i\n", "found entire search term at location: ", i);
+            if(kstrncmp(src+i, search_term, search_term_len) == 0) {
                 for(size_t j = 0; j < src_len-i; ++j) {
                     dest[j] = src[i+j+search_term_len];
                 }
@@ -148,21 +151,27 @@ int8_t get_string_section_after(const char *const src, char *const dest, const c
 }
 
 void default_run_command(void *const context, char *const command) {
-    default_parse_command_args(context, command);
+    struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
+
+    const bool has_space = default_parse_command_args(context, command);
 
     if(kstrncmp(command, "echo", 4) == 0) {
-        if(kstrlen(command) > 5) {
-            kprintf(kstrcat(command + 5, "\n"));
+        if(!has_space) {
+            terminal_writestring_color(terminal_context_ptr->vga_context, "missing space between 'echo' and argument\n", VGA_COLOR_RED);
         } else {
-            kprintf("'echo' requires one argument!\n");
+            if(kstrlen(command) > 5) {
+                terminal_writestring(terminal_context_ptr->vga_context, kstrcat(command + 5, "\n"));
+            } else {
+                terminal_writestring(terminal_context_ptr->vga_context, "'echo' requires one argument!\n");
+            }
         }
     } else if(kstrncmp(command, "help", 4) == 0) {
-        kprintf("List of available commands:\n");
-        kprintf("echo\n");
-        kprintf("help\n");
+        terminal_writestring(terminal_context_ptr->vga_context, "List of available commands:\n");
+        terminal_writestring(terminal_context_ptr->vga_context, "echo\n");
+        terminal_writestring(terminal_context_ptr->vga_context, "help\n");
     }
     else {
-        kprintf("Invalid command! Try 'help'\n");
+        terminal_writestring_color(terminal_context_ptr->vga_context, "Invalid command! Try 'help'\n", VGA_COLOR_RED);
     }
 }
 

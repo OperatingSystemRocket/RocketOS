@@ -22,6 +22,8 @@
 #include "default_terminal_system.h"
 #include "keyboard_callbacks.h"
 
+#include "pci_bus.h"
+
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
 
@@ -56,6 +58,17 @@ void kernel_main(void) {
 
     write_tss();
 
+
+    kprintf("0xFFFF: %u\n", 0xFFFFu);
+    for(uint16_t bus = 0u; bus < 256u; ++bus) {
+        for(uint8_t slot = 0u; slot < 32u; ++slot) {
+            const uint16_t vendor = pci_config_read_word((uint8_t)bus, slot, 0u, 0u);
+            if(vendor != 0xFFFFu) {
+                kprintf("bus: %u, slot: %u, vendor: %u\n", bus, slot, vendor);
+            }
+        }
+    }
+    kprintf("vendor end\n");
 
 
     default_keyboard_map_state_init();
