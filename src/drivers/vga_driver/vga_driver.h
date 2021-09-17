@@ -39,6 +39,7 @@ struct vga_driver_context {
     size_t terminal_column;
     enum vga_color terminal_color;
     volatile uint16_t* terminal_buffer;
+    bool terminal_on;
 
     uint16_t terminal_upward_history[VGA_WIDTH * VGA_HEIGHT];
     uint16_t terminal_downward_history[VGA_WIDTH * VGA_HEIGHT];

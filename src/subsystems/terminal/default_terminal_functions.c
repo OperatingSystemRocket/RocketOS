@@ -37,8 +37,10 @@ void default_terminal_process_command(void *const context) {
     struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
 
     if(terminal_context_ptr->end_of_command - terminal_context_ptr->start_of_command <= 0) {
-        kprintf("Invalid command! Try 'help'\n");
+        terminal_writestring(terminal_context_ptr->vga_context, terminal_context_ptr->prompt_symbol);
+
         run_terminal_start(context);
+        terminal_context_ptr->vga_context->terminal_on = true;
         return;
     } else if(terminal_context_ptr->end_of_command - terminal_context_ptr->start_of_command > 79) {
         kprintf("Command is too long! Limit of 79 characters! Cutting down to length...\n");
@@ -55,6 +57,8 @@ void default_terminal_shift(void *const context) {
 
     terminal_context_ptr->start_of_command -= 80;
     terminal_context_ptr->end_of_command -= 80;
+
+    terminal_context_ptr->vga_context->terminal_on = false;
 }
 
 
@@ -100,30 +104,12 @@ void get_string_between_chars(const char *const src, char *const dest, const cha
 }
 
 bool default_parse_command_args(void *const context, const char *const args) {
-    struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
+    (void) context;
 
     bool found_space = false;
 
-    size_t arg_index = 0u;
     for(size_t i = 0u; i < kstrlen(args); ++i) {
         if(args[i] == ' ') {
-            if(args[i+1] == '\"') {
-                kprintf("quotation mark\n");
-                const int32_t end_location = get_char_location(args, '\"', i+2, kstrlen(args));
-                if(end_location != -1) {
-                    get_string_slice(args, terminal_context_ptr->command_arguments[arg_index], i+2, (size_t)end_location);
-                    i = (size_t) end_location;
-                }
-            }
-            else {
-                kprintf("not quotation mark\n");
-                const int32_t end_location = get_char_location(args, ' ', i+1, kstrlen(args));
-                if(end_location != -1) {
-                    get_string_slice(args, terminal_context_ptr->command_arguments[arg_index], i+1, (size_t)end_location);
-                    i = (size_t) (end_location-1);
-                }
-            }
-            ++arg_index;
             found_space = true;
         }
     }
@@ -173,6 +159,9 @@ void default_run_command(void *const context, char *const command) {
     else {
         terminal_writestring_color(terminal_context_ptr->vga_context, "Invalid command! Try 'help'\n", VGA_COLOR_RED);
     }
+
+    terminal_context_ptr->vga_context->terminal_on = true;
+    terminal_writestring(terminal_context_ptr->vga_context, terminal_context_ptr->prompt_symbol);
 }
 
 void default_get_command(void *const context, char *const final, const size_t number_of_elements) {

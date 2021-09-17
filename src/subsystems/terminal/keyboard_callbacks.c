@@ -16,7 +16,7 @@ void catch_keycode(void *const context, struct GET_EVENT_TYPENAME(key_message) e
 
                 terminal_context_ptr->start_of_command += kstrlen(terminal_context_ptr->prompt_symbol);
             }
-            
+
             if(event.data.keycode == '\t' && terminal_context_ptr->vga_context->terminal_row * 80 + terminal_context_ptr->vga_context->terminal_column >= terminal_context_ptr->start_of_command) {
                 terminal_writestring(terminal_context_ptr->vga_context, "    ");
                 run_terminal_end(context);

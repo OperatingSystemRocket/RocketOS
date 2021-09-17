@@ -55,7 +55,7 @@ void terminal_putchar(struct vga_driver_context *const context, const char c) {
 		if(++context->terminal_row == VGA_HEIGHT) {
 			terminal_scroll_down(context);
 		}
-		context->terminal_column = 0;
+		context->terminal_column = 0u;
         terminal_updatecursor(context);
 		return;
 	}
@@ -116,22 +116,22 @@ void terminal_scroll_down(struct vga_driver_context *const context) {
         if(context->terminal_upward_history_size >= VGA_WIDTH * VGA_HEIGHT) context->terminal_upward_history_size = 0;
         context->terminal_upward_history[context->terminal_upward_history_size++] = context->terminal_buffer[x];
     }
-	for(size_t y = 0u; y < VGA_HEIGHT - 1; y++) {
-		for(size_t x = 0u; x < VGA_WIDTH; x++) {
-			context->terminal_buffer[y * VGA_WIDTH + x] = context->terminal_buffer[(y + 1) * VGA_WIDTH + x];
-		}
-	}
+    for(size_t y = 0u; y < VGA_HEIGHT - 1; y++) {
+        for(size_t x = 0u; x < VGA_WIDTH; x++) {
+            context->terminal_buffer[y * VGA_WIDTH + x] = context->terminal_buffer[(y + 1) * VGA_WIDTH + x];
+        }
+    }
     if(context->terminal_downward_history_size == 0u) {
         for(size_t x = 0u; x < VGA_WIDTH; x++) {
-            terminal_putentryat(context, ' ', context->terminal_color, x, VGA_HEIGHT - 1);
+            terminal_putentryat(context, ' ', VGA_COLOR_WHITE, x, VGA_HEIGHT - 1);
         }
     } else {
         for(size_t x = VGA_WIDTH; x > 0u; x--) {
             context->terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x - 1] = context->terminal_downward_history[--context->terminal_downward_history_size];
         }
     }
-	context->terminal_row = VGA_HEIGHT - 1;
-	context->terminal_column = 0u;
+    context->terminal_row = VGA_HEIGHT - 1;
+    context->terminal_column = 0u;
 
     //TODO: fix this weird coupling
     default_terminal_context_shift();
@@ -196,8 +196,8 @@ void terminal_backspace(struct vga_driver_context *const context) {
 
 void terminal_updatecursor(struct vga_driver_context *const context) {
 	const size_t pos = context->terminal_row * VGA_WIDTH + context->terminal_column;
-	outb(0x3D4, 14);
-	outb(0x3D5, (uint8_t)(pos >> 8u));
-	outb(0x3D4, 15);
-	outb(0x3D5, (uint8_t)pos);
+	outb(0x3D4u, 14u);
+	outb(0x3D5u, (uint8_t)(pos >> 8u));
+	outb(0x3D4u, 15u);
+	outb(0x3D5u, (uint8_t)pos);
 }
