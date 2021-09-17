@@ -11,7 +11,6 @@ enum event_types {
 };
 
 
-
 #define GENERATE_SUBJECT_DECLARATION(MAX_NUM_OF_OBSERVERS, TYPE_OF_DATA) \
 struct TYPE_OF_DATA##_event { \
     size_t event_type; \
