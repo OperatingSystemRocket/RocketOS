@@ -9,8 +9,8 @@ size_t number_of_pages_allocated; //TODO might remove `last_free_virtual_address
 uint32_t* head;
 
 
-
 uint32_t bytes_to_words(uint32_t bytes);
+uint32_t round_up_to_nearest_n_power(uint32_t num_to_round, uint32_t multiple);
 
 uint32_t get_size(uint32_t size_word);
 bool get_allocated_bit(uint32_t size_word);
@@ -50,6 +50,9 @@ static bool increase_memory_pool(void) {
 }
 
 static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const block) {
+    kassert(get_allocated_bit(block[0]) == false, NULL);
+
+
     if(get_size(block[0]) <= 2*MIN_BLOCK_SIZE) {
         block[0] |= 0x80000000;
         block[(get_size(block[0]))-1] |= 0x80000000;
@@ -112,12 +115,10 @@ void kdynamic_memory_init(void) {
     head[WORDS_IN_PAGE-1] = WORDS_IN_PAGE; //duplicate of first word of block
 }
 
-//TODO: ask OS if no suitable memory found
 void* kmalloc(const size_t size) {
     if(size == 0u) return NULL;
 
     const uint32_t size_in_words = (size/BYTES_IN_WORD) + (size%BYTES_IN_WORD > 0) + 4; //the +4 is for the 4 bookkeeping words in a block
-
 
     do {
         uint32_t* current_block = head;
@@ -127,6 +128,7 @@ void* kmalloc(const size_t size) {
                 //TODO: try using best fit policy
                 uint32_t *const ret = allocate_block(size_in_words, current_block)-3;
                 kassert((uint32_t*) ret[1] == NULL && (uint32_t*) ret[2] == NULL, NULL);
+
                 return ret+3;
             }
             current_block = (uint32_t*)current_block[2];
@@ -251,12 +253,12 @@ void* krealloc(void *const ptr, const size_t new_size) {
 
     uint32_t *const block_head = ((uint32_t*)ptr)-3;
 
-    if((bytes_to_words(new_size_in_words)+4) == get_size(block_head[0])) {
+    if((new_size_in_words+4u) == get_size(block_head[0])) {
         return ptr; //do nothing if already the correct size
     }
-    else if((bytes_to_words(new_size_in_words)+4) > get_size(block_head[0])) { //grow allocated block
+    else if((new_size_in_words+4u) > get_size(block_head[0])) { //grow allocated block
         uint32_t *const next_block_head = (uint32_t*) block_head[get_size(block_head[0])];
-        if(!get_allocated_bit(next_block_head[0]) && get_size(block_head[0]) + get_size(next_block_head[0]) >= new_size_in_words) {
+        if((next_block_head < last_free_virtual_address) && !get_allocated_bit(next_block_head[0]) && ((get_size(block_head[0]) + get_size(next_block_head[0])) >= new_size_in_words)) {
             const size_t new_next_block_size = next_block_head[0] - (new_size_in_words - get_size(block_head[0]));
             const size_t memory_taken_from_next_block = next_block_head[0] - new_next_block_size;
 
@@ -276,7 +278,7 @@ void* krealloc(void *const ptr, const size_t new_size) {
             }
             else {
                 //TODO: investigate if this is correct
-                uint32_t *const start_of_new_next_block = (uint32_t*) (new_next_block_size+new_next_block_size);
+                uint32_t *const start_of_new_next_block = (uint32_t*) (next_block_head+new_next_block_size);
 
                 uint32_t *const prev = (uint32_t*) next_block_head[1];
                 start_of_new_next_block[1] = (uint32_t) prev;
@@ -300,7 +302,7 @@ void* krealloc(void *const ptr, const size_t new_size) {
         }
         else {
             uint32_t *const new_memory_block = zeroed_out_kmalloc(new_size);
-            kmemcpy(new_memory_block, ptr, get_size(block_head[0])-4);
+            kmemcpy(new_memory_block, ptr, BYTES_IN_WORD*(get_size(block_head[0])-4));
             kfree(ptr);
             return new_memory_block;
         }

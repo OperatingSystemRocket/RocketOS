@@ -24,6 +24,9 @@
 
 #include "pci_bus.h"
 
+#include "hashmap.h"
+#include "default_hashmap_functions.h"
+
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
 
@@ -77,6 +80,41 @@ void kernel_main(void) {
         }
     }
     kprintf("vendor end\n");
+
+
+    kprintf("\n\n");
+    struct hashmap hashmap;
+    hashmap_init(&hashmap, &hash_function, &comp);
+
+    hashmap_add(&hashmap, "Hello", 15u);
+
+    kprintf("\n");
+
+    hashmap_add(&hashmap, "foo", 31u);
+
+    kprintf("\n");
+
+    uint32_t *const data_from_find = hashmap_find(&hashmap, "Hello");
+    kprintf("data_from_find: %u\n", *data_from_find);
+
+    kprintf("\n");
+
+    struct return_type data_from_remove = hashmap_remove(&hashmap, "Hello");
+    if(data_from_remove.succeeded) {
+        kprintf("data_from_remove: %u\n", data_from_remove.data);
+        kprintf("\n");
+    }
+
+    uint32_t *const data_from_find2 = hashmap_find(&hashmap, "Hello");
+    kprintf("data_from_find2 address: %p\n", data_from_find2);
+
+    kprintf("\n");
+
+    uint32_t *const data_from_find3 = hashmap_find(&hashmap, "foo");
+    kprintf("data_from_find3: %u\n", *data_from_find3);
+
+    hashmap_destroy(&hashmap);
+    kprintf("\n\n");
 
 
     struct default_terminal_context *const data = get_default_terminal_context();

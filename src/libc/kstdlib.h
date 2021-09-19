@@ -10,7 +10,18 @@
 
 
 inline uint32_t bytes_to_words(const uint32_t bytes) {
-    return (bytes/4) + (bytes%4 > 0);
+    return (bytes/4u) + (bytes%4u > 0);
+}
+
+inline uint32_t round_up_to_nearest_n_power(const uint32_t num_to_round, const uint32_t multiple) {
+    if(multiple == 0u) return num_to_round;
+
+    uint32_t remainder = num_to_round % multiple;
+    if(remainder == 0u) {
+        return num_to_round;
+    }
+
+    return num_to_round + multiple - remainder;
 }
 
 inline uint32_t get_size(const uint32_t size_word) {

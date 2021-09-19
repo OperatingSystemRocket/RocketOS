@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-
+//this is a fixed size type safe ring buffer implementation
 #define GENERATE_QUEUE_DECLARATION(MAX_NUM_OF_ITEMS, TYPE_OF_DATA) \
 struct queue_##TYPE_OF_DATA##_##MAX_NUM_OF_ITEMS { \
     uint32_t read_index; \
