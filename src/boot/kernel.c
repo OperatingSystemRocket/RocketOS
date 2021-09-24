@@ -66,16 +66,21 @@ void kernel_main(void) {
     write_tss();
 
 
-    kprintf("0xFFFF: %u\n", 0xFFFFu);
+    kprintf("\n0xFFFF: %u\n", 0xFFFFu);
+    bool first_pci_entry = true;
     for(uint16_t bus = 0u; bus < 256u; ++bus) {
         for(uint8_t slot = 0u; slot < 32u; ++slot) {
             const uint8_t u8_bus = (uint8_t)bus;
             const uint16_t vendor = pci_config_read_word(u8_bus, slot, 0u, 0u);
             if(vendor != 0xFFFFu) {
-                kprintf("bus: %u, slot: %u, vendor: %X, device: %X, header_type: %u, header_type_type: %u, header_type_mf: %u, subsystem_vendor_id: %X, subsystem_id: %X, revision_info: %u\n\n",
+                if(!first_pci_entry) {
+                    kprintf("\n");
+                }
+                kprintf("bus: %u, slot: %u, vendor: %X, device: %X, header_type: %u, header_type_type: %u, header_type_mf: %u, subsystem_vendor_id: %X, subsystem_id: %X, revision_info: %u\n",
                     bus, slot, vendor, get_device(u8_bus, slot),
                     get_header_type(u8_bus, slot), get_header_type_header_type(u8_bus, slot), get_header_type_mf(u8_bus, slot),
                     get_subsystem_vendor_id(u8_bus, slot), get_subsystem_id(u8_bus, slot), pci_config_read_word(u8_bus, slot, 0u, 0x08u));
+                first_pci_entry = false;
             }
         }
     }
@@ -86,11 +91,15 @@ void kernel_main(void) {
     struct hashmap hashmap;
     hashmap_init(&hashmap, &hash_function, &comp);
 
+    kprintf("hashmap.num_of_entries: %u\n", hashmap.num_of_entries);
+
     hashmap_add(&hashmap, "Hello", 15u);
 
-    kprintf("\n");
+    kprintf("\nhashmap.num_of_entries: %u\n", hashmap.num_of_entries);
 
     hashmap_add(&hashmap, "foo", 31u);
+
+    kprintf("\nhashmap.num_of_entries: %u\n", hashmap.num_of_entries);
 
     kprintf("\n");
 
@@ -104,6 +113,8 @@ void kernel_main(void) {
         kprintf("data_from_remove: %u\n", data_from_remove.data);
         kprintf("\n");
     }
+
+    kprintf("hashmap.num_of_entries: %u\n\n", hashmap.num_of_entries);
 
     uint32_t *const data_from_find2 = hashmap_find(&hashmap, "Hello");
     kprintf("data_from_find2 address: %p\n", data_from_find2);

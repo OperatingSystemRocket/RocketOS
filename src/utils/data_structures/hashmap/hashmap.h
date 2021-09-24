@@ -22,8 +22,9 @@ struct hashmap {
         TYPE_OF_KEY key;
         struct entry* prev;
         struct entry* next;
-    }** data_entries;
-    size_t num_of_entries; //size of the data_entries array, not the total number of data entries
+    }** list_of_buckets;
+    size_t num_of_buckets;
+    size_t num_of_entries;
     uint32_t (*hash_function)(TYPE_OF_KEY);
     bool (*comp)(TYPE_OF_KEY, TYPE_OF_KEY);
 };
