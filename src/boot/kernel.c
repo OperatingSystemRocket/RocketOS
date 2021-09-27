@@ -84,48 +84,58 @@ void kernel_main(void) {
             }
         }
     }
-    kprintf("vendor end\n");
+    kprintf("vendor end\n\n");
 
 
-    kprintf("\n\n");
     struct hashmap hashmap;
     hashmap_init(&hashmap, &hash_function, &comp);
 
-    kprintf("hashmap.num_of_entries: %u\n", hashmap.num_of_entries);
+    hashmap_add(&hashmap, "Hello", 5);
+    uint32_t *const find_hello_1 = hashmap_find(&hashmap, "Hello");
 
-    hashmap_add(&hashmap, "Hello", 15u);
+    hashmap_add(&hashmap, "foo", 4);
+    uint32_t *const find_hello_2 = hashmap_find(&hashmap, "Hello");
+    uint32_t *const find_foo_1 = hashmap_find(&hashmap, "foo");
 
-    kprintf("\nhashmap.num_of_entries: %u\n", hashmap.num_of_entries);
+    hashmap_add(&hashmap, "foo2", 3);
+    uint32_t *const find_hello_3 = hashmap_find(&hashmap, "Hello");
+    uint32_t *const find_foo_2 = hashmap_find(&hashmap, "foo");
+    uint32_t *const find_foo2_1 = hashmap_find(&hashmap, "foo2");
 
-    hashmap_add(&hashmap, "foo", 31u);
+    hashmap_add(&hashmap, "foo3", 7);
+    uint32_t *const find_hello_4 = hashmap_find(&hashmap, "Hello");
+    uint32_t *const find_foo_3 = hashmap_find(&hashmap, "foo");
+    uint32_t *const find_foo2_2 = hashmap_find(&hashmap, "foo2");
+    uint32_t *const find_foo3_1 = hashmap_find(&hashmap, "foo3");
 
-    kprintf("\nhashmap.num_of_entries: %u\n", hashmap.num_of_entries);
+    hashmap_add(&hashmap, "lsakdj", 1029);
+    uint32_t *const find_hello_5 = hashmap_find(&hashmap, "Hello");
+    uint32_t *const find_foo_4 = hashmap_find(&hashmap, "foo");
+    uint32_t *const find_foo2_3 = hashmap_find(&hashmap, "foo2");
+    uint32_t *const find_foo3_2 = hashmap_find(&hashmap, "foo3");
+    uint32_t *const find_lsakdj_1 = hashmap_find(&hashmap, "lsakdj");
 
-    kprintf("\n");
+    kassert_void((*find_hello_1) == 5);
+    kassert_void((*find_foo_1) == 4);
+    kassert_void((*find_foo2_1) == 3);
+    kassert_void((*find_foo3_1) == 7);
+    kassert_void((*find_lsakdj_1) == 1029);
 
-    uint32_t *const data_from_find = hashmap_find(&hashmap, "Hello");
-    kprintf("data_from_find: %u\n", *data_from_find);
+    kassert_void(find_hello_1 == find_hello_2);
+    kassert_void(find_hello_2 == find_hello_3);
+    kassert_void(find_hello_3 == find_hello_4);
+    kassert_void(find_hello_4 == find_hello_5);
 
-    kprintf("\n");
+    kassert_void(find_foo_1 == find_foo_2);
+    kassert_void(find_foo_2 == find_foo_3);
+    kassert_void(find_foo_3 == find_foo_4);
 
-    struct return_type data_from_remove = hashmap_remove(&hashmap, "Hello");
-    if(data_from_remove.succeeded) {
-        kprintf("data_from_remove: %u\n", data_from_remove.data);
-        kprintf("\n");
-    }
+    kassert_void(find_foo2_1 == find_foo2_2);
+    kassert_void(find_foo2_2 == find_foo2_3);
 
-    kprintf("hashmap.num_of_entries: %u\n\n", hashmap.num_of_entries);
-
-    uint32_t *const data_from_find2 = hashmap_find(&hashmap, "Hello");
-    kprintf("data_from_find2 address: %p\n", data_from_find2);
-
-    kprintf("\n");
-
-    uint32_t *const data_from_find3 = hashmap_find(&hashmap, "foo");
-    kprintf("data_from_find3: %u\n", *data_from_find3);
+    kassert_void(find_foo3_1 == find_foo3_2);
 
     hashmap_destroy(&hashmap);
-    kprintf("\n\n");
 
 
     struct default_terminal_context *const data = get_default_terminal_context();

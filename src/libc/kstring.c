@@ -131,17 +131,15 @@ char* kstrrchr(char *const str, const int32_t character) {
 int32_t kstrcmp(const char *const lhs, const char *const rhs) {
     kassert(lhs != NULL && rhs != NULL, -2);
 
-	size_t index = 0u;
-	while (lhs[index]) {
-		if (lhs[index] == rhs[index]) {
-			index++;
-		} else if (lhs[index] < rhs[index]) {
-			return -1;
-		} else {
-			return 1;
-		}
-	}
-	return 0;
+    size_t i = 0u;
+    for(; lhs[i] && rhs[i] && lhs[i] == rhs[i]; ++i);
+
+    if(lhs[i] < rhs[i]) {
+        return -1;
+    } else if(lhs[i] > rhs[i]) {
+        return 1;
+    }
+    return 0;
 }
 
 int32_t kstrncmp(const char *const lhs, const char *const rhs, const size_t sz) {
