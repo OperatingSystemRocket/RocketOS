@@ -148,7 +148,7 @@ void default_run_command(void *const context, char *const command) {
             if(kstrlen(command) > 5) {
                 terminal_writestring(terminal_context_ptr->vga_context, kstrcat(command + 5, "\n"));
             } else {
-                terminal_writestring(terminal_context_ptr->vga_context, "'echo' requires one argument!\n");
+                terminal_writestring_color(terminal_context_ptr->vga_context, "'echo' requires one argument!\n", VGA_COLOR_RED);
             }
         }
     } else if(kstrncmp(command, "help", 4) == 0) {

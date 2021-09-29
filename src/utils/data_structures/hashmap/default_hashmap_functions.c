@@ -1,7 +1,7 @@
 #include "default_hashmap_functions.h"
 
 
-uint32_t hash_function(const char *const str_to_hash) {
+uint32_t str_hash_function(const char *const str_to_hash) {
     uint32_t hash = 0u;
 
     const size_t str_len = kstrlen(str_to_hash);
@@ -12,6 +12,6 @@ uint32_t hash_function(const char *const str_to_hash) {
     return hash;
 }
 
-bool comp(const char *const str1, const char *const str2) {
+bool str_comp(const char *const str1, const char *const str2) {
     return kstrcmp(str1, str2) == 0;
 }

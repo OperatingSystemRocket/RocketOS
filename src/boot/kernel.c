@@ -30,6 +30,11 @@
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
 
+typedef const char* str;
+
+GENERATE_HASHMAP_DECLARATION(str, uint32_t)
+GENERATE_HASHMAP_DEFINITION(str, uint32_t, str_comp)
+
 void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
     (void) mboot_header; //needed for calling convention reasons, but currently unused
 
@@ -87,33 +92,33 @@ void kernel_main(void) {
     kprintf("vendor end\n\n");
 
 
-    struct hashmap hashmap;
-    hashmap_init(&hashmap, &hash_function, &comp);
+    struct HASHMAP_STRUCT(str, uint32_t) hashmap;
+    HASHMAP_INIT(str, uint32_t, &hashmap, &str_hash_function);
 
-    hashmap_add(&hashmap, "Hello", 5);
-    uint32_t *const find_hello_1 = hashmap_find(&hashmap, "Hello");
+    HASHMAP_ADD(str, uint32_t, &hashmap, "Hello", 5);
+    uint32_t *const find_hello_1 = HASHMAP_FIND(str, uint32_t, &hashmap, "Hello");
 
-    hashmap_add(&hashmap, "foo", 4);
-    uint32_t *const find_hello_2 = hashmap_find(&hashmap, "Hello");
-    uint32_t *const find_foo_1 = hashmap_find(&hashmap, "foo");
+    HASHMAP_ADD(str, uint32_t, &hashmap, "foo", 4);
+    uint32_t *const find_hello_2 = HASHMAP_FIND(str, uint32_t, &hashmap, "Hello");
+    uint32_t *const find_foo_1 = HASHMAP_FIND(str, uint32_t, &hashmap, "foo");
 
-    hashmap_add(&hashmap, "foo2", 3);
-    uint32_t *const find_hello_3 = hashmap_find(&hashmap, "Hello");
-    uint32_t *const find_foo_2 = hashmap_find(&hashmap, "foo");
-    uint32_t *const find_foo2_1 = hashmap_find(&hashmap, "foo2");
+    HASHMAP_ADD(str, uint32_t, &hashmap, "foo2", 3);
+    uint32_t *const find_hello_3 = HASHMAP_FIND(str, uint32_t, &hashmap, "Hello");
+    uint32_t *const find_foo_2 = HASHMAP_FIND(str, uint32_t, &hashmap, "foo");
+    uint32_t *const find_foo2_1 = HASHMAP_FIND(str, uint32_t, &hashmap, "foo2");
 
-    hashmap_add(&hashmap, "foo3", 7);
-    uint32_t *const find_hello_4 = hashmap_find(&hashmap, "Hello");
-    uint32_t *const find_foo_3 = hashmap_find(&hashmap, "foo");
-    uint32_t *const find_foo2_2 = hashmap_find(&hashmap, "foo2");
-    uint32_t *const find_foo3_1 = hashmap_find(&hashmap, "foo3");
+    HASHMAP_ADD(str, uint32_t, &hashmap, "foo3", 7);
+    uint32_t *const find_hello_4 = HASHMAP_FIND(str, uint32_t, &hashmap, "Hello");
+    uint32_t *const find_foo_3 = HASHMAP_FIND(str, uint32_t, &hashmap, "foo");
+    uint32_t *const find_foo2_2 = HASHMAP_FIND(str, uint32_t, &hashmap, "foo2");
+    uint32_t *const find_foo3_1 = HASHMAP_FIND(str, uint32_t, &hashmap, "foo3");
 
-    hashmap_add(&hashmap, "lsakdj", 1029);
-    uint32_t *const find_hello_5 = hashmap_find(&hashmap, "Hello");
-    uint32_t *const find_foo_4 = hashmap_find(&hashmap, "foo");
-    uint32_t *const find_foo2_3 = hashmap_find(&hashmap, "foo2");
-    uint32_t *const find_foo3_2 = hashmap_find(&hashmap, "foo3");
-    uint32_t *const find_lsakdj_1 = hashmap_find(&hashmap, "lsakdj");
+    HASHMAP_ADD(str, uint32_t, &hashmap, "lsakdj", 1029);
+    uint32_t *const find_hello_5 = HASHMAP_FIND(str, uint32_t, &hashmap, "Hello");
+    uint32_t *const find_foo_4 = HASHMAP_FIND(str, uint32_t, &hashmap, "foo");
+    uint32_t *const find_foo2_3 = HASHMAP_FIND(str, uint32_t, &hashmap, "foo2");
+    uint32_t *const find_foo3_2 = HASHMAP_FIND(str, uint32_t, &hashmap, "foo3");
+    uint32_t *const find_lsakdj_1 = HASHMAP_FIND(str, uint32_t, &hashmap, "lsakdj");
 
     kassert_void((*find_hello_1) == 5);
     kassert_void((*find_foo_1) == 4);
@@ -135,7 +140,7 @@ void kernel_main(void) {
 
     kassert_void(find_foo3_1 == find_foo3_2);
 
-    hashmap_destroy(&hashmap);
+    HASHMAP_DESTROY(str, uint32_t, &hashmap);
 
 
     struct default_terminal_context *const data = get_default_terminal_context();
