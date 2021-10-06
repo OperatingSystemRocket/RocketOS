@@ -13,7 +13,7 @@
 
 #define HASHMAP_RESIZE_FACTOR 2
 #define HASHMAP_LOAD_FACTOR 2 //entries:buckets ratio of when to reallocate the entries array for more buckets
-#define HASHMAP_STARTING_NUM_OF_BUCKETS 2 //256
+#define HASHMAP_STARTING_NUM_OF_BUCKETS 256
 
 
 #define GENERATE_HASHMAP_DECLARATION(TYPE_OF_KEY, TYPE_OF_DATA) \
