@@ -1,6 +1,6 @@
 [submodule "Unity"]
 	path = Unity
 	url = https://github.com/OperatingSystemRocket/Unity.git
-[submodule "src/acpica"]
-	path = src/acpica
+[submodule "acpica"]
+	path = acpica
 	url = https://github.com/OperatingSystemRocket/acpica.git
