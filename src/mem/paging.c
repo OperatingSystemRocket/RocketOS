@@ -15,8 +15,12 @@ https://web.archive.org/web/20151025081259/http://www.intel.com/content/dam/www/
 
 static uint32_t* default_page_directory;
 
+GENERATE_BITMAP(virtual_memory, NUMBER_OF_PAGES, PAGE_SIZE)
+static struct BITMAP_TYPENAME(virtual_memory) virtual_pages;
+static uint32_t bitmap_page_permissions[NUMBER_OF_PAGES/32u]; //store 0 for kernel, 1 for user
 
-static void identity_map_page(const uint32_t page_directory, const uint32_t address, const uint32_t pt_flags, const uint32_t pd_flags) {
+
+void identity_map_page(const uint32_t page_directory, const uint32_t address, const uint32_t pt_flags, const uint32_t pd_flags) {
     const uint32_t page_index = address / PAGE_SIZE;
     const uint32_t table_index = page_index / 1024;
     const uint32_t page_index_in_table = page_index % 1024;
@@ -40,6 +44,16 @@ static void identity_map_page(const uint32_t page_directory, const uint32_t addr
 }
 
 void paging_init(void) {
+    kmemset(virtual_pages.bitset, 0u, sizeof(virtual_pages.bitset));
+    virtual_pages.has_filled_bitset_cache = false;
+    for(int32_t i = 0; i < 20; ++i) {
+        virtual_pages.bitset_cache[i] = -1;
+    }
+
+    kmemset(bitmap_page_permissions, 1u, sizeof(bitmap_page_permissions));
+
+
+
     default_page_directory = allocate_page(CRITICAL_KERNEL_USE); //page frame allocator returns page aligned blocks of 4KiB of memory
 
     for(int32_t i = 0; i < 1024; ++i) {
@@ -50,11 +64,6 @@ void paging_init(void) {
         default_page_directory[i] = 0x00000002u;
     }
     serial_writestring("default_page_directory created successfully\n");
-
-    for(uint32_t i = 0u; i < (uint32_t) get_first_nonreserved_address(); i += PAGE_SIZE) {
-        identity_map_page((uint32_t)default_page_directory, i, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
-    }
-    serial_writestring("indentity mapping done successfully\n");
 
 
     uint32_t *const first_page_table = allocate_page(CRITICAL_KERNEL_USE);
@@ -69,8 +78,9 @@ void paging_init(void) {
     // attributes: user level, read/write, present
     default_page_directory[0] = ((uint32_t)first_page_table) | (PT_PRESENT | PT_RW | PT_USER);
     serial_writestring("page table set successfully\n");
+}
 
-
+void load_and_turn_on_paging(void) {
     load_page_directory(default_page_directory);
     serial_writestring("page directory loaded successfully\n");
 
@@ -81,6 +91,33 @@ void paging_init(void) {
 
     enable_paging();
     serial_writestring("paging enabled successfully\n");
+}
+
+void reserve_virtual_address(const uint32_t virtual_address, const size_t num_of_pages, const enum memory_type type) {
+    const uint32_t start_page_index = virtual_address / PAGE_SIZE;
+
+    //TODO: replace with call to kmemset at some point
+    for(uint32_t i = 0u; i < num_of_pages; ++i) {
+        bitset_set_at(start_page_index+i, virtual_pages.bitset, true);
+    }
+
+    //TODO: replace with call to kmemset at some point
+    const bool memory_permission = (type == USER_USE);
+    for(uint32_t i = 0u; i < num_of_pages; ++i) {
+        bitset_set_at(start_page_index+i, bitmap_page_permissions, memory_permission);
+    }
+}
+
+//TODO: test to see if it works
+uint32_t get_physical_address(const void *const virtual_address) {
+    const uint32_t page_index = (uint32_t)virtual_address / PAGE_SIZE;
+    const uint32_t table_index = page_index / 1024;
+    const uint32_t page_index_in_table = page_index % 1024;
+
+    const uint32_t *const page_directory = default_page_directory;
+    const uint32_t *const page_table = (uint32_t*) (page_directory[table_index] & 0xFFFFF000u);
+
+    return page_table[page_index_in_table] & 0xFFFFF000u;
 }
 
 void map_page(void *const virtual_address, const uint32_t phys_frame, const uint32_t pt_flags, const uint32_t pd_flags) {

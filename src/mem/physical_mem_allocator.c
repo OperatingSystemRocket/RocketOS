@@ -5,114 +5,80 @@
 extern uint32_t endkernel;
 
 
-#define NUMBER_OF_PAGES (0x100000000u/PAGE_SIZE)
+GENERATE_BITMAP(physical_mem_allocation, NUMBER_OF_PAGES, PAGE_SIZE)
+GENERATE_BITMAP(kernel_physical_mem_allocation, NUMBER_OF_PAGES_IN_KERNEL_HEAP, PAGE_SIZE)
 
+static struct BITMAP_TYPENAME(physical_mem_allocation) global_physical_memory_bitmap;
+static struct BITMAP_TYPENAME(kernel_physical_mem_allocation) kernel_heap_bitmap;
 
-#define NUMBER_OF_PAGES_IN_KERNEL_HEAP (4096u)
+static size_t number_of_permanently_reserved_pages;
+static size_t number_of_pages_used;
 
-
-uint32_t global_heap[NUMBER_OF_PAGES/32u] __attribute__((aligned(PAGE_SIZE))); //each bit in this buffer is a page
-bool has_filled_freed_pages_list = false;
-//global page cache
-int32_t most_recently_freed_pages[20u]; //store a cache of 20 pages so that we only have to do expensive allocation every 20 pages
-
-
-uint32_t internal_kernel_heap[NUMBER_OF_PAGES_IN_KERNEL_HEAP/32u] __attribute__((aligned(PAGE_SIZE)));
-bool kernel_page_cache_seached = false;
-int32_t internal_kernel_free_page_cache[20u];
-
-
-uint32_t* first_nonreserved_address;
+static uint32_t* first_nonreserved_address;
 
 
 void allocate_init(void) {
-    kmemset(global_heap, 0, sizeof(uint32_t) * (NUMBER_OF_PAGES/32u));
-    for(int32_t i = 0; i < 20; ++i) {
-        most_recently_freed_pages[i] = -1;
-    }
+    bitmap_allocator_init(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, global_physical_memory_bitmap.bitset_cache, CACHE_N, &global_physical_memory_bitmap.has_filled_bitset_cache);
+    //kmemset(global_physical_memory_bitmap.bitset, 0u, sizeof(global_physical_memory_bitmap.bitset));
+    //global_physical_memory_bitmap.has_filled_bitset_cache = false;
+    //for(int32_t i = 0; i < 20; ++i) {
+    //    global_physical_memory_bitmap.bitset_cache[i] = -1;
+    //}
+
+    //reserve the memory for the kernel heap so that it isn't allocated in the global heap
+    bitmap_allocator_init(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, kernel_heap_bitmap.bitset_cache, CACHE_N, &kernel_heap_bitmap.has_filled_bitset_cache);
+    //[kmemset(kernel_heap_bitmap.bitset, 0u, sizeof(kernel_heap_bitmap.bitset));
+    //kernel_heap_bitmap.has_filled_bitset_cache = false;
+    //for(int32_t i = 0; i < 20; ++i) {
+    //    kernel_heap_bitmap.bitset_cache[i] = -1;
+    //}
+
 
     const uintptr_t end_address = (uintptr_t)&endkernel;
-    size_t number_of_pages_used = end_address / PAGE_SIZE;
+    number_of_pages_used = end_address / PAGE_SIZE;
     if(number_of_pages_used % PAGE_SIZE) {
         ++number_of_pages_used;
     }
     //reserve an extra 4 MiB to make sure the multiboot structure is safe
     number_of_pages_used += 1024u;
 
-    const size_t number_of_permanently_reserved_pages = number_of_pages_used;
-    number_of_pages_used += NUMBER_OF_PAGES_IN_KERNEL_HEAP; //reserve the memory for the kernel heap so that it isn't allocated in the global heap
-    kmemset(internal_kernel_heap, 0, sizeof(uint32_t) * (NUMBER_OF_PAGES_IN_KERNEL_HEAP/32u));
-    for(int32_t i = 0; i < 20; ++i) {
-        internal_kernel_free_page_cache[i] = -1;
-    }
+    //CRITICAL_KERNEL_USE number
+    number_of_permanently_reserved_pages = number_of_pages_used;
 
-    kassert_void(number_of_pages_used > 0);
-
-    //Marks all pages that are used by the kernel and below as used in the page table cache and never frees them.
-    //This also protects some mmio addresses/ports.
-    //TODO: replace with call to kmemset at some point
-    for(uint32_t i = 0u; i < number_of_pages_used/32u; ++i) {
-        global_heap[i] = 0xFFFFFFFFu;
-    }
-    for(uint8_t i = 0u; i < number_of_pages_used%32u; ++i) {
-        set_at(number_of_pages_used-i-1u, global_heap, true);
-    }
-
-    for(uint32_t i = 0u; i < number_of_permanently_reserved_pages/32u; ++i) {
-        internal_kernel_heap[i] = 0xFFFFFFFF;
-    }
-    for(uint8_t i = 0u; i < number_of_permanently_reserved_pages%32u; ++i) {
-        set_at(number_of_permanently_reserved_pages-i-1u, internal_kernel_heap, true);
-    }
+    number_of_pages_used += NUMBER_OF_PAGES_IN_KERNEL_HEAP;
 
     first_nonreserved_address = (void*)(number_of_pages_used*PAGE_SIZE);
 }
 
 
-void* allocate_page_impl(uint32_t *const bookkeeping_bitset, const size_t number_of_entries, int32_t *const page_cache, bool *const has_searched_cache) {
-    for(int32_t i = 0; i < 20; ++i) {
-        const int32_t current_entry = page_cache[i];
-        if(current_entry != -1) {
-            page_cache[i] = -1;
-            bookkeeping_bitset[current_entry/32] |= 1u << (current_entry%32);
-            *has_searched_cache = false;
-            kprintf("allocated index: %i\n", current_entry);
-            return (void*)(current_entry*PAGE_SIZE);
+void reserve_physical_address(const uint32_t physical_address, const size_t num_of_pages, const enum memory_type type) {
+    const uint32_t start_page_index = physical_address / PAGE_SIZE;
+
+    //TODO: replace with call to kmemset at some point
+    for(uint32_t i = 0u; i < num_of_pages/32u; ++i) {
+        global_physical_memory_bitmap.bitset[start_page_index+i] = 0xFFFFFFFFu;
+    }
+    for(uint32_t i = 0u; i < num_of_pages%32u; ++i) {
+        bitset_set_at(start_page_index+i, global_physical_memory_bitmap.bitset, true);
+    }
+
+    if(type == CRITICAL_KERNEL_USE) {
+        //TODO: replace with call to kmemset at some point
+        for(uint32_t i = 0u; i < num_of_pages/32u; ++i) {
+            kernel_heap_bitmap.bitset[start_page_index/32] = 0xFFFFFFFFu;
+        }
+        for(uint32_t i = 0u; i < num_of_pages%32u; ++i) {
+            bitset_set_at(start_page_index+i, kernel_heap_bitmap.bitset, true);
         }
     }
-
-
-    //we have already tried to allocate pages and failed
-    if(*has_searched_cache) {
-        *has_searched_cache = false; //we will try to allocate next time this function is called
-        return NULL;
-    }
-
-    //page table cache is empty, must do expensive allocation:
-    for(uint32_t i = 0u, number_of_free_pages = 0u; i < 1024u && number_of_free_pages < 20u; ++i) {
-        const uint32_t current_pages = bookkeeping_bitset[i];
-        //at least one bit is 0
-        if(current_pages != 0xFFFFFFFF) {
-            for(uint8_t j = 0u; j < 32u && number_of_free_pages < 20u; ++j) {
-                if(!at((i*32u)+j, bookkeeping_bitset)) {
-                    page_cache[number_of_free_pages++] = (int32_t) ((i*32u)+j);
-                }
-            }
-        }
-    }
-    //we store this to be able to detect if we are out of memory
-    *has_searched_cache = true; //it might not have filled the page table if there is no free memory or not enough freed memory
-
-
-    return allocate_page_impl(bookkeeping_bitset, number_of_entries, page_cache, has_searched_cache); //grabs the first page from most_recently_freed_pages and triggers the early return.
 }
 
 
 void* allocate_page(const enum memory_type allocation_type) {
     if(allocation_type == USER_USE) {
-        return allocate_page_impl(global_heap, NUMBER_OF_PAGES/32u, most_recently_freed_pages, &has_filled_freed_pages_list);
+        return bitmap_allocate(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, global_physical_memory_bitmap.bitset_cache, CACHE_N, &global_physical_memory_bitmap.has_filled_bitset_cache);
     }
-    return allocate_page_impl(internal_kernel_heap, NUMBER_OF_PAGES_IN_KERNEL_HEAP/32u, internal_kernel_free_page_cache, &kernel_page_cache_seached);
+    return bitmap_allocate(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, kernel_heap_bitmap.bitset_cache, CACHE_N, &kernel_heap_bitmap.has_filled_bitset_cache);
 }
 
 
@@ -120,12 +86,22 @@ void free_page(const enum memory_type allocation_type, const void *const page) {
     kprintf("freed page: %i\n", ((uintptr_t)page)/PAGE_SIZE);
 
     if(allocation_type == USER_USE) {
-        set_at(((uintptr_t)page)/PAGE_SIZE, global_heap, 0u);
+        bitmap_free(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, ((uintptr_t)page)/PAGE_SIZE);
+        //bitset_set_at(((uintptr_t)page)/PAGE_SIZE, global_physical_memory_bitmap.bitset, 0u);
     } else {
-        set_at(((uintptr_t)page)/PAGE_SIZE, internal_kernel_heap, 0u);
+        bitmap_free(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, ((uintptr_t)page)/PAGE_SIZE);
+        //bitset_set_at(((uintptr_t)page)/PAGE_SIZE, kernel_heap_bitmap.bitset, 0u);
     }
 }
 
+
+size_t get_number_of_permanently_reserved_pages(void) {
+    return number_of_permanently_reserved_pages;
+}
+
+size_t get_number_of_pages_used(void) {
+    return number_of_pages_used;
+}
 
 void* get_first_nonreserved_address(void) {
     return first_nonreserved_address;

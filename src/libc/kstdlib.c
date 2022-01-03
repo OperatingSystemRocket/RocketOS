@@ -3,10 +3,10 @@
 #include "kstdlib_constants.h"
 
 
-uint32_t* first_free_virtual_address; //points to start of first page
-uint32_t* last_free_virtual_address; //points to start of last page
-size_t number_of_pages_allocated; //TODO might remove `last_free_virtual_address`
-uint32_t* head;
+static uint32_t* first_free_virtual_address; //points to start of first page
+static uint32_t* last_free_virtual_address; //points to start of last page
+static size_t number_of_pages_allocated; //TODO might remove `last_free_virtual_address`
+static uint32_t* head;
 
 
 uint32_t bytes_to_words(uint32_t bytes);
@@ -17,36 +17,40 @@ bool get_allocated_bit(uint32_t size_word);
 
 
 //TODO: do this in a way to where it can increase by more than a page at a time (implement brk and sbrk in `paging`)
-//asks OS for an extra page
+//asks OS for a physical page
 static bool increase_memory_pool(void) {
-    const uint32_t phys_addr = allocate_virtual_page(last_free_virtual_address, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    if(number_of_pages_allocated < get_max_heap_size()) {
+        const uint32_t phys_addr = allocate_virtual_page(last_free_virtual_address, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
 
 
-    if(phys_addr) {
-        kassert(last_free_virtual_address+WORDS_IN_PAGE > (uint32_t*) get_first_nonreserved_address(), false);
-        if(!get_allocated_bit(last_free_virtual_address[-1])) {
-            uint32_t *const new_block_ptr = last_free_virtual_address-last_free_virtual_address[-1];
+        if(phys_addr) {
+            kassert(last_free_virtual_address+WORDS_IN_PAGE > (uint32_t*) get_heap_range_start(), false);
+            if(!get_allocated_bit(last_free_virtual_address[-1])) {
+                uint32_t *const new_block_ptr = last_free_virtual_address-last_free_virtual_address[-1];
 
-            new_block_ptr[0] += WORDS_IN_PAGE;
-            new_block_ptr[new_block_ptr[0]-1] = new_block_ptr[0];
-        } else {
-            //front insertion policy
-            //TODO: try using end insertion policy
-            last_free_virtual_address[0] = 1024u;
-            last_free_virtual_address[1] = (uint32_t) NULL;
-            last_free_virtual_address[2] = (uint32_t) head;
-            if((uint32_t*) last_free_virtual_address[2] != NULL) {
-                ((uint32_t*)last_free_virtual_address[2])[1] = (uint32_t) &last_free_virtual_address[0];
+                new_block_ptr[0] += WORDS_IN_PAGE;
+                new_block_ptr[new_block_ptr[0]-1] = new_block_ptr[0];
+            } else {
+                //front insertion policy
+                //TODO: try using end insertion policy
+                last_free_virtual_address[0] = 1024u;
+                last_free_virtual_address[1] = (uint32_t) NULL;
+                last_free_virtual_address[2] = (uint32_t) head;
+                if((uint32_t*) last_free_virtual_address[2] != NULL) {
+                    ((uint32_t*)last_free_virtual_address[2])[1] = (uint32_t) &last_free_virtual_address[0];
+                }
+                last_free_virtual_address[1023] = last_free_virtual_address[0];
+                head = &last_free_virtual_address[0];
             }
-            last_free_virtual_address[1023] = last_free_virtual_address[0];
-            head = &last_free_virtual_address[0];
+
+            ++number_of_pages_allocated;
+            last_free_virtual_address += WORDS_IN_PAGE;
         }
 
-        ++number_of_pages_allocated;
-        last_free_virtual_address += WORDS_IN_PAGE;
+        return phys_addr;
     }
 
-    return phys_addr;
+    return false; //allocation failed as it has reached the maximum size of the heap
 }
 
 static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const block) {
@@ -99,7 +103,7 @@ static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const b
 
 void kdynamic_memory_init(void) {
     number_of_pages_allocated = 1u;
-    first_free_virtual_address = get_first_nonreserved_address();
+    first_free_virtual_address = get_heap_range_start();
     last_free_virtual_address = first_free_virtual_address;
     allocate_virtual_page(last_free_virtual_address, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     head = last_free_virtual_address;
@@ -201,7 +205,7 @@ void kfree(const void *const payload_ptr) {
         block_ptr[block_ptr[0]-1] = block_ptr[0]; //set last word of the new block to the new coalesced block size
         kassert_void((uint32_t*) block_ptr[1] != &block_ptr[0] && (uint32_t*) block_ptr[2] != &block_ptr[0]);
     }
-    if(block_ptr > (uint32_t*) get_first_nonreserved_address() && !get_allocated_bit(block_ptr[-1])) { //points to last word of the previous block
+    if(block_ptr > (uint32_t*) get_heap_range_start() && !get_allocated_bit(block_ptr[-1])) { //points to last word of the previous block
         const uint32_t old_size = block_ptr[0];
         uint32_t *const old_block_ptr = block_ptr;
 

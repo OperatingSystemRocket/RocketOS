@@ -59,8 +59,9 @@ void kernel_main(void) {
     init_gdt();
     gdt_load();
 
-    allocate_init();
-    paging_init();
+    //allocate_init();
+    //paging_init();
+    initialize_kernel_memory();
     kdynamic_memory_init();
 
     scheduler_init();

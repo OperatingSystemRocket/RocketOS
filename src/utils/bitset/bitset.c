@@ -6,13 +6,13 @@
 
 //use `void*` instead of `unsigned char` to allow implicit pointer conversions
 
-bool at(const uint32_t index, const void *const bitset) {
+bool bitset_at(const uint32_t index, const void *const bitset) {
     const unsigned char *const byte_bitset = bitset;
 
     return byte_bitset[index/NUMBER_OF_BITS_IN_TYPE] & (1u << (index%NUMBER_OF_BITS_IN_TYPE));
 }
 
-void set_at(const uint32_t index, void *const bitset, const bool value) {
+void bitset_set_at(const uint32_t index, void *const bitset, const bool value) {
     unsigned char *const byte_bitset = bitset;
 
     if(value) {
