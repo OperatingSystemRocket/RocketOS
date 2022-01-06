@@ -26,7 +26,7 @@ static void identity_map_page(const uint32_t page_directory, const uint32_t addr
 
     // Check if this table is present and allocate it if not
     uint32_t *const pd_virt = (uint32_t*)page_directory;
-    if ((pd_virt[table_index] & PD_PRESENT) == 0) {
+    if ((pd_virt[table_index] & PD_PRESENT) != PD_PRESENT) {
         const uint32_t pt_phys = (uint32_t)allocate_page(CRITICAL_KERNEL_USE);
 
         pd_virt[table_index] = pt_phys | pd_flags;
@@ -91,14 +91,14 @@ void map_page(void *const virtual_address, const uint32_t phys_frame, const uint
     const uint32_t page_index_in_table = page_index % 1024;
 
     uint32_t *const virt_page_directory = default_page_directory;
-    if((virt_page_directory[table_index] & PD_PRESENT) == 0) {
+    if((virt_page_directory[table_index] & PD_PRESENT) != PD_PRESENT) {
         const uint32_t phys_page_table = (uint32_t)allocate_page(CRITICAL_KERNEL_USE); //will be identity mapped
 
         virt_page_directory[table_index] = phys_page_table | pd_flags;
     }
 
     uint32_t *const virt_page_table = (uint32_t*)((virt_page_directory[table_index]) & 0xFFFFF000u);
-    if((virt_page_table[page_index] & PD_PRESENT) == 0) {
+    if((virt_page_table[page_index_in_table] & PD_PRESENT) == PD_PRESENT) {
         kprintf("Woah, mapping an already mapped page. You should fix this.\n"); //find out why this is being triggered
     }
     //TODO: properly handle the case of someone mapping an already mapped page
@@ -149,4 +149,17 @@ void free_virtual_page(const void *const virtual_address) {
 
 uint32_t* get_default_page_directory(void) {
     return default_page_directory;
+}
+
+
+//TODO: test to see if it works
+uint32_t get_physical_address(const void *const virtual_address) {
+    const uint32_t page_index = (uint32_t)virtual_address / PAGE_SIZE;
+    const uint32_t table_index = page_index / 1024;
+    const uint32_t page_index_in_table = page_index % 1024;
+
+    const uint32_t *const page_directory = default_page_directory;
+    const uint32_t *const page_table = (uint32_t*) (page_directory[table_index] & 0xFFFFF000u);
+
+    return page_table[page_index_in_table] & 0xFFFFF000u;
 }

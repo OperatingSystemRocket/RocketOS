@@ -52,8 +52,7 @@ static bool increase_memory_pool(void) {
 static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const block) {
     kassert(get_allocated_bit(block[0]) == false, NULL);
 
-
-    if(get_size(block[0]) <= 2*MIN_BLOCK_SIZE) {
+    if(get_size(block[0]) <= (size_to_allocate+(2*MIN_BLOCK_SIZE))) {
         block[0] |= 0x80000000;
         block[(get_size(block[0]))-1] |= 0x80000000;
         if((uint32_t*) block[1] != NULL) {
@@ -67,7 +66,7 @@ static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const b
         block[1] = (uint32_t) NULL;
         block[2] = (uint32_t) NULL;
 
-        return block+3;
+        return block;
     }
 
     uint32_t *const new_split_block = block+size_to_allocate; //point to start of new split free block
@@ -94,7 +93,7 @@ static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const b
 
     block[size_to_allocate-1] = size_to_allocate | 0x80000000;
 
-    return block+3; //points to beginning of payload
+    return block; //points to beginning of payload
 }
 
 void kdynamic_memory_init(void) {
@@ -126,10 +125,10 @@ void* kmalloc(const size_t size) {
             if((get_size(current_block[0])) >= size_in_words) {
                 //first fit policy
                 //TODO: try using best fit policy
-                uint32_t *const ret = allocate_block(size_in_words, current_block)-3;
+                uint32_t *const ret = allocate_block(size_in_words, current_block);
                 kassert((uint32_t*) ret[1] == NULL && (uint32_t*) ret[2] == NULL, NULL);
 
-                return ret+3;
+                return ret;
             }
             current_block = (uint32_t*)current_block[2];
         }
