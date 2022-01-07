@@ -8,9 +8,6 @@
 #include "paging.h"
 #include "kstring.h"
 
-//for debugging
-#include "kstdio.h"
-
 
 inline uint32_t bytes_to_words(const uint32_t bytes) {
     return (bytes/4u) + (bytes%4u > 0);
