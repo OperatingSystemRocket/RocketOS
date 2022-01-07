@@ -24,3 +24,6 @@
 #define COMPILER_DEPENDENT_UINT64   unsigned long long
 
 
+//tell ACPICA to use its internal cache
+#define ACPI_CACHE_T                ACPI_MEMORY_LIST
+#define ACPI_USE_LOCAL_CACHE        1

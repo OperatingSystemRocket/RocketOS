@@ -1,8 +1,14 @@
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
 #include "acpi.h"
 
 #include "bitmap_allocator.h"
 #include "initialize_kernel_memory.h"
 #include "osi_memory_allocator.h"
+#include "paging.h"
+#include "kstdlib.h"
 
 
 static struct osi_memory_allocator acpica_memory_allocator;
@@ -34,6 +40,10 @@ ACPI_STATUS AcpiOsTableOverride(ACPI_TABLE_HEADER *ExistingTable, ACPI_TABLE_HEA
 }
 
 void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
+    if(Length == 0u) {
+        return NULL;
+    }
+
     const uint32_t physical_page_address = PhysicalAddress & PAGE_SIZE;
     const uint32_t physical_page_offset = PhysicalAddress - physical_page_address;
 
@@ -52,4 +62,82 @@ void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
     return (void*)(virtual_page_address+physical_page_offset);
 }
 
+void AcpiOsUnmapMemory(void *where, ACPI_SIZE length) {
+    if(where == NULL || length == 0u) {
+        return;
+    }
 
+    const uint32_t where_address = (uint32_t)where;
+
+    const uint32_t virtual_page_address = where_address & PAGE_SIZE;
+    const uint32_t virtual_page_offset = where_address - virtual_page_address;
+
+    const uint32_t adjusted_length = virtual_page_offset + length; //takes into account the offset, which affects page boundary overlap
+
+    const uint32_t virtual_memory_size = (adjusted_length/PAGE_SIZE) + ((adjusted_length%PAGE_SIZE)>0u); //in pages, round up
+
+    for(uint32_t i = 0u; i < virtual_memory_size; ++i) {
+        unmap_page((void*)(virtual_page_address+(i*PAGE_SIZE)));
+    }
+
+    osi_memory_allocator_free(&acpica_memory_allocator, (void*)virtual_page_address, virtual_memory_size);
+}
+
+ACPI_STATUS AcpiOsGetPhysicalAddress(void *LogicalAddress, ACPI_PHYSICAL_ADDRESS *PhysicalAddress) {
+    *PhysicalAddress = get_physical_address(LogicalAddress);
+    return AE_OK;
+}
+
+void *AcpiOsAllocate(ACPI_SIZE Size) {
+    return kmalloc(Size);
+}
+
+void AcpiOsFree(void *Memory) {
+    kfree(Memory);
+}
+
+BOOLEAN AcpiOsReadable(void *Memory, ACPI_SIZE Length) {
+    if(Memory == NULL || Memory == 0u) {
+        return false;
+    }
+
+    const uint32_t where_address = (uint32_t)Memory;
+
+    const uint32_t virtual_page_address = where_address & PAGE_SIZE;
+    const uint32_t virtual_page_offset = where_address - virtual_page_address;
+
+    const uint32_t adjusted_length = virtual_page_offset + Length; //takes into account the offset, which affects page boundary overlap
+
+    const uint32_t virtual_memory_size = (adjusted_length/PAGE_SIZE) + ((adjusted_length%PAGE_SIZE)>0u); //in pages, round up
+
+    for(uint32_t i = 0u; i < virtual_memory_size; ++i) {
+        if(!is_readable((void*)(virtual_page_address+(i*PAGE_SIZE)))) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+BOOLEAN AcpiOsWritable(void *Memory, ACPI_SIZE Length) {
+    if(Memory == NULL || Memory == 0u) {
+        return false;
+    }
+
+    const uint32_t where_address = (uint32_t)Memory;
+
+    const uint32_t virtual_page_address = where_address & PAGE_SIZE;
+    const uint32_t virtual_page_offset = where_address - virtual_page_address;
+
+    const uint32_t adjusted_length = virtual_page_offset + Length; //takes into account the offset, which affects page boundary overlap
+
+    const uint32_t virtual_memory_size = (adjusted_length/PAGE_SIZE) + ((adjusted_length%PAGE_SIZE)>0u); //in pages, round up
+
+    for(uint32_t i = 0u; i < virtual_memory_size; ++i) {
+        if(!is_writable((void*)(virtual_page_address+(i*PAGE_SIZE)))) {
+            return false;
+        }
+    }
+
+    return true;
+}
