@@ -93,7 +93,7 @@ static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const b
 
     block[size_to_allocate-1] = size_to_allocate | 0x80000000;
 
-    return block; //points to beginning of payload
+    return block;
 }
 
 void kdynamic_memory_init(void) {
