@@ -86,10 +86,10 @@ void kernel_main(void) {
     create_process(&foo_function_task);
 
 
-    //uint32_t count = 0u;
+    uint32_t count = 0u;
 
     for(;;) {
-        //kprintf("kernel.c with count: %u\n", count++);
+        kprintf("kernel.c with count: %u\n", count++);
         asm volatile("hlt");
     }
 }

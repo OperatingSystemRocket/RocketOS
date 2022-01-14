@@ -8,8 +8,8 @@ extern void enable_ring0_write_protect(void);
 
 
 /*
-Relevant Intel manual on 32 bit paging:
-https://web.archive.org/web/20151025081259/http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-system-programming-manual-325384.pdf
+Relevant Intel manual section on 32 bit paging:
+https://web.archive.org/web/20151025081259if_/http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-system-programming-manual-325384.pdf#G9.81100
 */
 
 

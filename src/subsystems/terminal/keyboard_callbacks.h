@@ -13,5 +13,9 @@
 #include "default_terminal_functions.h"
 
 
+//for testing purposes only
+#include "pit.h"
+
+
 void catch_keycode(void* context, struct GET_EVENT_TYPENAME(key_message) event);
 

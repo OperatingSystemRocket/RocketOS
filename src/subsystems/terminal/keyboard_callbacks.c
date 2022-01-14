@@ -42,5 +42,18 @@ void catch_keycode(void *const context, struct GET_EVENT_TYPENAME(key_message) e
         else if(event.data.key_type == DOWN_ARROW) {
             terminal_cursor_down(terminal_context_ptr->vga_context);
         }
+
+        if(event.data.keycode == '1') {
+            init_pit(1000, PIT_CHANNEL_0, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
+        } else if (event.data.keycode == '2') {
+            init_pit(18, PIT_CHANNEL_0, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
+        } else if(event.data.keycode == '3') {
+            play_sound(44100);
+        } else if(event.data.keycode == '4') {
+            play_sound(18);
+        } else if(event.data.keycode == '5') {
+            no_sound();
+            restore_timer();
+        }
     }
 }
