@@ -44,7 +44,7 @@ void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
         return NULL;
     }
 
-    const uint32_t physical_page_address = PhysicalAddress & PAGE_SIZE;
+    const uint32_t physical_page_address = PhysicalAddress & (~(PAGE_SIZE-1u));
     const uint32_t physical_page_offset = PhysicalAddress - physical_page_address;
 
     const uint32_t adjusted_length = physical_page_offset + Length; //takes into account the offset, which affects page boundary overlap
@@ -69,7 +69,7 @@ void AcpiOsUnmapMemory(void *where, ACPI_SIZE length) {
 
     const uint32_t where_address = (uint32_t)where;
 
-    const uint32_t virtual_page_address = where_address & PAGE_SIZE;
+    const uint32_t virtual_page_address = where_address & (~(PAGE_SIZE-1u));
     const uint32_t virtual_page_offset = where_address - virtual_page_address;
 
     const uint32_t adjusted_length = virtual_page_offset + length; //takes into account the offset, which affects page boundary overlap
@@ -103,7 +103,7 @@ BOOLEAN AcpiOsReadable(void *Memory, ACPI_SIZE Length) {
 
     const uint32_t where_address = (uint32_t)Memory;
 
-    const uint32_t virtual_page_address = where_address & PAGE_SIZE;
+    const uint32_t virtual_page_address = where_address & (~(PAGE_SIZE-1u));
     const uint32_t virtual_page_offset = where_address - virtual_page_address;
 
     const uint32_t adjusted_length = virtual_page_offset + Length; //takes into account the offset, which affects page boundary overlap
@@ -126,7 +126,7 @@ BOOLEAN AcpiOsWritable(void *Memory, ACPI_SIZE Length) {
 
     const uint32_t where_address = (uint32_t)Memory;
 
-    const uint32_t virtual_page_address = where_address & PAGE_SIZE;
+    const uint32_t virtual_page_address = where_address & (~(PAGE_SIZE-1u));
     const uint32_t virtual_page_offset = where_address - virtual_page_address;
 
     const uint32_t adjusted_length = virtual_page_offset + Length; //takes into account the offset, which affects page boundary overlap
