@@ -128,7 +128,7 @@ void* kmalloc(const size_t size) {
                 uint32_t *const ret = allocate_block(size_in_words, current_block);
                 kassert((uint32_t*) ret[1] == NULL && (uint32_t*) ret[2] == NULL, NULL);
 
-                return ret;
+                return ret+3;
             }
             current_block = (uint32_t*)current_block[2];
         }
