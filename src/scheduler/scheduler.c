@@ -50,6 +50,10 @@ void scheduler_init(void) {
     process_queue_end = current_process;
 }
 
+#define NUM_OF_TICKS 1
+static bool is_on = false;
+static uint32_t current_ticks = NUM_OF_TICKS;
+
 //TODO: replace __attribute__((interrupt)) as it is garbage
 __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const frame) {
     (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
@@ -57,6 +61,17 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
     increment_time();
     set_time_in_seconds();
     kprintf("time: %u\n", get_time_in_ticks());
+
+    if(is_turned_on) {
+        if(is_on) {
+            is_on = false;
+            no_sound();
+        } else if(--current_ticks == 0) {
+            current_ticks = NUM_OF_TICKS;
+            is_on = true;
+            on_sound();
+        }
+    }
 
 
     if(current_process != NULL && current_process->next != NULL && (--current_process->time_quantum == 0)) {

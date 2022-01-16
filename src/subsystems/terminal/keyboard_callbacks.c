@@ -1,6 +1,8 @@
 #include "keyboard_callbacks.h"
 
 
+bool is_turned_on = false;
+
 void catch_keycode(void *const context, struct GET_EVENT_TYPENAME(key_message) event) {
     struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
 
@@ -48,10 +50,13 @@ void catch_keycode(void *const context, struct GET_EVENT_TYPENAME(key_message) e
         } else if (event.data.keycode == '2') {
             init_pit(18, PIT_CHANNEL_0, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
         } else if(event.data.keycode == '3') {
-            play_sound(44100);
+            is_turned_on = true;
+            play_sound(2000);
         } else if(event.data.keycode == '4') {
+            is_turned_on = true;
             play_sound(18);
         } else if(event.data.keycode == '5') {
+            is_turned_on = false;
             no_sound();
             restore_timer();
         }

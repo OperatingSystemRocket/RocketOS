@@ -18,7 +18,7 @@ void init_pit(const uint32_t requested_frequency, const enum PIT_CHANNEL channel
     current_command_bitset = command_bitset;
     outb(PIT_COMMAND_REG, command_bitset);
 
-    if(channel == PIT_CHANNEL_0) {
+    //if(channel == PIT_CHANNEL_0) {
         uint32_t reload_value = 0;
 
         if(requested_frequency <= LOWEST_HZ) {
@@ -42,7 +42,7 @@ void init_pit(const uint32_t requested_frequency, const enum PIT_CHANNEL channel
             outb(PIT_CHANNEL_0_REG, reload_value & 0xFF);
             outb(PIT_CHANNEL_0_REG, (reload_value >> 8) & 0xFF);
         }
-    }
+    //}
 
 #if 0
     if(channel == PIT_CHANNEL_2) {
@@ -73,6 +73,7 @@ void init_pit(const uint32_t requested_frequency, const enum PIT_CHANNEL channel
 #endif
 }
 
+#if 0
 void play_sound(const uint32_t requested_frequency) {
     outb(PIT_COMMAND_REG, 0xb6);
 
@@ -101,10 +102,52 @@ void play_sound(const uint32_t requested_frequency) {
         outb(0x61, tmp | 3);
     }
 }
+#endif
+
+//static uint32_t sound_reload_value = 0;
+//static uint32_t sound_frequency = 0;
+
+void play_sound(const uint32_t requested_frequency) {
+    /*uint32_t reload_value = 0;
+
+    if(requested_frequency <= LOWEST_HZ) {
+        reload_value = HIGHEST_DIVISOR;
+    } else if(requested_frequency >= HIGHEST_HZ) {
+        reload_value = LOWEST_DIVISOR;
+    } else {
+        reload_value = (HIGHEST_HZ / requested_frequency);
+    }
+
+    sound_reload_value = reload_value;
+    sound_frequency = requested_frequency;
+
+    outb(PIT_COMMAND_REG, 0xb6);
+
+    const uint8_t current_access_mode = current_command_bitset & 0x30;
+    if(current_access_mode == ACCESS_MODE_LOBYTE_ONLY) {
+        outb(PIT_CHANNEL_0_REG, reload_value & 0xFF);
+    } else if(current_access_mode == ACCESS_MODE_HIBYTE_ONLY) {
+        outb(PIT_CHANNEL_0_REG, (reload_value >> 8) & 0xFF);
+    } else if(current_access_mode == ACCESS_MODE_LOBYTE_HIBYTE) {
+        outb(PIT_CHANNEL_0_REG, reload_value & 0xFF);
+        outb(PIT_CHANNEL_0_REG, (reload_value >> 8) & 0xFF);
+    }*/
+
+    init_pit(requested_frequency, PIT_CHANNEL_2, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
+
+    const uint8_t tmp = inb(0x61); //TODO: figure out what `tmp` is
+    if(tmp != (tmp | 3)) { //TODO: figure out what this bitwise AND with 3 is about/for
+        outb(0x61, tmp | 3);    
+    }
+}
 
 void no_sound(void) {
     const uint8_t tmp = inb(0x61) & 0xFC; //TODO: figure out what `tmp` is
     outb(0x61, tmp);
+}
+
+void on_sound(void) {
+    play_sound(current_frequency);
 }
 
 void restore_timer(void) {

@@ -39,4 +39,5 @@ void init_pit(uint32_t requested_frequency, enum PIT_CHANNEL channel, enum ACCES
 
 void play_sound(uint32_t frequency);
 void no_sound(void);
+void on_sound(void);
 void restore_timer(void);

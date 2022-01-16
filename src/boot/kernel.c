@@ -64,12 +64,6 @@ void kernel_main(void) {
     kdynamic_memory_init();
 
 
-    uint32_t *ptr1 = kmalloc(4);
-    kfree(ptr1);
-    ptr1 = kmalloc(17);
-    kfree(ptr1);
-
-
     scheduler_init();
 
     pic_init();

@@ -14,6 +14,10 @@
 #include "kassert.h"
 #include "kstdio.h"
 
+#include "pit.h"
+
+extern bool is_turned_on;
+
 
 struct task_context {
     uint32_t ebp;
