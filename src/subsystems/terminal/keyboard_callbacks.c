@@ -51,11 +51,14 @@ void catch_keycode(void *const context, struct GET_EVENT_TYPENAME(key_message) e
             init_pit(18, PIT_CHANNEL_0, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
         } else if(event.data.keycode == '3') {
             is_turned_on = true;
-            play_sound(2000);
+            play_sound(1000);
         } else if(event.data.keycode == '4') {
             is_turned_on = true;
             play_sound(18);
         } else if(event.data.keycode == '5') {
+            is_turned_on = true;
+            play_sound(500);
+        } else if(event.data.keycode == '6') {
             is_turned_on = false;
             no_sound();
             restore_timer();

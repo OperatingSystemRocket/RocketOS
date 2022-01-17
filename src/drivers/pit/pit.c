@@ -4,9 +4,9 @@
 #define PID_HZ 3579545
 
 #define LOWEST_HZ 18
-#define HIGHEST_HZ 1193181 //TODO: might make 1193180
+#define HIGHEST_HZ 1193180 //1193181 //TODO: might make 1193180
 
-#define HIGHEST_DIVISOR 65536 //TODO: might make 0 or conditionally 65535
+#define HIGHEST_DIVISOR 65535 //65536 //TODO: might make 0 or conditionally 65535
 #define LOWEST_DIVISOR 1
 
 static uint8_t current_command_bitset = 0;
@@ -31,8 +31,8 @@ void init_pit(const uint32_t requested_frequency, const enum PIT_CHANNEL channel
 
         current_frequency = HIGHEST_HZ/reload_value;
         current_reload_value = reload_value;
-        kprintf("\n\n\nrequested frequency: %u, current_frequency: %u\n", requested_frequency, current_frequency);
-        kprintf("reload_value: %u\n\n\n\n", reload_value);
+        kprintf("requested frequency: %u, current_frequency: %u\n", requested_frequency, current_frequency);
+        kprintf("reload_value: %u\n", reload_value);
 
         if(access_mode == ACCESS_MODE_LOBYTE_ONLY) {
             outb(PIT_CHANNEL_0_REG, reload_value & 0xFF);
