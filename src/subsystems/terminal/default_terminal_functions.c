@@ -176,4 +176,3 @@ void default_get_command(void *const context, char *const final, const size_t nu
         kstrncat(final, temp, number_of_elements);
     }
 }
-
