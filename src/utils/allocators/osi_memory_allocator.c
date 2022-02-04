@@ -5,9 +5,7 @@ void osi_memory_allocator_init(struct osi_memory_allocator *const allocator, uin
     allocator->start_of_virt_mem = start_of_virt_mem;
     allocator->number_of_pages = number_of_pages;
 
-    kprintf("\n\tallocator->allocated_list_head = NULL;\n\n");
     allocator->allocated_list_head = NULL;
-    kprintf("\n\tallocator->allocated_list_head: %p\n\n", allocator->allocated_list_head);
     allocator->allocated_list_tail = NULL;
 
     struct memory_bookkeeping_node *const memory_node = kmalloc(sizeof(struct memory_bookkeeping_node));
@@ -19,7 +17,6 @@ void osi_memory_allocator_init(struct osi_memory_allocator *const allocator, uin
     allocator->free_list_tail = memory_node;
 }
 void* osi_memory_allocator_allocate(struct osi_memory_allocator *const allocator, const uint32_t num_of_pages) {
-    kprintf("osi_memory_allocator_allocate(%u)\n", num_of_pages);
     if(allocator == NULL || num_of_pages == 0u) {
         return NULL;
     }
@@ -50,19 +47,12 @@ void* osi_memory_allocator_allocate(struct osi_memory_allocator *const allocator
                 }
                 kfree(current_node);
             }
-            kprintf("struct memory_bookkeeping_node* current_allocated_node = allocator->allocated_list_head;\n");
             struct memory_bookkeeping_node* current_allocated_node = allocator->allocated_list_head;
             if(current_allocated_node == NULL) {
                 new_allocated_node->prev = NULL;
                 new_allocated_node->next = NULL;
-                kprintf("\n\tcurrent_allocated_node == NULL\n\n");
-                kprintf("\n\tallocator->allocated_list_head = new_allocated_node;\n\n");
                 allocator->allocated_list_head = new_allocated_node;
-                kprintf("\n\tallocator->allocated_list_head: %p\n\n", allocator->allocated_list_head);
                 allocator->allocated_list_tail = new_allocated_node;
-                kprintf("\n\tnew_allocated_node: %p\n\n", new_allocated_node);
-                volatile uint32_t foo = (uint32_t)new_allocated_node->prev;
-                kprintf("\tmemory load passed in allocate function\n");
             } else {
                 bool has_inserted = false;
                 while(current_allocated_node != NULL) {
@@ -72,10 +62,7 @@ void* osi_memory_allocator_allocate(struct osi_memory_allocator *const allocator
                         if(current_allocated_node->prev != NULL) {
                             current_allocated_node->prev->next = new_allocated_node;
                         } else {
-                            kprintf("\n\tnew_allocated_node->page_index < current_allocated_node->page_index and current_allocated_node->prev == NULL\n\n");
-                            kprintf("\n\tallocator->allocated_list_head = new_allocated_node;\n\n");
                             allocator->allocated_list_head = new_allocated_node;
-                            kprintf("\n\tallocator->allocated_list_head: %p\n\n", allocator->allocated_list_head);
                         }
                         current_allocated_node->prev = new_allocated_node;
                         has_inserted = true;
@@ -100,7 +87,6 @@ void* osi_memory_allocator_allocate(struct osi_memory_allocator *const allocator
     return NULL;
 }
 void osi_memory_allocator_free(struct osi_memory_allocator *const allocator, const void *const ptr, const uint32_t num_of_pages) {
-    kprintf("osi_memory_allocator_free: %p, %u\n", ptr, num_of_pages);
     if(allocator == NULL || ptr == NULL || num_of_pages == 0u) {
         return;
     }
@@ -109,22 +95,13 @@ void osi_memory_allocator_free(struct osi_memory_allocator *const allocator, con
     const uint32_t page_index = (u32_ptr - ((uint32_t)allocator->start_of_virt_mem))/PAGE_SIZE;
 
     //handle `allocate_list`
-    kprintf("struct memory_bookkeeping_node* current_allocated_node = allocator->allocated_list_head;\n");
     struct memory_bookkeeping_node* current_allocated_node = allocator->allocated_list_head;
     if(current_allocated_node == NULL) {
         return;
     }
-    kprintf("enter `allocated_list` while loop\n");
     struct memory_bookkeeping_node* new_free_node = NULL;
-    kprintf("new_free_node = NULL\n");
     while(current_allocated_node != NULL) {
-        kprintf("while loop check passed\n");
-        kprintf("current_allocated_node = %p\n", current_allocated_node);
-        volatile uint32_t foo = (uint32_t)current_allocated_node->prev;
-        kprintf("memory load passed\n");
-        kprintf("current_node->page_index: %u, page_index: %u\n", current_allocated_node->page_index, page_index);
         if(current_allocated_node->page_index <= page_index && page_index < (current_allocated_node->page_index+current_allocated_node->num_of_pages)) {
-            kprintf("found allocated node\n");
             if((page_index+num_of_pages) > (current_allocated_node->page_index+current_allocated_node->num_of_pages)) {
                 //freeing past the end of the allocated node
                 kprintf("freeing past the end of the allocated node\n");
@@ -132,15 +109,12 @@ void osi_memory_allocator_free(struct osi_memory_allocator *const allocator, con
             }
 
             if(current_allocated_node->page_index == page_index) {
-                kprintf("freeing at the beginning of the allocated node\n");
                 if(current_allocated_node->num_of_pages == num_of_pages) {
                     new_free_node = current_allocated_node;
                     if(current_allocated_node->prev != NULL) {
                         current_allocated_node->prev->next = current_allocated_node->next;
                     } else {
-                        kprintf("\n\tallocator->allocated_list_head = current_allocated_node->next;\n\n");
                         allocator->allocated_list_head = current_allocated_node->next;
-                        kprintf("\n\tallocator->allocated_list_head: %p\n\n", allocator->allocated_list_head);
                     }
                     if(current_allocated_node->next != NULL) {
                         current_allocated_node->next->prev = current_allocated_node->prev;
@@ -157,7 +131,6 @@ void osi_memory_allocator_free(struct osi_memory_allocator *const allocator, con
                     current_allocated_node->num_of_pages -= num_of_pages;
                 }
             } else {
-                kprintf("freeing in the middle of the allocated node\n");
                 //points to a different place in the block than the beginning of the block
                 if((current_allocated_node->page_index+current_allocated_node->num_of_pages) == (page_index+num_of_pages)) {
                     new_free_node = kmalloc(sizeof(struct memory_bookkeeping_node));
@@ -192,14 +165,10 @@ void osi_memory_allocator_free(struct osi_memory_allocator *const allocator, con
             }
 
             break;
-        } else {
-            kprintf("not found allocated node\n");
         }
-        kprintf("set to next node\n");
         current_allocated_node = current_allocated_node->next;
     }
 
-    kprintf("exit `allocated_list` while loop\n");
     //handle `free_list`
     struct memory_bookkeeping_node* current_free_node = allocator->free_list_head;
     if(current_free_node == NULL) {
@@ -207,7 +176,6 @@ void osi_memory_allocator_free(struct osi_memory_allocator *const allocator, con
         allocator->free_list_tail = new_free_node;
         return;
     }
-    kprintf("enter `free_list` while loop\n");
     bool is_inserted = false;
     while(current_free_node != NULL) {
         if(new_free_node->page_index < current_allocated_node->page_index) {

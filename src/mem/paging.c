@@ -188,16 +188,11 @@ void map_page(void *const virtual_address, const uint32_t phys_frame, const uint
 }
 
 uint32_t allocate_virtual_page(void *const virtual_address, const uint32_t pt_flags, const uint32_t pd_flags) {
-    kprintf("allocate_virtual_page called\n");
-
     const uint32_t phys_frame = (uint32_t)allocate_page(USER_USE);
-    kprintf("phys_frame: %X, phys_frame quotient PAGE_SIZE: %X\n", phys_frame, phys_frame%PAGE_SIZE);
 
     if(phys_frame) {
         map_page(virtual_address, phys_frame, pt_flags, pd_flags);
     }
-
-    kprintf("allocate_virtual_page finished\n");
 
     return phys_frame;
 }
