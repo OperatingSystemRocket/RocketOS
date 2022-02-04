@@ -94,7 +94,6 @@ void free_page(const enum memory_type allocation_type, const void *const page) {
     }
 }
 
-
 size_t get_number_of_permanently_reserved_pages(void) {
     return number_of_permanently_reserved_pages;
 }
