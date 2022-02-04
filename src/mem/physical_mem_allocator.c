@@ -85,7 +85,6 @@ void* allocate_page(const enum memory_type allocation_type) {
     return allocated_page;
 }
 
-
 void free_page(const enum memory_type allocation_type, const void *const page) {
     if(allocation_type == USER_USE) {
         bitmap_free(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, ((uintptr_t)page)/PAGE_SIZE);
