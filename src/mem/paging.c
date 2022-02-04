@@ -53,7 +53,6 @@ void paging_init(void) {
     kmemset(bitmap_page_permissions, 1u, sizeof(bitmap_page_permissions));
 
 
-
     default_page_directory = allocate_page(CRITICAL_KERNEL_USE); //page frame allocator returns page aligned blocks of 4KiB of memory
 
     for(int32_t i = 0; i < 1024; ++i) {
@@ -84,10 +83,8 @@ void load_and_turn_on_paging(void) {
     load_page_directory(default_page_directory);
     serial_writestring("page directory loaded successfully\n");
 
-
     //TODO: add flag to decide if this is done or not
     enable_ring0_write_protect();
-
 
     enable_paging();
     serial_writestring("paging enabled successfully\n");
@@ -228,59 +225,4 @@ void free_virtual_page(const void *const virtual_address) {
 
 uint32_t* get_default_page_directory(void) {
     return default_page_directory;
-}
-
-
-uint32_t get_physical_address(const void *const virtual_address) {
-    const uint32_t page_index = (uint32_t)virtual_address / PAGE_SIZE;
-    const uint32_t table_index = page_index / 1024;
-    const uint32_t page_index_in_table = page_index % 1024;
-
-    const uint32_t *const page_directory = default_page_directory;
-    const uint32_t *const page_table = (uint32_t*) (page_directory[table_index] & 0xFFFFF000u);
-
-    return page_table[page_index_in_table] & 0xFFFFF000u;
-}
-
-
-//TODO: maybe split into two `static` functions for the implementation (for the page table in the page directory, and page in the page table)
-bool is_readable(const void* virtual_address) {
-    kassert(((uint32_t)virtual_address % PAGE_SIZE == 0), false);
-
-    const uint32_t page_index = ((uint32_t)virtual_address) / PAGE_SIZE;
-    const uint32_t table_index = page_index / 1024;
-    const uint32_t page_index_in_table = page_index % 1024;
-
-    const uint32_t *const virt_page_directory = default_page_directory;
-    if((virt_page_directory[table_index] & PD_PRESENT) != PD_PRESENT) {
-        return false;
-    }
-
-    const uint32_t *const virt_page_table = (uint32_t*)((virt_page_directory[table_index]) & 0xFFFFF000u);
-    if((virt_page_table[page_index_in_table] & PT_PRESENT) != PT_PRESENT) {
-        return false;
-    }
-
-    return true;
-}
-bool is_writable(const void* virtual_address) {
-    if(!is_readable(virtual_address)) {
-        return false;
-    }
-
-    const uint32_t page_index = ((uint32_t)virtual_address) / PAGE_SIZE;
-    const uint32_t table_index = page_index / 1024;
-    const uint32_t page_index_in_table = page_index % 1024;
-
-    const uint32_t *const virt_page_directory = default_page_directory;
-    if((virt_page_directory[table_index] & PD_RW) != PD_RW) {
-        return false;
-    }
-
-    const uint32_t *const virt_page_table = (uint32_t*)((virt_page_directory[table_index]) & 0xFFFFF000u);
-    if((virt_page_table[page_index_in_table] & PT_RW) != PT_RW) {
-        return false;
-    }
-
-    return true;
 }

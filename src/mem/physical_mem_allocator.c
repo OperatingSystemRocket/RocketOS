@@ -19,19 +19,9 @@ static uint32_t* first_nonreserved_address;
 
 void allocate_init(void) {
     bitmap_allocator_init(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, global_physical_memory_bitmap.bitset_cache, CACHE_N, &global_physical_memory_bitmap.has_filled_bitset_cache);
-    //kmemset(global_physical_memory_bitmap.bitset, 0u, sizeof(global_physical_memory_bitmap.bitset));
-    //global_physical_memory_bitmap.has_filled_bitset_cache = false;
-    //for(int32_t i = 0; i < 20; ++i) {
-    //    global_physical_memory_bitmap.bitset_cache[i] = -1;
-    //}
 
     //reserve the memory for the kernel heap so that it isn't allocated in the global heap
     bitmap_allocator_init(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, kernel_heap_bitmap.bitset_cache, CACHE_N, &kernel_heap_bitmap.has_filled_bitset_cache);
-    //[kmemset(kernel_heap_bitmap.bitset, 0u, sizeof(kernel_heap_bitmap.bitset));
-    //kernel_heap_bitmap.has_filled_bitset_cache = false;
-    //for(int32_t i = 0; i < 20; ++i) {
-    //    kernel_heap_bitmap.bitset_cache[i] = -1;
-    //}
 
 
     const uintptr_t end_address = (uintptr_t)&endkernel;
@@ -76,21 +66,31 @@ void reserve_physical_address(const uint32_t physical_address, const size_t num_
 
 void* allocate_page(const enum memory_type allocation_type) {
     if(allocation_type == USER_USE) {
-        return (void*)(bitmap_allocate(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, global_physical_memory_bitmap.bitset_cache, CACHE_N, &global_physical_memory_bitmap.has_filled_bitset_cache)*PAGE_SIZE);
+        void *const allocated_page = (void*)(bitmap_allocate(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, global_physical_memory_bitmap.bitset_cache, CACHE_N, &global_physical_memory_bitmap.has_filled_bitset_cache)*PAGE_SIZE);
+        kprintf("USER: allocated_page: %p\n", allocated_page);
+        if(allocated_page != NULL) {
+            //NULL is a valid page and not necessarily a failure for critical kernel allocations,
+            //but the first page allocation (which will get NULL), happens in `paging_init` and the result is overwritten,
+            //so calling `kmemcpy` is redundant and will produce a spurious error message from a `kassert`.
+            kmemset(allocated_page, 0u, PAGE_SIZE);
+        }
+        return allocated_page;
     }
-    return (void*)(bitmap_allocate(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, kernel_heap_bitmap.bitset_cache, CACHE_N, &kernel_heap_bitmap.has_filled_bitset_cache)*PAGE_SIZE);
+    void *const allocated_page = (void*)(bitmap_allocate(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, kernel_heap_bitmap.bitset_cache, CACHE_N, &kernel_heap_bitmap.has_filled_bitset_cache)*PAGE_SIZE);
+    kprintf("KERNEL: allocated_page: %p\n", allocated_page);
+    if(allocated_page != NULL) {
+        //NULL can only be returned on failure for user allocations
+        kmemset(allocated_page, 0u, PAGE_SIZE);
+    }
+    return allocated_page;
 }
 
 
 void free_page(const enum memory_type allocation_type, const void *const page) {
-    kprintf("freed page: %i\n", ((uintptr_t)page)/PAGE_SIZE);
-
     if(allocation_type == USER_USE) {
         bitmap_free(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, ((uintptr_t)page)/PAGE_SIZE);
-        //bitset_set_at(((uintptr_t)page)/PAGE_SIZE, global_physical_memory_bitmap.bitset, 0u);
     } else {
         bitmap_free(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, ((uintptr_t)page)/PAGE_SIZE);
-        //bitset_set_at(((uintptr_t)page)/PAGE_SIZE, kernel_heap_bitmap.bitset, 0u);
     }
 }
 

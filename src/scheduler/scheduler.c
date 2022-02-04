@@ -58,10 +58,8 @@ static uint32_t current_ticks = NUM_OF_TICKS;
 __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const frame) {
     (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
 
-<<<<<<< HEAD
-    increment_time();
-    set_time_in_seconds();
-    kprintf("time: %u\n", get_time_in_ticks());
+    increment_ticks();
+    increment_timer();
 
     if(is_turned_on) {
         if(is_on) {
@@ -73,12 +71,6 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
             on_sound();
         }
     }
-=======
-
-    increment_ticks();
-    increment_timer();
->>>>>>> acpica_integrate
-
 
     if(current_process != NULL && current_process->next != NULL && (--current_process->time_quantum == 0)) {
         save_current_task(&current_process->register_states);
@@ -95,7 +87,6 @@ __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const f
             load_task(&current_process->register_states);
         }
     }
-
 
     pic_send_eoi(1);
 }

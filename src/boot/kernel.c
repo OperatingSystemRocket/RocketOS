@@ -94,8 +94,6 @@ void kernel_main(void) {
     init_gdt();
     gdt_load();
 
-    scheduler_init();
-
     pic_init();
     isr_install();
 
@@ -104,9 +102,8 @@ void kernel_main(void) {
     initialize_kernel_memory();
     kdynamic_memory_init();
 
-<<<<<<< HEAD
+    scheduler_init();
 
-=======
     init_pit(1000, PIT_CHANNEL_0, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
 
 
@@ -142,7 +139,6 @@ void kernel_main(void) {
     kprintf("\nIt did not shutdown\n");
 
 /*
->>>>>>> acpica_integrate
     scheduler_init();
 
     pic_init();
@@ -166,15 +162,11 @@ void kernel_main(void) {
     create_process(&foo_function_task);
 
 
-<<<<<<< HEAD
-    uint32_t count = 0u;
-=======
     //uint32_t count = 0u;
 */
->>>>>>> acpica_integrate
 
     for(;;) {
-        kprintf("kernel.c with count: %u\n", count++);
+        //kprintf("kernel.c with count: %u\n", count++);
         asm volatile("hlt");
     }
 }

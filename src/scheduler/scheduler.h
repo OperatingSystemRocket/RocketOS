@@ -15,11 +15,8 @@
 
 #include "pit.h"
 
-<<<<<<< HEAD
 extern bool is_turned_on;
 
-=======
->>>>>>> acpica_integrate
 
 struct task_context {
     uint32_t ebp;

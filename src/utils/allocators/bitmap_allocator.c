@@ -49,6 +49,7 @@ static int32_t allocate_impl(uint32_t *const bookkeeping_bitset, const size_t nu
 
 uint32_t bitmap_allocate(uint32_t *const bitset, const uint32_t n, int32_t *const bitset_cache, const uint32_t cache_n, bool *const has_filled_bitset_cache) {
     const int32_t allocated_page = allocate_impl(bitset, n, bitset_cache, cache_n, has_filled_bitset_cache);
+    //TODO: don't use signed integers at all. This -1 to 0 conversion is also broken for other reasons.
     return (allocated_page == -1) ? 0u : allocated_page; //turn -1 into NULL
 }
 

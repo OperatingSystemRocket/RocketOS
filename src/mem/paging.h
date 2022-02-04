@@ -55,9 +55,3 @@ uint32_t unmap_page(const void* virtual_address);
 void free_virtual_page(const void* virtual_address);
 
 uint32_t* get_default_page_directory(void);
-
-
-uint32_t get_physical_address(const void* virtual_address);
-
-bool is_readable(const void* virtual_address); //checks if it is in the paging structure
-bool is_writable(const void* virtual_address); //checks if it is in the paging structure and if the RW flag is set
