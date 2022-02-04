@@ -25,7 +25,7 @@ int64_t kmod(int64_t x, int64_t y) {
     return x - (y * (x/y));
 }
 
-int64_t kpow(int64_t base, int64_t exponent) { /// currently does not support negative exponents
+int64_t kpow(int64_t base, int64_t exponent) {
     int64_t result = 1;
     for(int64_t i = 0; i < exponent; ++i) {
         result *= base;

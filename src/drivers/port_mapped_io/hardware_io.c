@@ -1,10 +1,10 @@
 #include "hardware_io.h"
 
 
-void io_wait(void) {
-    asm volatile("outb %%al, $0x80" : : "a"(0));
-}
+void outw(uint16_t _port, uint16_t _data);
 
-void flush_tlb_single_page(const uint32_t addr) {
-    asm volatile("invlpg (%0)" : : "r" (addr) : "memory");
-}
+uint16_t inw(uint16_t _port);
+
+void io_wait(void);
+
+void flush_tlb_single_page(uint32_t addr);

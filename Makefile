@@ -4,9 +4,9 @@ AS := nasm -felf32
 WARNING_FLAGS :=  -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align \
                   -Wstrict-prototypes -Wcast-qual -Wconversion -Wunreachable-code \
                   -Wwrite-strings -Wnested-externs -Winline \
-                  -Wno-long-long -Wpedantic -Werror
+                  -Wno-long-long -Wpedantic #-Werror
 
-KERNEL_FLAGS := -std=gnu17 -ffreestanding
+KERNEL_FLAGS := -std=gnu17 -ffreestanding -DRocketOS
 
 RELEASE_LINK_FLAGS := -O3 -flto
 DEBUG_LINK_FLAGS := -O0 -g
@@ -32,6 +32,8 @@ PATHO := build/objs/
 PATHR := build/results/
 PATHOT := build/tests/
 
+
+#TODO: replace all uses of `shell find` with uses of `wildcard`
 
 #Do not replace these two occurrences of src/ with $(PATHS). It *will* break
 AS_NAMES := $(shell find src/ -name '*.s')

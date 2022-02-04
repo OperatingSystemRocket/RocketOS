@@ -9,15 +9,17 @@
 #include "gdt.h"
 #include "kstdlib.h"
 #include "interrupts.h"
-#include "time.h"
 
 #include "kassert.h"
 #include "kstdio.h"
 
 #include "pit.h"
 
+<<<<<<< HEAD
 extern bool is_turned_on;
 
+=======
+>>>>>>> acpica_integrate
 
 struct task_context {
     uint32_t ebp;

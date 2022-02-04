@@ -6,7 +6,6 @@
 #include "kstdio.h"
 #include "kmath.h"
 #include "interrupts.h"
-#include "time.h"
 #include "serial_driver.h"
 #include "kassert.h"
 #include "terminal_driver.h"
@@ -26,6 +25,8 @@
 
 #include "hashmap.h"
 #include "default_hashmap_functions.h"
+
+#include "acpi.h"
 
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
@@ -55,14 +56,43 @@ void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboo
     }
 }
 
+static const char* AcpiGbl_ExceptionNames_Env[] = {
+    "AE_OK",
+    "AE_ERROR",
+    "AE_NO_ACPI_TABLES",
+    "AE_NO_NAMESPACE",
+    "AE_NO_MEMORY",
+    "AE_NOT_FOUND",
+    "AE_NOT_EXIST",
+    "AE_ALREADY_EXISTS",
+    "AE_TYPE",
+    "AE_NULL_OBJECT",
+    "AE_NULL_ENTRY",
+    "AE_BUFFER_OVERFLOW",
+    "AE_STACK_OVERFLOW",
+    "AE_STACK_UNDERFLOW",
+    "AE_NOT_IMPLEMENTED",
+    "AE_SUPPORT",
+    "AE_LIMIT",
+    "AE_TIME",
+    "AE_ACQUIRE_DEADLOCK",
+    "AE_RELEASE_DEADLOCK",
+    "AE_NOT_ACQUIRED",
+    "AE_ALREADY_ACQUIRED",
+    "AE_NO_HARDWARE_RESPONSE",
+    "AE_NO_GLOBAL_LOCK",
+    "AE_ABORT_METHOD",
+    "AE_SAME_HANDLER",
+    "AE_NO_HANDLER",
+    "AE_OWNER_ID_LIMIT",
+    "AE_NOT_CONFIGURED",
+    "AE_ACCESS",
+    "AE_IO_ERROR"
+};
+
 void kernel_main(void) {
     init_gdt();
     gdt_load();
-
-    allocate_init();
-    paging_init();
-    kdynamic_memory_init();
-
 
     scheduler_init();
 
@@ -71,6 +101,55 @@ void kernel_main(void) {
 
     write_tss();
 
+    initialize_kernel_memory();
+    kdynamic_memory_init();
+
+<<<<<<< HEAD
+
+=======
+    init_pit(1000, PIT_CHANNEL_0, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
+
+
+    ACPI_STATUS status = AcpiInitializeSubsystem();
+    if(ACPI_FAILURE(status)) {
+        kprintf("acpica: Impossible to initialize subsystem: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
+    }
+    status = AcpiInitializeTables(NULL, 16, true);
+    if(ACPI_FAILURE(status)) {
+        kprintf("acpica: Impossible to initialize tables: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
+    }
+    status = AcpiLoadTables();
+    if(ACPI_FAILURE(status)) {
+        kprintf("acpica: Impossible to load tables: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
+    }
+    status = AcpiEnableSubsystem(ACPI_FULL_INITIALIZATION);
+    if(ACPI_FAILURE(status)) {
+        kprintf("acpica: Impossible to enable subsystem: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
+    }
+    status = AcpiInitializeObjects(ACPI_FULL_INITIALIZATION);
+    if(ACPI_FAILURE(status)) {
+        kprintf("acpica: Impossible to initialize objects: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
+    }
+
+    kprintf("\nACPICA initialized\n\n\n");
+
+    AcpiEnterSleepStatePrep(5);
+    kprintf("\tAcpiEnterSleepStatePrep(5); passed\n");
+    disable_interrupts();
+    kprintf("\tdisable_interrupts(); passed\n");
+    AcpiEnterSleepState(5);
+
+    kprintf("\nIt did not shutdown\n");
+
+/*
+>>>>>>> acpica_integrate
+    scheduler_init();
+
+    pic_init();
+    isr_install();
+
+    write_tss();
+*/
 
     struct default_terminal_context *const data = get_default_terminal_context();
     data->vga_context = get_default_vga_context();
@@ -80,14 +159,19 @@ void kernel_main(void) {
     default_context_terminal_start();
     enable_keyboard();
 
-
+/*
     //jump_usermode();
 
     create_process(&example_function_task);
     create_process(&foo_function_task);
 
 
+<<<<<<< HEAD
     uint32_t count = 0u;
+=======
+    //uint32_t count = 0u;
+*/
+>>>>>>> acpica_integrate
 
     for(;;) {
         kprintf("kernel.c with count: %u\n", count++);

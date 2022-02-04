@@ -41,3 +41,18 @@ void play_sound(uint32_t frequency);
 void no_sound(void);
 void on_sound(void);
 void restore_timer(void);
+<<<<<<< HEAD
+=======
+
+void reset_timer(void);
+void reset_seconds(void);
+void reset_us(void);
+void increment_timer(void);
+uint64_t get_seconds(void);
+uint64_t get_us(void);
+
+void reset_ticks(void);
+void increment_ticks(void);
+void pit_wait_ticks(uint32_t ticks);
+void pit_wait_us(uint32_t us);
+>>>>>>> acpica_integrate

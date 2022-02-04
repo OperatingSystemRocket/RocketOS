@@ -8,6 +8,8 @@
 #include "hardware_io.h"
 #include "serial_driver.h"
 #include "kassert.h"
+#include "mem_constants.h"
+#include "bitmap_allocator.h"
 
 
 // Page Table Entry flags
@@ -40,8 +42,13 @@ enum page_fault_error_flags {
 extern uintptr_t get_cr3(void);
 
 
+void identity_map_page(uint32_t page_directory, uint32_t address, uint32_t pt_flags, uint32_t pd_flags);
 void paging_init(void);
-void* get_physical_memory(void* virtual_address);
+void load_and_turn_on_paging(void);
+void reserve_virtual_address(uint32_t virtual_address, size_t num_of_pages, enum memory_type type);
+uint32_t get_physical_address(const void* virtual_address);
+bool is_readable(const void* virtual_address); //checks if it is in the paging structure
+bool is_writable(const void* virtual_address); //checks if it is in the paging structure and if the RW flag is set
 void map_page(void* virtual_address, uint32_t phys_frame, uint32_t pt_flags, uint32_t pd_flags);
 uint32_t allocate_virtual_page(void* virtual_address, uint32_t pt_flags, uint32_t pd_flags);
 uint32_t unmap_page(const void* virtual_address);
