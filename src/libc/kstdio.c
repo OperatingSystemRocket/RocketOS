@@ -202,19 +202,25 @@ static int32_t conversion_specifier(const char *const format, const size_t forma
     return 0;
 }
 
+int32_t kprintf_implementation(const char *const format, va_list* pargs) {
+    const size_t format_len = kstrlen(format);
+    for(uint32_t i = 0u; i < format_len; ++i) {
+        conversion_specifier(format, format_len, &i, pargs);
+    }
+
+    color_setting = -1;
+
+    return 0; //TODO: implement return value
+}
+
 int32_t kprintf(const char *const format, ...) {
     va_list pargs;
 
     va_start(pargs, format);
 
-    const size_t format_len = kstrlen(format);
-    for(uint32_t i = 0u; i < format_len; ++i) {
-        conversion_specifier(format, format_len, &i, &pargs);
-    }
+    (void) kprintf_implementation(format, &pargs);
 
     va_end(pargs);
-
-    color_setting = -1;
 
     return 0; //TODO: implement return value
 }

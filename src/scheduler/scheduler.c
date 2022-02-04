@@ -54,9 +54,9 @@ void scheduler_init(void) {
 __attribute__((interrupt)) static void timer_irq(struct interrupt_frame *const frame) {
     (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
 
-    increment_time();
-    set_time_in_seconds();
-    //kprintf("time: %u\n", get_time_in_ticks());
+
+    increment_ticks();
+    increment_timer();
 
 
     if(current_process != NULL && current_process->next != NULL && (--current_process->time_quantum == 0)) {

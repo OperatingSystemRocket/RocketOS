@@ -76,9 +76,9 @@ void reserve_physical_address(const uint32_t physical_address, const size_t num_
 
 void* allocate_page(const enum memory_type allocation_type) {
     if(allocation_type == USER_USE) {
-        return bitmap_allocate(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, global_physical_memory_bitmap.bitset_cache, CACHE_N, &global_physical_memory_bitmap.has_filled_bitset_cache);
+        return (void*)(bitmap_allocate(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, global_physical_memory_bitmap.bitset_cache, CACHE_N, &global_physical_memory_bitmap.has_filled_bitset_cache)*PAGE_SIZE);
     }
-    return bitmap_allocate(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, kernel_heap_bitmap.bitset_cache, CACHE_N, &kernel_heap_bitmap.has_filled_bitset_cache);
+    return (void*)(bitmap_allocate(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, kernel_heap_bitmap.bitset_cache, CACHE_N, &kernel_heap_bitmap.has_filled_bitset_cache)*PAGE_SIZE);
 }
 
 

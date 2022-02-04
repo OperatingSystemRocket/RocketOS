@@ -6,14 +6,14 @@ static uint32_t malloc_heap_start;
 static uint32_t acpica_start;
 
 void* get_heap_range_start(void) {
-    return (void*)malloc_heap_start;
+    return (void*)(malloc_heap_start*PAGE_SIZE);
 }
 size_t get_max_heap_size(void) {
     return MAX_SIZE_OF_HEAP;
 }
 
 void* get_acpica_start(void) {
-    return (void*)acpica_start;
+    return (void*)(acpica_start*PAGE_SIZE);
 }
 size_t get_acpica_size(void) {
     return ACPICA_SIZE;
@@ -46,6 +46,6 @@ void initialize_kernel_memory(void) {
 
     load_and_turn_on_paging();
 
-    malloc_heap_start = acpica_start+1u;
+    malloc_heap_start = (acpica_start+ACPICA_SIZE)+1u;
     reserve_virtual_address(malloc_heap_start, MAX_SIZE_OF_HEAP, USER_USE);
 }

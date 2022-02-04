@@ -11,6 +11,16 @@
 #include "kstdlib.h"
 
 
+#include "pit.h"
+#include "hardware_io.h"
+
+//TODO: remove as this is for debugging only
+#include "interrupts.h"
+
+//for debugging only:
+#include "kstdio.h"
+
+
 static struct osi_memory_allocator acpica_memory_allocator;
 
 
@@ -41,8 +51,10 @@ ACPI_STATUS AcpiOsTableOverride(ACPI_TABLE_HEADER *ExistingTable, ACPI_TABLE_HEA
 
 void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
     if(Length == 0u) {
+        kprintf("Length is 0\n");
         return NULL;
     }
+
 
     const uint32_t physical_page_address = PhysicalAddress & (~(PAGE_SIZE-1u));
     const uint32_t physical_page_offset = PhysicalAddress - physical_page_address;
@@ -64,8 +76,10 @@ void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
 
 void AcpiOsUnmapMemory(void *where, ACPI_SIZE length) {
     if(where == NULL || length == 0u) {
+        kprintf("length is 0\n");
         return;
     }
+
 
     const uint32_t where_address = (uint32_t)where;
 
@@ -140,4 +154,170 @@ BOOLEAN AcpiOsWritable(void *Memory, ACPI_SIZE Length) {
     }
 
     return true;
+}
+
+ACPI_STATUS AcpiOsPhysicalTableOverride(ACPI_TABLE_HEADER *ExistingTable, ACPI_PHYSICAL_ADDRESS *NewAddress, UINT32 *NewTableLength) {
+    return AE_SUPPORT; //copied from the windows and unix osi shims
+}
+
+ACPI_STATUS AcpiOsExecute(ACPI_EXECUTE_TYPE Type, ACPI_OSD_EXEC_CALLBACK Function, void *Context) {
+    Function(Context);
+    return AE_OK;
+}
+
+ACPI_CPU_FLAGS AcpiOsAcquireLock(ACPI_SPINLOCK Handle) {
+    return 0u;
+}
+
+void AcpiOsWaitEventsComplete(void) {}
+
+void AcpiOsReleaseLock(ACPI_SPINLOCK Handle, ACPI_CPU_FLAGS Flags) {}
+
+ACPI_THREAD_ID AcpiOsGetThreadId(void) {
+    return 1u;
+}
+
+ACPI_STATUS AcpiOsWaitSemaphore(ACPI_SEMAPHORE Handle, UINT32 Units, UINT16 Timeout) {
+    return AE_OK;
+}
+
+ACPI_STATUS AcpiOsCreateLock(ACPI_SPINLOCK *OutHandle) {
+    return AE_OK;
+}
+
+void AcpiOsDeleteLock(ACPI_SPINLOCK Handle) {}
+
+ACPI_STATUS AcpiOsSignalSemaphore(ACPI_SEMAPHORE Handle, UINT32 Units) {
+    return AE_OK;
+}
+
+ACPI_STATUS AcpiOsInstallInterruptHandler(UINT32 InterruptNumber, ACPI_OSD_HANDLER ServiceRoutine, void *Context) {
+    return AE_OK;
+}
+
+ACPI_STATUS AcpiOsCreateSemaphore(UINT32 MaxUnits, UINT32 InitialUnits, ACPI_SEMAPHORE *OutHandle) {
+    return AE_OK;
+}
+
+ACPI_STATUS AcpiOsRemoveInterruptHandler(UINT32 InterruptNumber, ACPI_OSD_HANDLER Handler) {
+    return AE_OK;
+}
+
+ACPI_PRINTF_LIKE (1) void ACPI_INTERNAL_VAR_XFACE AcpiOsPrintf(const char *Format, ...) {
+    va_list pargs;
+
+    va_start(pargs, Format);
+
+    kprintf_implementation(Format, &pargs);
+    kprintf("\n");
+
+    va_end(pargs);
+}
+
+ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE Handle) {
+    return AE_OK;
+}
+
+void AcpiOsVprintf(const char *Format, va_list Args) {
+    kprintf_implementation(Format, &Args);
+    kprintf("\n");
+}
+
+UINT64 AcpiOsGetTimer(void) {
+    return (get_seconds()*ACPI_100NSEC_PER_SEC) + (get_us()*ACPI_100NSEC_PER_USEC);
+}
+
+ACPI_STATUS AcpiOsEnterSleep(UINT8 SleepState, UINT32 RegaValue, UINT32 RegbValue) {
+    return AE_OK;
+}
+
+void AcpiOsStall(UINT32 Microseconds) {
+    enable_interrupts();
+    pit_wait_us(Microseconds);
+    disable_interrupts();
+}
+
+ACPI_STATUS AcpiOsReadMemory(ACPI_PHYSICAL_ADDRESS Address, UINT64 *Value, UINT32 Width) {
+    switch(Width) {
+    case 8:
+    case 16:
+    case 32:
+    case 64:
+        *Value = 0u;
+        break;
+
+    default:
+        return AE_BAD_PARAMETER;
+    }
+
+    return AE_OK;
+}
+
+ACPI_STATUS AcpiOsWriteMemory(ACPI_PHYSICAL_ADDRESS Address, UINT64 Value, UINT32 Width) {
+    return AE_OK;
+}
+
+ACPI_STATUS AcpiOsSignal(UINT32 Function, void *Info) {
+    return AE_OK;
+}
+
+ACPI_STATUS AcpiOsReadPciConfiguration(ACPI_PCI_ID *PciId, UINT32 Reg, UINT64 *Value, UINT32 Width) {
+    *Value = 0u;
+    return AE_OK;
+}
+
+ACPI_STATUS AcpiOsWritePciConfiguration(ACPI_PCI_ID *PciId, UINT32 Reg, UINT64 Value, UINT32 Width) {
+    return AE_OK;
+}
+
+ACPI_STATUS AcpiOsReadPort(ACPI_IO_ADDRESS Address, UINT32 *Value, UINT32 Width) {
+    switch(Width) {
+    case 8:
+        *Value = inb(Address);
+        break;
+    
+    case 16:
+        *Value = inw(Address);
+        break;
+
+    case 32:
+        *Value = inl(Address);
+        break;
+
+    default:
+        kprintf("Bad width parameter: %X\n", Width);
+        return AE_BAD_PARAMETER;
+    }
+
+    return AE_OK;
+}
+
+ACPI_STATUS AcpiOsWritePort(ACPI_IO_ADDRESS Address, UINT32 Value, UINT32 Width) {
+    switch(Width) {
+    case 8:
+        outb(Address, Value);
+        break;
+    
+    case 16:
+        outw(Address, Value);
+        break;
+
+    case 32:
+        outl(Address, Value);
+        break;
+
+    default:
+        kprintf("Bad width parameter: %X\n", Width);
+        return AE_BAD_PARAMETER;
+    }
+
+    return AE_OK;
+}
+
+#define US_IN_MS 1000
+
+void AcpiOsSleep(UINT64 Milliseconds) {
+    enable_interrupts();
+    pit_wait_us(Milliseconds*US_IN_MS);
+    disable_interrupts();
 }

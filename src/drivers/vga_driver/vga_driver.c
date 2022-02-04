@@ -7,7 +7,7 @@ uint16_t vga_entry(char uc, enum vga_color color);
 
 void terminal_initialize(struct vga_driver_context *const context) {
     terminal_resetcolor(context);
-    context->terminal_buffer = (uint16_t*)0xB8000u;
+    context->terminal_buffer = (volatile uint16_t*)0xB8000u;
     context->terminal_upward_history_size = 0;
     context->terminal_downward_history_size = 0;
     terminal_clear(context);

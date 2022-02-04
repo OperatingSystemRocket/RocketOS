@@ -9,6 +9,9 @@
 #include "kstdlib.h"
 
 
+#include "kstdio.h"
+
+
 struct memory_bookkeeping_node {
     struct memory_bookkeeping_node* prev;
     struct memory_bookkeeping_node* next;

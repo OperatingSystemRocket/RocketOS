@@ -20,8 +20,8 @@ bool get_allocated_bit(uint32_t size_word);
 //asks OS for a physical page
 static bool increase_memory_pool(void) {
     if(number_of_pages_allocated < get_max_heap_size()) {
+        kprintf("last_free_virtual_address: %p, last_free_virtual_address quotient PAGE_SIZE: %X\n", last_free_virtual_address, ((uint32_t)last_free_virtual_address)%PAGE_SIZE);
         const uint32_t phys_addr = allocate_virtual_page(last_free_virtual_address, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
-
 
         if(phys_addr) {
             kassert(last_free_virtual_address+WORDS_IN_PAGE > (uint32_t*) get_heap_range_start(), false);
@@ -132,7 +132,7 @@ void* kmalloc(const size_t size) {
                 uint32_t *const ret = allocate_block(size_in_words, current_block);
                 kassert((uint32_t*) ret[1] == NULL && (uint32_t*) ret[2] == NULL, NULL);
 
-                return ret;
+                return ret+3;
             }
             current_block = (uint32_t*)current_block[2];
         }
