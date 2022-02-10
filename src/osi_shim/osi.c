@@ -192,6 +192,7 @@ ACPI_STATUS AcpiOsSignalSemaphore(ACPI_SEMAPHORE Handle, UINT32 Units) {
 }
 
 ACPI_STATUS AcpiOsInstallInterruptHandler(UINT32 InterruptNumber, ACPI_OSD_HANDLER ServiceRoutine, void *Context) {
+    kprintf("AcpiOsInstallInterruptHandler\n");
     return AE_OK;
 }
 
@@ -200,6 +201,7 @@ ACPI_STATUS AcpiOsCreateSemaphore(UINT32 MaxUnits, UINT32 InitialUnits, ACPI_SEM
 }
 
 ACPI_STATUS AcpiOsRemoveInterruptHandler(UINT32 InterruptNumber, ACPI_OSD_HANDLER Handler) {
+    kprintf("AcpiOsRemoveInterruptHandler\n");
     return AE_OK;
 }
 
@@ -238,22 +240,68 @@ void AcpiOsStall(UINT32 Microseconds) {
 }
 
 ACPI_STATUS AcpiOsReadMemory(ACPI_PHYSICAL_ADDRESS Address, UINT64 *Value, UINT32 Width) {
-    switch(Width) {
-    case 8:
-    case 16:
-    case 32:
-    case 64:
-        *Value = 0u;
-        break;
-
-    default:
-        return AE_BAD_PARAMETER;
+    void *const logical_address = AcpiOsMapMemory(Address, Width);
+    if(logical_address == NULL) {
+        return AE_NOT_EXIST;
     }
+
+    switch (Width) {
+        case 8:
+            *Value = *((volatile uint8_t*) logical_address);
+            break;
+
+        case 16:
+            *Value = *((volatile uint16_t*) logical_address);
+            break;
+
+        case 32:
+            *Value = *((volatile uint32_t*) logical_address);
+            break;
+
+        case 64:
+            *Value = *((volatile uint64_t*) logical_address);
+            break;
+
+        default:
+            AcpiOsUnmapMemory(logical_address, Width);
+            return AE_BAD_PARAMETER;
+    }
+
+    AcpiOsUnmapMemory(logical_address, Width);
 
     return AE_OK;
 }
 
 ACPI_STATUS AcpiOsWriteMemory(ACPI_PHYSICAL_ADDRESS Address, UINT64 Value, UINT32 Width) {
+    void *const logical_address = AcpiOsMapMemory(Address, Width);
+    if(logical_address == NULL) {
+        return AE_NOT_FOUND;
+    }
+
+    switch (Width) {
+        case 8:
+            *((volatile uint8_t*) logical_address) = Value;
+            break;
+
+        case 16:
+            *((volatile uint16_t*) logical_address) = Value;
+            break;
+
+        case 32:
+            *((volatile uint32_t*) logical_address) = Value;
+            break;
+
+        case 64:
+            *((volatile uint64_t*) logical_address) = Value;
+            break;
+
+        default:
+            AcpiOsUnmapMemory(logical_address, Width);
+            return AE_BAD_PARAMETER;
+    }
+
+    AcpiOsUnmapMemory(logical_address, Width);
+
     return AE_OK;
 }
 
@@ -262,11 +310,15 @@ ACPI_STATUS AcpiOsSignal(UINT32 Function, void *Info) {
 }
 
 ACPI_STATUS AcpiOsReadPciConfiguration(ACPI_PCI_ID *PciId, UINT32 Reg, UINT64 *Value, UINT32 Width) {
+    kprintf("AcpiOsReadPciConfiguration: not implemented\n");
+
     *Value = 0u;
     return AE_OK;
 }
 
 ACPI_STATUS AcpiOsWritePciConfiguration(ACPI_PCI_ID *PciId, UINT32 Reg, UINT64 Value, UINT32 Width) {
+    kprintf("AcpiOsWritePciConfiguration: not implemented\n");
+
     return AE_OK;
 }
 

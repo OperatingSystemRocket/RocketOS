@@ -68,18 +68,15 @@ void* allocate_page(const enum memory_type allocation_type) {
     if(allocation_type == USER_USE) {
         void *const allocated_page = (void*)(bitmap_allocate(global_physical_memory_bitmap.bitset, NUMBER_OF_PAGES, global_physical_memory_bitmap.bitset_cache, CACHE_N, &global_physical_memory_bitmap.has_filled_bitset_cache)*PAGE_SIZE);
         kprintf("USER: allocated_page: %p\n", allocated_page);
-        if(allocated_page != NULL) {
-            //NULL is a valid page and not necessarily a failure for critical kernel allocations,
-            //but the first page allocation (which will get NULL), happens in `paging_init` and the result is overwritten,
-            //so calling `kmemcpy` is redundant and will produce a spurious error message from a `kassert`.
-            kmemset(allocated_page, 0u, PAGE_SIZE);
-        }
+
         return allocated_page;
     }
     void *const allocated_page = (void*)(bitmap_allocate(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, kernel_heap_bitmap.bitset_cache, CACHE_N, &kernel_heap_bitmap.has_filled_bitset_cache)*PAGE_SIZE);
     kprintf("KERNEL: allocated_page: %p\n", allocated_page);
     if(allocated_page != NULL) {
-        //NULL can only be returned on failure for user allocations
+        //NULL is a valid page and not necessarily a failure for critical kernel allocations,
+        //but the first page allocation (which will get NULL), happens in `paging_init` and the result is overwritten,
+        //so calling `kmemcpy` is redundant and will produce a spurious error message from a `kassert`.
         kmemset(allocated_page, 0u, PAGE_SIZE);
     }
     return allocated_page;

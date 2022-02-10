@@ -95,7 +95,7 @@ build : create_directory_structure os.bin
 
 
 run : build
-	qemu-system-i386 -soundhw pcspk -serial stdio -drive file=disk.img,format=raw,index=0 -cdrom build/results/os.iso
+	qemu-system-i386 -machine q35 -soundhw pcspk -serial stdio -drive file=disk.img,format=raw,index=0 -cdrom build/results/os.iso
 
 
 create_directory_structure :

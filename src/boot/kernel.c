@@ -28,6 +28,9 @@
 
 #include "acpi.h"
 
+#include "ata_driver.h"
+#include "pcie_bus.h"
+
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
 
@@ -105,7 +108,7 @@ void kernel_main(void) {
     scheduler_init();
 
     init_pit(1000, PIT_CHANNEL_0, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
-
+    disable_interrupts();
 
     ACPI_STATUS status = AcpiInitializeSubsystem();
     if(ACPI_FAILURE(status)) {
@@ -130,6 +133,7 @@ void kernel_main(void) {
 
     kprintf("\nACPICA initialized\n\n\n");
 
+/*
     AcpiEnterSleepStatePrep(5);
     kprintf("\tAcpiEnterSleepStatePrep(5); passed\n");
     disable_interrupts();
@@ -137,6 +141,12 @@ void kernel_main(void) {
     AcpiEnterSleepState(5);
 
     kprintf("\nIt did not shutdown\n");
+*/
+
+    disable_interrupts();
+    ACPI_TABLE_RSDP* rsdp = AcpiOsMapMemory(AcpiOsGetRootPointer(), sizeof(ACPI_TABLE_RSDP));
+    kprintf("rsdp: %p\n", AcpiOsGetRootPointer());
+    print_all_tables(rsdp);
 
 /*
     scheduler_init();

@@ -62,7 +62,6 @@ void paging_init(void) {
         //   Not Present: The page table is not present
         default_page_directory[i] = 0x00000002u;
     }
-    serial_writestring("default_page_directory created successfully\n");
 
 
     uint32_t *const first_page_table = allocate_page(CRITICAL_KERNEL_USE);
@@ -71,23 +70,19 @@ void paging_init(void) {
         // Those bits are used by the attributes
         first_page_table[i] = (i * 4096u) | (PT_PRESENT | PT_RW | PT_USER); // attributes: user level, read/write, present.
     }
-    serial_writestring("page table created successfully\n");
 
 
     // attributes: user level, read/write, present
     default_page_directory[0] = ((uint32_t)first_page_table) | (PT_PRESENT | PT_RW | PT_USER);
-    serial_writestring("page table set successfully\n");
 }
 
 void load_and_turn_on_paging(void) {
     load_page_directory(default_page_directory);
-    serial_writestring("page directory loaded successfully\n");
 
     //TODO: add flag to decide if this is done or not
     enable_ring0_write_protect();
 
     enable_paging();
-    serial_writestring("paging enabled successfully\n");
 }
 
 void reserve_virtual_address(const uint32_t virtual_address, const size_t num_of_pages, const enum memory_type type) {
@@ -187,8 +182,10 @@ void map_page(void *const virtual_address, const uint32_t phys_frame, const uint
 uint32_t allocate_virtual_page(void *const virtual_address, const uint32_t pt_flags, const uint32_t pd_flags) {
     const uint32_t phys_frame = (uint32_t)allocate_page(USER_USE);
 
+    //NULL can only be returned on failure for user allocations
     if(phys_frame) {
         map_page(virtual_address, phys_frame, pt_flags, pd_flags);
+        kmemset(virtual_address, 0u, PAGE_SIZE);
     }
 
     return phys_frame;
