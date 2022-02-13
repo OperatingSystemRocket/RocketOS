@@ -14,6 +14,8 @@
 #include "pit.h"
 #include "hardware_io.h"
 
+#include "pci_bus.h"
+
 //TODO: remove as this is for debugging only
 #include "interrupts.h"
 
@@ -234,6 +236,7 @@ ACPI_STATUS AcpiOsRemoveInterruptHandler(UINT32 InterruptNumber, ACPI_OSD_HANDLE
 }
 
 ACPI_PRINTF_LIKE (1) void ACPI_INTERNAL_VAR_XFACE AcpiOsPrintf(const char *Format, ...) {
+#if 0
     va_list pargs;
 
     va_start(pargs, Format);
@@ -242,6 +245,7 @@ ACPI_PRINTF_LIKE (1) void ACPI_INTERNAL_VAR_XFACE AcpiOsPrintf(const char *Forma
     kprintf("\n");
 
     va_end(pargs);
+#endif
 }
 
 ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE Handle) {
@@ -249,8 +253,10 @@ ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE Handle) {
 }
 
 void AcpiOsVprintf(const char *Format, va_list Args) {
+#if 0
     kprintf_implementation(Format, &Args);
     kprintf("\n");
+#endif
 }
 
 UINT64 AcpiOsGetTimer(void) {
@@ -337,10 +343,28 @@ ACPI_STATUS AcpiOsSignal(UINT32 Function, void *Info) {
     return AE_OK;
 }
 
-ACPI_STATUS AcpiOsReadPciConfiguration(ACPI_PCI_ID *PciId, UINT32 Reg, UINT64 *Value, UINT32 Width) {
-    kprintf("AcpiOsReadPciConfiguration: not implemented\n");
+ACPI_STATUS AcpiOsReadPciConfiguration(ACPI_PCI_ID* PciId, UINT32 Register, UINT64* Value, UINT32 Width) {
+    if (PciId->Bus >= 256 || PciId->Device >= 32 || PciId->Function >= 8){
+        return AE_BAD_PARAMETER;
+    }
 
-    *Value = 0u;
+    switch (Width) {
+        case 8:
+            *((uint8_t*) Value) = pci_config_read_byte(PciId->Bus, PciId->Device, PciId->Function, Register);
+            break;
+
+        case 16:
+            *((uint16_t*) Value) = pci_config_read_word(PciId->Bus, PciId->Device, PciId->Function, Register);
+            break;
+
+        case 32:
+            *((uint32_t*) Value) = pci_config_read_long(PciId->Bus, PciId->Device, PciId->Function, Register);
+            break;
+
+        default:
+            return AE_BAD_PARAMETER;
+    }
+
     return AE_OK;
 }
 

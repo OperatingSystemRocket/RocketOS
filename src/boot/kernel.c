@@ -128,11 +128,11 @@ void kernel_main(void) {
         kprintf("acpica: Impossible to enable subsystem: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
     }
     kprintf("AcpiEnableSubsystem passed\n");
-    //status = AcpiInitializeObjects(ACPI_FULL_INITIALIZATION);
-    //if(ACPI_FAILURE(status)) {
-        //kprintf("acpica: Impossible to initialize objects: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
-    //}
-    //kprintf("AcpiInitializeObjects passed\n");
+    status = AcpiInitializeObjects(ACPI_FULL_INITIALIZATION);
+    if(ACPI_FAILURE(status)) {
+        kprintf("acpica: Impossible to initialize objects: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
+    }
+    kprintf("AcpiInitializeObjects passed\n");
 
     kprintf("\nACPICA initialized\n\n\n");
 
