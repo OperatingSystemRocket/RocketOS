@@ -145,13 +145,10 @@ int32_t kstrcmp(const char *const lhs, const char *const rhs) {
 int32_t kstrncmp(const char *const lhs, const char *const rhs, const size_t sz) {
     kassert(lhs != NULL && rhs != NULL, -2);
 
-	size_t index = 0u;
-	while (index < sz) {
-		if (lhs[index] == rhs[index]) {
-			index++;
-		} else if (lhs[index] < rhs[index]) {
+	for(size_t index = 0u; index < sz; ++index) {
+		if(lhs[index] < rhs[index]) {
 			return -1;
-		} else {
+		} else if(lhs[index] > rhs[index]) {
 			return 1;
 		}
 	}

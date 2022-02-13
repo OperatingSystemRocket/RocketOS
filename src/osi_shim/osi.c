@@ -49,7 +49,34 @@ ACPI_STATUS AcpiOsTableOverride(ACPI_TABLE_HEADER *ExistingTable, ACPI_TABLE_HEA
     return AE_OK;
 }
 
-void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
+#if 0
+void* AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
+    if(Length == 0u) {
+        kprintf("Length is 0\n");
+        return NULL;
+    }
+    kprintf("PhysicalAddress: %X\n", PhysicalAddress);
+
+
+    const uint32_t physical_page_address = PhysicalAddress & (~(PAGE_SIZE-1u));
+    const uint32_t physical_page_offset = PhysicalAddress - physical_page_address;
+
+    const uint32_t adjusted_length = physical_page_offset + Length; //takes into account the offset, which affects page boundary overlap
+
+    const uint32_t physical_memory_size = (adjusted_length/PAGE_SIZE) + ((adjusted_length%PAGE_SIZE)>0u); //in pages, round up
+
+    kprintf("before mapping page\n");
+    for(uint32_t i = 0u; i < physical_memory_size; ++i) {
+        identity_map_page((uint32_t)get_default_page_directory(), (physical_page_address+(i*PAGE_SIZE)), PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    }
+    kprintf("return value: %p\n", (void*)(PhysicalAddress));
+    return (void*)(PhysicalAddress);
+}
+
+void AcpiOsUnmapMemory(void *where, ACPI_SIZE length) {}
+#endif
+
+void* AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
     if(Length == 0u) {
         kprintf("Length is 0\n");
         return NULL;
@@ -193,6 +220,7 @@ ACPI_STATUS AcpiOsSignalSemaphore(ACPI_SEMAPHORE Handle, UINT32 Units) {
 
 ACPI_STATUS AcpiOsInstallInterruptHandler(UINT32 InterruptNumber, ACPI_OSD_HANDLER ServiceRoutine, void *Context) {
     kprintf("AcpiOsInstallInterruptHandler\n");
+    kprintf("ServiceRoutine: %p\n", (void*)ServiceRoutine);
     return AE_OK;
 }
 

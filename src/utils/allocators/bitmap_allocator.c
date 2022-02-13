@@ -16,7 +16,7 @@ static int32_t allocate_impl(uint32_t *const bookkeeping_bitset, const size_t nu
             bitset_cache[i] = -1;
             bookkeeping_bitset[current_entry/32] |= 1u << (current_entry%32);
             *has_searched_cache = false;
-            kprintf("allocated index: %i\n", current_entry);
+            //kprintf("allocated index: %i\n", current_entry);
             return current_entry;
         }
     }

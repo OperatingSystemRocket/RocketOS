@@ -122,14 +122,17 @@ void kernel_main(void) {
     if(ACPI_FAILURE(status)) {
         kprintf("acpica: Impossible to load tables: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
     }
+    kprintf("AcpiLoadTables passed\n");
     status = AcpiEnableSubsystem(ACPI_FULL_INITIALIZATION);
     if(ACPI_FAILURE(status)) {
         kprintf("acpica: Impossible to enable subsystem: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
     }
-    status = AcpiInitializeObjects(ACPI_FULL_INITIALIZATION);
-    if(ACPI_FAILURE(status)) {
-        kprintf("acpica: Impossible to initialize objects: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
-    }
+    kprintf("AcpiEnableSubsystem passed\n");
+    //status = AcpiInitializeObjects(ACPI_FULL_INITIALIZATION);
+    //if(ACPI_FAILURE(status)) {
+        //kprintf("acpica: Impossible to initialize objects: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
+    //}
+    //kprintf("AcpiInitializeObjects passed\n");
 
     kprintf("\nACPICA initialized\n\n\n");
 
@@ -147,6 +150,17 @@ void kernel_main(void) {
     ACPI_TABLE_RSDP* rsdp = AcpiOsMapMemory(AcpiOsGetRootPointer(), sizeof(ACPI_TABLE_RSDP));
     kprintf("rsdp: %p\n", AcpiOsGetRootPointer());
     print_all_tables(rsdp);
+    ACPI_TABLE_MCFG* mcfg = AcpiOsMapMemory(find_mcfg(rsdp), sizeof(ACPI_TABLE_MCFG));
+    kprintf("mcfg: %p\n", mcfg);
+    for(uint32_t i = 0u; i < ACPI_NAMESEG_SIZE; ++i) {
+        kprintf("%c", mcfg->Header.Signature[i]);
+    }
+    kprintf("\n");
+    enumerate_pcie(mcfg);
+    AcpiOsUnmapMemory(mcfg, sizeof(ACPI_TABLE_MCFG));
+    AcpiOsUnmapMemory(rsdp, sizeof(ACPI_TABLE_RSDP));
+
+
 
 /*
     scheduler_init();
