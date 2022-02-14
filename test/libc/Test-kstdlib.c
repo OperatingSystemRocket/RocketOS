@@ -143,18 +143,28 @@ void test_kfree_two_kmalloced_four_byte_blocks(void) {
     TEST_ASSERT_EQUAL_UINT32(0u, get_allocated_bit(first_word_first_allocation));
     TEST_ASSERT_EQUAL_UINT32(5u, get_size(first_word_first_allocation));
 
+    kfree(second_allocation_payload_ptr);
+
     const uint32_t prev_first_allocation = first_allocation_payload_ptr[-2]; 
     TEST_ASSERT_EQUAL_UINT32(0u, prev_first_allocation);
 
     const uint32_t next_first_allocation = first_allocation_payload_ptr[-1];
-    TEST_ASSERT_EQUAL_UINT16(0u, next_first_allocation);
+    TEST_ASSERT_EQUAL_UINT32(0u, next_first_allocation);
 }
 
 
 void kernel_main(void) {
     serial_init();
-    allocate_init();
-    paging_init();
+
+    init_gdt();
+    gdt_load();
+
+    pic_init();
+    isr_install();
+
+    write_tss();
+
+    initialize_kernel_memory();
     kdynamic_memory_init();
 
     UNITY_BEGIN();
