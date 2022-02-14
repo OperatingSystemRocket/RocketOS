@@ -343,22 +343,22 @@ ACPI_STATUS AcpiOsSignal(UINT32 Function, void *Info) {
     return AE_OK;
 }
 
-ACPI_STATUS AcpiOsReadPciConfiguration(ACPI_PCI_ID* PciId, UINT32 Register, UINT64* Value, UINT32 Width) {
+ACPI_STATUS AcpiOsReadPciConfiguration(ACPI_PCI_ID* PciId, UINT32 Reg, UINT64* Value, UINT32 Width) {
     if (PciId->Bus >= 256 || PciId->Device >= 32 || PciId->Function >= 8){
         return AE_BAD_PARAMETER;
     }
 
     switch (Width) {
         case 8:
-            *((uint8_t*) Value) = pci_config_read_byte(PciId->Bus, PciId->Device, PciId->Function, Register);
+            *((uint8_t*) Value) = pci_config_read_byte(PciId->Bus, PciId->Device, PciId->Function, Reg);
             break;
 
         case 16:
-            *((uint16_t*) Value) = pci_config_read_word(PciId->Bus, PciId->Device, PciId->Function, Register);
+            *((uint16_t*) Value) = pci_config_read_word(PciId->Bus, PciId->Device, PciId->Function, Reg);
             break;
 
         case 32:
-            *((uint32_t*) Value) = pci_config_read_long(PciId->Bus, PciId->Device, PciId->Function, Register);
+            *((uint32_t*) Value) = pci_config_read_long(PciId->Bus, PciId->Device, PciId->Function, Reg);
             break;
 
         default:
@@ -369,7 +369,26 @@ ACPI_STATUS AcpiOsReadPciConfiguration(ACPI_PCI_ID* PciId, UINT32 Register, UINT
 }
 
 ACPI_STATUS AcpiOsWritePciConfiguration(ACPI_PCI_ID *PciId, UINT32 Reg, UINT64 Value, UINT32 Width) {
-    kprintf("AcpiOsWritePciConfiguration: not implemented\n");
+    if (PciId->Bus >= 256 || PciId->Device >= 32 || PciId->Function >= 8){
+        return AE_BAD_PARAMETER;
+    }
+
+    switch (Width) {
+        case 8:
+            pci_config_write_byte(PciId->Bus, PciId->Device, PciId->Function, Reg, Value);
+            break;
+
+        case 16:
+            pci_config_write_word(PciId->Bus, PciId->Device, PciId->Function, Reg, Value);
+            break;
+
+        case 32:
+            pci_config_write_long(PciId->Bus, PciId->Device, PciId->Function, Reg, Value);
+            break;
+
+        default:
+            return AE_BAD_PARAMETER;
+    }
 
     return AE_OK;
 }

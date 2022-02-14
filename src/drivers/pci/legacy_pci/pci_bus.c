@@ -23,6 +23,35 @@ uint8_t pci_config_read_byte(const uint8_t bus, const uint8_t device, const uint
     return (pci_config_read_long(bus, device, function, offset) >> ((offset & 3) * 8)) & 0xff;
 }
 
+void pci_config_write_long(const uint8_t bus, const uint8_t device, const uint8_t function, const uint8_t offset, const uint32_t value) {
+    const uint32_t address =
+        (uint32_t)(1 << 31)  //enabled
+        | ((uint32_t)bus << 16)  //bus number
+        | ((uint32_t)device << 11)  //device number
+        | ((uint32_t)function << 8) //function number
+        | (((uint32_t)offset) & 0xFC); //Register number
+
+    outl(CONFIG_ADDRESS, address);
+
+    outl(CONFIG_DATA, value);
+}
+void pci_config_write_word(const uint8_t bus, const uint8_t device, const uint8_t function, const uint8_t offset, const uint16_t value) {
+    uint32_t tmp = pci_config_read_long(bus, device, function, offset);
+
+    tmp &= ~(0xffff << ((offset & 3) * 8));
+    tmp |= (value << ((offset & 3) * 8));
+
+    pci_config_write_long(bus, device, function, offset, tmp);
+}
+void pci_config_write_byte(const uint8_t bus, const uint8_t device, const uint8_t function, const uint8_t offset, const uint8_t value) {
+    auto tmp = pci_config_read_long(bus, device, function, offset);
+
+    tmp &= ~(0xff << ((offset & 3) * 8));
+    tmp |= (value << ((offset & 3) * 8));
+
+    pci_config_write_long(bus, device, function, offset, tmp);
+}
+
 uint16_t get_device(const uint8_t bus, const uint8_t slot) {
     return pci_config_read_word(bus, slot, 0u, 2u);
 }
