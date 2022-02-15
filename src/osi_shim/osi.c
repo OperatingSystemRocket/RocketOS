@@ -395,21 +395,21 @@ ACPI_STATUS AcpiOsWritePciConfiguration(ACPI_PCI_ID *PciId, UINT32 Reg, UINT64 V
 
 ACPI_STATUS AcpiOsReadPort(ACPI_IO_ADDRESS Address, UINT32 *Value, UINT32 Width) {
     switch(Width) {
-    case 8:
-        *Value = inb(Address);
-        break;
-    
-    case 16:
-        *Value = inw(Address);
-        break;
+        case 8:
+            *Value = inb(Address);
+            break;
+        
+        case 16:
+            *Value = inw(Address);
+            break;
 
-    case 32:
-        *Value = inl(Address);
-        break;
+        case 32:
+            *Value = inl(Address);
+            break;
 
-    default:
-        kprintf("Bad width parameter: %X\n", Width);
-        return AE_BAD_PARAMETER;
+        default:
+            kprintf("Bad width parameter: %X\n", Width);
+            return AE_BAD_PARAMETER;
     }
 
     return AE_OK;
@@ -417,21 +417,21 @@ ACPI_STATUS AcpiOsReadPort(ACPI_IO_ADDRESS Address, UINT32 *Value, UINT32 Width)
 
 ACPI_STATUS AcpiOsWritePort(ACPI_IO_ADDRESS Address, UINT32 Value, UINT32 Width) {
     switch(Width) {
-    case 8:
-        outb(Address, Value);
-        break;
-    
-    case 16:
-        outw(Address, Value);
-        break;
+        case 8:
+            outb(Address, Value);
+            break;
+        
+        case 16:
+            outw(Address, Value);
+            break;
 
-    case 32:
-        outl(Address, Value);
-        break;
+        case 32:
+            outl(Address, Value);
+            break;
 
-    default:
-        kprintf("Bad width parameter: %X\n", Width);
-        return AE_BAD_PARAMETER;
+        default:
+            kprintf("Bad width parameter: %X\n", Width);
+            return AE_BAD_PARAMETER;
     }
 
     return AE_OK;

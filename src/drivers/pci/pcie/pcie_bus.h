@@ -27,4 +27,7 @@ struct pci_device_header {
 void print_all_tables(ACPI_TABLE_RSDP* rsdp);
 void* find_table(ACPI_TABLE_RSDP* rsdp, const char* signature);
 ACPI_TABLE_MCFG* find_mcfg(ACPI_TABLE_RSDP* rsdp);
-void enumerate_pcie(ACPI_TABLE_MCFG* mcfg);
+ACPI_TABLE_MADT* find_madt(ACPI_TABLE_RSDP* rsdp);
+void enumerate_pcie(const ACPI_TABLE_MCFG* mcfg);
+void detect_cores(ACPI_TABLE_MADT* madt);
+void print_cores_info(void);

@@ -157,9 +157,18 @@ void kernel_main(void) {
     }
     kprintf("\n");
     enumerate_pcie(mcfg);
+    ACPI_TABLE_MADT* madt = AcpiOsMapMemory(find_madt(rsdp), sizeof(ACPI_TABLE_MADT));
+    kprintf("madt: %p\n", madt);
+    for(uint32_t i = 0u; i < ACPI_NAMESEG_SIZE; ++i) {
+        kprintf("%c", madt->Header.Signature[i]);
+    }
+    kprintf("\n");
+    detect_cores(madt);
+    print_cores_info();
+    AcpiOsUnmapMemory(madt, sizeof(ACPI_TABLE_MADT));
     AcpiOsUnmapMemory(mcfg, sizeof(ACPI_TABLE_MCFG));
     AcpiOsUnmapMemory(rsdp, sizeof(ACPI_TABLE_RSDP));
-
+    enable_interrupts();
 
 
 /*
