@@ -58,25 +58,30 @@ ACPI_TABLE_MADT* find_madt(ACPI_TABLE_RSDP *const rsdp) {
 static uint32_t last_vendor_id = 0u;
 static uint32_t last_device_id = 0u;
 
+static uint32_t num_of_valid_devices = 0u;
+static uint32_t all_devices = 0u;
+
 void enumerate_function(const uint64_t device_addr, const uint64_t function) {
     const uint64_t offset = function << 12;
 
     const uint32_t function_addr = (device_addr + offset) & 0xFFFFFFFFu;
     identity_map_page((uint32_t)get_default_page_directory(), function_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
-    //struct pci_device_header* function_header = AcpiOsMapMemory(device_addr, sizeof(struct pci_device_header));
     struct pci_device_header *const function_header = (struct pci_device_header*)function_addr;
 
     if(function_header->device_id == 0u || function_header->device_id == 0xFFFFu) return;
 
     const uint32_t vendor_id = function_header->vendor_id;
     const uint32_t device_id = function_header->device_id;
+    const uint32_t class_code = function_header->class_code;
+    const uint32_t subclass = function_header->subclass;
+    const uint32_t prog_if = function_header->prog_if;
     if(vendor_id != last_vendor_id || device_id != last_device_id) {
-        kprintf("%X %X\n", vendor_id, device_id);
+        kprintf("vendor_id: %X, device_id: %X, class_code: %X, subclass: %X, prog_if: %X\n", vendor_id, device_id, class_code, subclass, prog_if);
+        ++num_of_valid_devices;
     }
+    ++all_devices;
     last_vendor_id = vendor_id;
     last_device_id = device_id;
-
-    //AcpiOsUnmapMemory(function_header, sizeof(struct pci_device_header));
 }
 
 void enumerate_device(const uint64_t bus_addr, const uint64_t device) {
@@ -87,16 +92,13 @@ void enumerate_device(const uint64_t bus_addr, const uint64_t device) {
 
     const uint32_t device_addr = (bus_addr + offset) & 0xFFFFFFFFu;
     identity_map_page((uint32_t)get_default_page_directory(), device_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
-    //struct pci_device_header* device_header = AcpiOsMapMemory(device_addr, sizeof(struct pci_device_header));
     struct pci_device_header *const device_header = (struct pci_device_header*)device_addr;
 
     if(device_header->device_id == 0u || device_header->device_id == 0xFFFFu) return;
 
     for(uint32_t function = 0u; function < 8u; ++function) {
-        enumerate_function(device_addr, device);
+        enumerate_function(device_addr, function);
     }
-
-    //AcpiOsUnmapMemory(device_header, sizeof(struct pci_device_header));
 }
 
 void enumerate_bus(const uint64_t base_addr, const uint64_t bus) {
@@ -104,39 +106,27 @@ void enumerate_bus(const uint64_t base_addr, const uint64_t bus) {
 
     const uint32_t bus_addr = (base_addr + offset) & 0xFFFFFFFFu;
     identity_map_page((uint32_t)get_default_page_directory(), bus_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
-    //struct pci_device_header* bus_header = AcpiOsMapMemory(bus_addr, sizeof(struct pci_device_header));
     struct pci_device_header *const bus_header = (struct pci_device_header*)bus_addr;
 
-    if(bus_header->device_id == 0u || bus_header->device_id == 0xFFFFu) {
-        //kprintf("non-existent_bus ");
-        return;
-    }
-    //kprintf("enumerate_bus ");
+    if(bus_header->device_id == 0u || bus_header->device_id == 0xFFFFu) return;
 
     for(uint32_t device = 0u; device < 32u; ++device) {
         enumerate_device(bus_addr, device);
     }
-
-    //AcpiOsUnmapMemory(bus_header, sizeof(struct pci_device_header));
 }
 
 void enumerate_pcie(const ACPI_TABLE_MCFG *const mcfg) {
-    //kprintf("mcfg->Header.Length: %u, sizeof(ACPI_TABLE_MCFG): %u, sizeof(ACPI_MCFG_ALLOCATION): %u\n", mcfg->Header.Length, sizeof(ACPI_TABLE_MCFG), sizeof(ACPI_MCFG_ALLOCATION));
     const uint32_t entries = (mcfg->Header.Length - sizeof(ACPI_TABLE_MCFG)) / sizeof(ACPI_MCFG_ALLOCATION);
-    //kprintf("enumerate_pcie entries: %u\n", entries);
 
     for (uint32_t i = 0; i < entries; ++i) {
         const uint32_t device_config_addr = (((uint64_t)mcfg) + sizeof(ACPI_TABLE_MCFG) + (sizeof(ACPI_MCFG_ALLOCATION) * i)) & 0xFFFFFFFFu;
         identity_map_page((uint32_t)get_default_page_directory(), device_config_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
         ACPI_MCFG_ALLOCATION* new_device_config = (ACPI_MCFG_ALLOCATION*)device_config_addr;
-        //ACPI_MCFG_ALLOCATION* new_device_config = AcpiOsMapMemory(device_config_addr, sizeof(ACPI_MCFG_ALLOCATION));
-        const uint32_t number_of_buses = (new_device_config->EndBusNumber-new_device_config->StartBusNumber)+1u;
-        //kprintf("enumerate_pcie new_device_config->EndBusNumber-new_device_config->StartBusNumber: %u\n", number_of_buses);
         for(uint32_t bus = new_device_config->StartBusNumber; bus <= new_device_config->EndBusNumber; ++bus) {
             enumerate_bus(new_device_config->Address, bus);
         }
-        //AcpiOsUnmapMemory(new_device_config, sizeof(ACPI_MCFG_ALLOCATION));
     }
+    kprintf("PCIe num_of_devices: %u, all_devices: %u\n", num_of_valid_devices, all_devices);
 }
 
 static uint8_t lapic_ids[256] = {0u}; // CPU core Local APIC IDs
@@ -147,9 +137,9 @@ static uint32_t ioapic_ptr = 0u;      // pointer to the IO APIC MMIO registers
 void detect_cores(ACPI_TABLE_MADT *const madt) {
     lapic_ptr = madt->Address;
     identity_map_page((uint32_t)get_default_page_directory(), lapic_ptr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
-    const length = madt->Header.Length;
-    uint8_t* const end_of_madt_struct = (uint8_t*)(((uint32_t)madt) + sizeof(ACPI_TABLE_MADT));
-    uint8_t* const end_of_madt = (uint8_t*)(((uint32_t)madt) + length);
+    const uint32_t length = madt->Header.Length;
+    uint8_t *const end_of_madt_struct = (uint8_t*)(((uint32_t)madt) + sizeof(ACPI_TABLE_MADT));
+    uint8_t *const end_of_madt = (uint8_t*)(((uint32_t)madt) + length);
     for(uint8_t* current_addr = end_of_madt_struct; current_addr < end_of_madt; current_addr += current_addr[1]) {
         switch(current_addr[0]) {
             case 0u: // Processor Local APIC
