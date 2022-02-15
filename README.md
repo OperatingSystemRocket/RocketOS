@@ -61,6 +61,11 @@ We do not currently require you to forfeit your individual copyright to your cha
 <a href="https://rocketos.readthedocs.io/en/latest/">Documentation</a>
 
 
+## Acknowledgments
+All the amazing art assets and designs used for the README.md, url preview, and located in `logos/`
+were created by: https://github.com/StefanGreve. Check them out!
+
+
 ## Roadmap
 
 - [x] Global Descriptor Table
