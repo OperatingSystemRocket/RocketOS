@@ -55,11 +55,7 @@ ACPI_TABLE_MADT* find_madt(ACPI_TABLE_RSDP *const rsdp) {
     return find_table(rsdp, ACPI_SIG_MADT);
 }
 
-static uint32_t last_vendor_id = 0u;
-static uint32_t last_device_id = 0u;
-
 static uint32_t num_of_valid_devices = 0u;
-static uint32_t all_devices = 0u;
 
 void enumerate_function(const uint64_t device_addr, const uint64_t function) {
     const uint64_t offset = function << 12;
@@ -75,19 +71,26 @@ void enumerate_function(const uint64_t device_addr, const uint64_t function) {
     const uint32_t class_code = function_header->class_code;
     const uint32_t subclass = function_header->subclass;
     const uint32_t prog_if = function_header->prog_if;
-    if(vendor_id != last_vendor_id || device_id != last_device_id) {
-        kprintf("vendor_id: %X, device_id: %X, class_code: %X, subclass: %X, prog_if: %X\n", vendor_id, device_id, class_code, subclass, prog_if);
-        ++num_of_valid_devices;
+    //kprintf("vendor_id: %X, device_id: %X, class_code: %X, subclass: %X, prog_if: %X\n", vendor_id, device_id, class_code, subclass, prog_if);
+    ++num_of_valid_devices;
+
+    switch(class_code) {
+        case 0x01: // mass storage controller
+            switch(subclass) {
+                case 0x06: // SATA
+                    switch(prog_if) {
+                        case 0x01: // AHCI
+                            kprintf("SATA AHCI\n");
+                            init_ahci(function_header);
+                            break;
+                    }
+                    break;
+            }
+            break;
     }
-    ++all_devices;
-    last_vendor_id = vendor_id;
-    last_device_id = device_id;
 }
 
 void enumerate_device(const uint64_t bus_addr, const uint64_t device) {
-    last_vendor_id = 0u;
-    last_device_id = 0u;
-
     const uint64_t offset = device << 15;
 
     const uint32_t device_addr = (bus_addr + offset) & 0xFFFFFFFFu;
@@ -126,7 +129,7 @@ void enumerate_pcie(const ACPI_TABLE_MCFG *const mcfg) {
             enumerate_bus(new_device_config->Address, bus);
         }
     }
-    kprintf("PCIe num_of_devices: %u, all_devices: %u\n", num_of_valid_devices, all_devices);
+    //kprintf("PCIe num_of_devices: %u\n", num_of_valid_devices);
 }
 
 static uint8_t lapic_ids[256] = {0u}; // CPU core Local APIC IDs

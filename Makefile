@@ -90,6 +90,7 @@ build : create_directory_structure os.bin
 	./is_multiboot.sh build/results/os.bin
 	$(MKDIR) isodir/boot/grub
 	cp build/results/os.bin isodir/boot/os.bin
+	cp ramdisk.img isodir/boot/ramdisk.img
 	cp grub.cfg isodir/boot/grub/grub.cfg
 	grub-mkrescue -o build/results/os.iso isodir
 

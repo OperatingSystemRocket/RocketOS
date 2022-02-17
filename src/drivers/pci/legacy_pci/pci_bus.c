@@ -114,5 +114,5 @@ void brute_force_check_all_buses(void) {
             check_device(bus, device);
         }
     }
-    kprintf("legacy PCI num_of_devices: %u\n", (uint32_t)num_of_devices);
+    //kprintf("legacy PCI num_of_devices: %u\n", (uint32_t)num_of_devices);
 }

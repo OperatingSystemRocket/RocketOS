@@ -119,7 +119,7 @@ typedef unsigned long long      multiboot_uint64_t;
        multiboot_uint32_t width;
        multiboot_uint32_t height;
        multiboot_uint32_t depth;
-     };
+     } __attribute__((section(".multiboot")));
 
 /* The symbol table for a.out. */
      struct multiboot_aout_symbol_table
@@ -190,7 +190,7 @@ typedef struct multiboot_elf_section_header_table multiboot_elf_section_header_t
        multiboot_uint16_t vbe_interface_seg;
        multiboot_uint16_t vbe_interface_off;
        multiboot_uint16_t vbe_interface_len;
-     };
+     } __attribute__((section(".multiboot")));
 typedef struct multiboot_info multiboot_info_t;
 
      struct multiboot_mmap_entry

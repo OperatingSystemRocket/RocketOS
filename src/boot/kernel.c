@@ -28,8 +28,9 @@
 
 #include "acpi.h"
 
-#include "ata_driver.h"
 #include "pcie_bus.h"
+
+#include "tar.h"
 
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size
@@ -38,6 +39,8 @@ typedef const char* str;
 
 GENERATE_HASHMAP_DECLARATION(str, uint32_t)
 GENERATE_HASHMAP_DEFINITION(str, uint32_t, str_comp)
+
+multiboot_info_t* mb_info = NULL;
 
 void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
     (void) mboot_header; //needed for calling convention reasons, but currently unused
@@ -56,6 +59,7 @@ void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboo
         terminal_context_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
     } else {
         terminal_context_writestring("The multiboot structure was loaded properly\n");
+        mb_info = mboot_header;
     }
 }
 
@@ -147,6 +151,7 @@ void kernel_main(void) {
 */
 
     disable_interrupts();
+#if 0
     ACPI_TABLE_RSDP* rsdp = AcpiOsMapMemory(AcpiOsGetRootPointer(), sizeof(ACPI_TABLE_RSDP));
     kprintf("rsdp: %p\n", AcpiOsGetRootPointer());
     print_all_tables(rsdp);
@@ -164,11 +169,26 @@ void kernel_main(void) {
     }
     kprintf("\n");*/
     detect_cores(madt);
-    print_cores_info();
+    //print_cores_info();
     AcpiOsUnmapMemory(madt, sizeof(ACPI_TABLE_MADT));
     AcpiOsUnmapMemory(mcfg, sizeof(ACPI_TABLE_MCFG));
     AcpiOsUnmapMemory(rsdp, sizeof(ACPI_TABLE_RSDP));
-    brute_force_check_all_buses();
+    //brute_force_check_all_buses();
+#endif
+    identity_map_page((uint32_t)get_default_page_directory(), mb_info->mods_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    multiboot_module_t *const first_module = (multiboot_module_t*)mb_info->mods_addr;
+    identity_map_page((uint32_t)get_default_page_directory(), first_module, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    const uint32_t addr = first_module->mod_start;
+    identity_map_page((uint32_t)get_default_page_directory(), addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+
+    kprintf("first_module: %p\n", first_module);
+    kprintf("addr: %p\n", addr);
+    kprintf("mb_info->mods_addr: %X\n", mb_info->mods_addr);
+    kprintf("mb_info->mods_count: %u\n", mb_info->mods_count);
+
+    parse_headers(addr);
+    //print_file("bar.txt");
+
     enable_interrupts();
 
 
