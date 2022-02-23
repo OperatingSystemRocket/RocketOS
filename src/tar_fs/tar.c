@@ -7,7 +7,7 @@ static struct file_header* file_headers[32] = {NULL};
 void parse_headers(const uint32_t address) {
     /*for(struct file_header* file_header = (struct file_header*)address; file_header->size != 0; file_header = (struct file_header*)((uint32_t)file_header + file_header->size)) {
         kprintf("%s, %u\n", file_header->filename, file_header->size);
-        identity_map_page((uint32_t)get_default_page_directory(), (uint32_t)file_header, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+        identity_map_page((uint32_t)get_default_page_directory(), (uint32_t)file_header, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
         if(num_of_files >= 32) {
             kprintf("Too many files in file list!\n");
             break;

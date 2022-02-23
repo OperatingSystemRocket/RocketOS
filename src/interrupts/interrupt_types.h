@@ -34,6 +34,16 @@ struct interrupt_frame {
     uint16_t reserved7;
 };
 
+struct syscall_regs {
+    uint32_t eax;
+    uint32_t ebx;
+    uint32_t ecx;
+    uint32_t edx;
+    uint32_t esi;
+    uint32_t edi;
+    uint32_t ebp;
+};
+
 struct IDT_entry{
     uint16_t offset_lowerbits;
     uint16_t selector;

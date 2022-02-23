@@ -1,0 +1,9 @@
+PROJECTS := libc/ kernel/
+
+all: ${PROJECTS}
+	./config.sh
+
+${PROJECTS}:
+	DESTDIR = ${SYSROOT}
+	${MAKE} -C $@ install
+

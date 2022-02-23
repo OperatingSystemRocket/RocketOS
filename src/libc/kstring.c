@@ -202,9 +202,10 @@ int32_t kstrspn(const char *const str1, const char *const str2) {
 size_t kstrlen(const char *const str) {
     kassert(str != NULL, 0u);
 
-    size_t len = 0;
-    while (str[len])
-        len++;
+    size_t len = 0u;
+    while (str[len]) {
+        ++len;
+    }
     return len;
 }
 

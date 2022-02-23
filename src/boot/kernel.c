@@ -104,10 +104,10 @@ void kernel_main(void) {
     pic_init();
     isr_install();
 
-    write_tss();
-
     initialize_kernel_memory();
     kdynamic_memory_init();
+
+    //write_tss();
 
     scheduler_init();
 
@@ -151,6 +151,9 @@ void kernel_main(void) {
 */
 
     disable_interrupts();
+
+    write_tss();
+
 #if 0
     ACPI_TABLE_RSDP* rsdp = AcpiOsMapMemory(AcpiOsGetRootPointer(), sizeof(ACPI_TABLE_RSDP));
     kprintf("rsdp: %p\n", AcpiOsGetRootPointer());
@@ -174,12 +177,12 @@ void kernel_main(void) {
     AcpiOsUnmapMemory(mcfg, sizeof(ACPI_TABLE_MCFG));
     AcpiOsUnmapMemory(rsdp, sizeof(ACPI_TABLE_RSDP));
     //brute_force_check_all_buses();
-#endif
-    identity_map_page((uint32_t)get_default_page_directory(), mb_info->mods_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+
+    identity_map_page((uint32_t)get_default_page_directory(), mb_info->mods_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     multiboot_module_t *const first_module = (multiboot_module_t*)mb_info->mods_addr;
-    identity_map_page((uint32_t)get_default_page_directory(), first_module, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    identity_map_page((uint32_t)get_default_page_directory(), first_module, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     const uint32_t addr = first_module->mod_start;
-    identity_map_page((uint32_t)get_default_page_directory(), addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    identity_map_page((uint32_t)get_default_page_directory(), addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
 
     kprintf("first_module: %p\n", first_module);
     kprintf("addr: %p\n", addr);
@@ -188,18 +191,9 @@ void kernel_main(void) {
 
     parse_headers(addr);
     //print_file("bar.txt");
+#endif
 
-    enable_interrupts();
 
-
-/*
-    scheduler_init();
-
-    pic_init();
-    isr_install();
-
-    write_tss();
-*/
 
     struct default_terminal_context *const data = get_default_terminal_context();
     data->vga_context = get_default_vga_context();
@@ -209,9 +203,12 @@ void kernel_main(void) {
     default_context_terminal_start();
     enable_keyboard();
 
-/*
-    //jump_usermode();
+    enable_interrupts();
 
+
+    jump_usermode();
+
+/*
     create_process(&example_function_task);
     create_process(&foo_function_task);
 

@@ -28,7 +28,7 @@ void idt_register_handler(const uint8_t interrupt, const uint32_t address) {
     idt[interrupt].offset_lowerbits = address & 0xffff;
     idt[interrupt].selector = KERNEL_CODE_SEGMENT_OFFSET;
     idt[interrupt].zero = 0;
-    idt[interrupt].type_attr = INTERRUPT_GATE;
+    idt[interrupt].type_attr = IDT_PRESENT | INTERRUPT_GATE;
     idt[interrupt].offset_higherbits = (uint16_t)((address & 0xffff0000) >> 16);
 }
 
@@ -274,10 +274,22 @@ void idt_init(void) {
                         : "m"(idt_ptr));
 }
 
-__attribute__((interrupt)) static void system_call(struct interrupt_frame *const frame) {
-    (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+struct system_call_regs {
+    uint32_t code;
+    uint32_t eax;
+};
 
+uint32_t __attribute__((regparm(1))) system_call(struct system_call_regs *const regs) {
     kprintf("system_call triggered\n");
+    if(regs->code == 0) {
+        kprintf("eax: %u\n", regs->eax);
+        return regs->eax;
+    } else if(regs->code == 1) {
+        kprintf("eax: %s\n", (const char*)regs->eax);
+        return (uint32_t)kstrlen((const char*)regs->eax);
+    }
+
+    return 3;
 }
 
 void isr_install(void) {
@@ -295,10 +307,7 @@ void isr_install(void) {
     idt_register_handler(11, (uint32_t)isr11);
     idt_register_handler(12, (uint32_t)isr12);
     idt_register_handler(13, (uint32_t)isr13);
-
     idt_register_handler(14, (uint32_t)isr14);
-    idt[14].type_attr = IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT;
-
     idt_register_handler(15, (uint32_t)isr15);
     idt_register_handler(16, (uint32_t)isr16);
     idt_register_handler(17, (uint32_t)isr17);
@@ -319,8 +328,8 @@ void isr_install(void) {
 
     enable_timer();
 
-    idt_register_handler(128, (uint32_t)system_call); //system call, 0x80
-    idt[128].type_attr = IDT_PRESENT | IDT_RING_3 | IDT_INTERRUPT;
+    idt_register_handler(128, (uint32_t)irq_common_handler); //system call, 0x80
+    idt[128].type_attr = IDT_PRESENT | IDT_RING_3 | INTERRUPT_GATE;
 
     idt_init();
 }

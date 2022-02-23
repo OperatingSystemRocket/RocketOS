@@ -2,15 +2,21 @@
 
 
 void test_user_function(void) {
-    //kprintf("test_user_function() called\n");
+    const volatile uint32_t ret0 = print_int(40);
+    print_int(ret0);
+    const volatile uint32_t ret1 = print_int(5);
+    print_int(ret1);
+    const volatile uint32_t ret2 = print_int(6);
+    print_int(ret2);
+    const volatile uint32_t ret3 = print_int(2);
+    print_int(ret3);
 
-	//asm volatile("hlt");
-
-	//volatile int32_t n = 0;
-	//volatile int32_t y = 7;
-	//volatile int32_t t = y/n;
-
-	//trigger_interrupt();
+    const volatile uint32_t ret4 = print("test");
+    print_int(ret4);
+    const volatile uint32_t ret5 = print("test2");
+    print_int(ret5);
+    const volatile uint32_t ret6 = print("test3");
+    print_int(ret6);
 
 	for(volatile int i = 0; ;++i);
 }
@@ -78,12 +84,18 @@ void init_gdt(void) {
 	gdt_entries_ptr.base = (uint32_t) &gdt_entries[0];
 }
 
+struct osi_memory_allocator* get_default_virt_allocator(void);
+
 void write_tss(void) {
 	kmemset(&tss_entry, 0, sizeof(struct tss_entry_struct));
 
-	//may not be correct
 	tss_entry.ss0 = 2*sizeof(struct gdt_entry);
-	tss_entry.esp0 = ((uint32_t)&stack_bottom + 16384) - 4;
+
+	void *const physical_page = allocate_page(USER_USE);
+    void *const virtual_page = osi_memory_allocator_allocate(get_default_virt_allocator(), 1u);
+    map_page(virtual_page, (uint32_t)physical_page, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    tss_entry.esp0 = ((uint32_t) virtual_page) + PAGE_SIZE;
+    //tss_entry.esp0 = ((uint32_t) kmalloc(4096u))+4096u;
 
     flush_tss();
 }

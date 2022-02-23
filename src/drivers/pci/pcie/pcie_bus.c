@@ -61,7 +61,7 @@ void enumerate_function(const uint64_t device_addr, const uint64_t function) {
     const uint64_t offset = function << 12;
 
     const uint32_t function_addr = (device_addr + offset) & 0xFFFFFFFFu;
-    identity_map_page((uint32_t)get_default_page_directory(), function_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    identity_map_page((uint32_t)get_default_page_directory(), function_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     struct pci_device_header *const function_header = (struct pci_device_header*)function_addr;
 
     if(function_header->device_id == 0u || function_header->device_id == 0xFFFFu) return;
@@ -139,7 +139,7 @@ static uint32_t ioapic_ptr = 0u;      // pointer to the IO APIC MMIO registers
 
 void detect_cores(ACPI_TABLE_MADT *const madt) {
     lapic_ptr = madt->Address;
-    identity_map_page((uint32_t)get_default_page_directory(), lapic_ptr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    identity_map_page((uint32_t)get_default_page_directory(), lapic_ptr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     const uint32_t length = madt->Header.Length;
     uint8_t *const end_of_madt_struct = (uint8_t*)(((uint32_t)madt) + sizeof(ACPI_TABLE_MADT));
     uint8_t *const end_of_madt = (uint8_t*)(((uint32_t)madt) + length);
@@ -152,11 +152,11 @@ void detect_cores(ACPI_TABLE_MADT *const madt) {
                 break;
             case 1u: // I/O APIC
                 ioapic_ptr = *((uint32_t*)(current_addr+4));
-                identity_map_page((uint32_t)get_default_page_directory(), ioapic_ptr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+                identity_map_page((uint32_t)get_default_page_directory(), ioapic_ptr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
                 break;
             case 5u: // Local APIC Address Override
                 lapic_ptr = (uint32_t)((*((uint64_t*)(current_addr+4))) & 0xFFFFFFFFu);
-                identity_map_page((uint32_t)get_default_page_directory(), lapic_ptr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+                identity_map_page((uint32_t)get_default_page_directory(), lapic_ptr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
                 break;
         }
     }

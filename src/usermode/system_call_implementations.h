@@ -3,9 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "default_vga_driver.h"
 
+extern uint32_t __attribute__((naked)) __attribute__((regparm(1))) print_int(uint32_t eax);
 
-extern void trigger_interrupt(void);
-
-void print(const char* str);
+extern uint32_t __attribute__((naked)) __attribute__((regparm(1))) print(const char* str);

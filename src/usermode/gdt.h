@@ -9,6 +9,10 @@
 
 #include "system_call_implementations.h"
 
+#include "kstdlib.h"
+#include "physical_mem_allocator.h"
+#include "osi_memory_allocator.h"
+
 
 struct tss_entry_struct {
 	uint32_t prev_tss; // The previous TSS - with hardware task switching these form a kind of backward linked list.

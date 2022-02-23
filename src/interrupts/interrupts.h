@@ -20,3 +20,6 @@ void idt_register_handler(uint8_t interrupt, uint32_t address);
 
 void enable_interrupts(void);
 void disable_interrupts(void);
+
+
+extern uint32_t __attribute__((naked)) __attribute__((regparm(2))) irq_common_handler(uint32_t eax, uint32_t edx);
