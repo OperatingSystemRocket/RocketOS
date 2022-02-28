@@ -7,7 +7,6 @@ CPPFLAGS ?=
 LDFLAGS ?=
 LIBS ?=
 
-DESTDIR ?=
 PREFIX ?= /usr/local
 EXEC_PREFIX ?= $(PREFIX)
 INCLUDEDIR ?= $(PREFIX)/include
@@ -20,7 +19,6 @@ LIBK_CPPFLAGS := $(CPPFLAGS) -D__is_libk
 
 ARCHDIR = arch/$(HOSTARCH)
 
-
 ARCH_CFLAGS=
 ARCH_CPPFLAGS=
 KERNEL_ARCH_CFLAGS=
@@ -29,8 +27,6 @@ KERNEL_ARCH_CPPFLAGS=
 ARCH_FREEOBJS=\
 
 ARCH_HOSTEDOBJS=\
-
-
 
 CFLAGS := $(CFLAGS) $(ARCH_CFLAGS)
 CPPFLAGS := $(CPPFLAGS) $(ARCH_CPPFLAGS)
@@ -61,8 +57,21 @@ LIBK_OBJS = $(FREEOBJS:.o=.libk.o)
 #BINARIES=libc.a libk.a # Not ready for libc yet.
 BINARIES = libk.a
 
+
+
+#libc
+LIBC_C_NAMES = $(shell find libc/ -name '*.c')
+LIBC_H_NAMES = $(shell find libc/ -name '*.h')
+
+#sysroot
+INCLUDE_HEADERS = $(DESTDIR)
+
+
+
 .PHONY: all clean install install-headers install-libs
 .SUFFIXES: .o .libk.o .c .S
+
+include ../make.config
 
 all: $(BINARIES)
 
@@ -92,8 +101,8 @@ clean:
 install: install-headers install-libs
 
 install-headers:
-	mkdir -p $(DESTDIR)$(INCLUDEDIR)
-	cp -R --preserve=timestamps include/. $(DESTDIR)$(INCLUDEDIR)/.
+	mkdir -p $(DESTDIR)/userspace$(INCLUDEDIR)
+	cp -R --preserve=timestamps libc/include/. $(DESTDIR)/userspace$(INCLUDEDIR)/.
 
 install-libs: $(BINARIES)
 	mkdir -p $(DESTDIR)$(LIBDIR)

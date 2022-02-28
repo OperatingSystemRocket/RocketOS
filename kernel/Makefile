@@ -7,7 +7,6 @@ CPPFLAGS ?=
 LDFLAGS ?=
 LIBS ?=
 
-DESTDIR ?=
 PREFIX ?= /usr/local
 EXEC_PREFIX ?= $(PREFIX)
 BOOTDIR ?= $(EXEC_PREFIX)/boot
@@ -47,8 +46,34 @@ $(LIBS) \
 $(ARCHDIR)/crtend.o \
 $(ARCHDIR)/crtn.o \
 
+
+
+
+#arch
+ARCH_AS_NAMES = $(subst arch/i686/boot/boot.s,,$(shell find arch/ -name '*.s'))
+ARCH_C_NAMES = $(subst arch/i686/boot/kernel.o,,$(shell find arch/ -name '*.c'))
+ARCH_H_NAMES = $(shell find arch/ -name '*.h')
+
+#entry point
+ENTRY_POINT_AS_NAMES = $(shell find arch/i686/boot/ -name '*.s')
+ENTRY_POINT_C_NAMES = $(shell find arch/i686/boot/ -name '*.c')
+
+#kernel
+KERNEL_AS_NAMES = $(shell find kernel/ -name '*.s')
+KERNEL_C_NAMES = $(shell find kernel/ -name '*.c')
+KERNEL_H_NAMES = $(shell find kernel/ -name '*.h')
+
+#sysroot
+INCLUDE_HEADERS = $(DESTDIR)
+
+
+
+
+
 .PHONY: all clean install install-headers install-kernel
 .SUFFIXES: .o .c .S
+
+include ../make.config
 
 all: myos.kernel
 
@@ -73,8 +98,8 @@ clean:
 install: install-headers install-kernel
 
 install-headers:
-	mkdir -p $(DESTDIR)$(INCLUDEDIR)
-	cp -R --preserve=timestamps include/. $(DESTDIR)$(INCLUDEDIR)/.
+	mkdir -p $(DESTDIR)/kernel$(INCLUDEDIR)
+	cp -R --preserve=timestamps include/. $(DESTDIR)/kernel$(INCLUDEDIR)/.
 
 install-kernel: myos.kernel
 	mkdir -p $(DESTDIR)$(BOOTDIR)
