@@ -41,6 +41,7 @@ sysroot/
 
 *.bin
 *.iso
+*.kernel
 isodir/
 
 # Debug files

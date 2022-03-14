@@ -53,6 +53,7 @@ libk.a: $(LIBK_OBJS)
 	$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(LIBK_CPPFLAGS)
 
 clean:
+	-rm libk.a
 	-rm $(shell find -name '*.o')
 	-rm $(shell find -name '*.d')
 	-rm -r $(DESTDIR)$(INCLUDEDIR)/userspace/

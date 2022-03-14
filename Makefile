@@ -1,7 +1,7 @@
 PROJECTS := userspace/ kernel/
 HEADER_PROJECTS := ${PROJECTS}
 
-.PHONY: all clean build headers
+.PHONY: all build_iso clean build headers
 .SUFFIXES: .o .c .S
 
 all : build_iso

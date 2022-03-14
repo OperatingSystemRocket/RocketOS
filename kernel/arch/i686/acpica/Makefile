@@ -8,7 +8,16 @@ ACPICA_H_FILES_INCLUDE := $(addprefix -I,$(dir $(ACPICA_H_NAMES)))
 
 CC := i686-elf-gcc
 
-all: acpica.a
+.PHONY: all build
+.SUFFIXES: .o .c
 
-acpica.a: $(ACPICA_C_NAMES) $(ACPICA_H_NAMES)
-	$(CC) $(ACPICA_C_NAMES) -c $(ACPICA_H_FILES_INCLUDE) -std=gnu17 -ffreestanding -DRocketOS -nostdlib
+all: build
+
+build: $(patsubst %.c,%.o,$(ACPICA_C_NAMES))
+
+.c.o:
+	$(CC) -MD -c $< -o $@ $(ACPICA_H_FILES_INCLUDE) -std=gnu17 -ffreestanding -DRocketOS -nostdlib
+
+clean:
+	-rm $(shell find -name '*.o')
+	-rm $(shell find -name '*.d')

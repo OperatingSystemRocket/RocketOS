@@ -40,14 +40,17 @@ INCLUDE_HEADERS = $(shell find include/ -name '*.h')
 OBJ_LIST = $(patsubst %.c,%.o,$(ARCH_C_NAMES)) $(patsubst %.c,%.o,$(KERNEL_C_NAMES)) $(patsubst %.s,%.o,$(ARCH_AS_NAMES)) $(patsubst %.s,%.o,$(KERNEL_AS_NAMES))
 
 
-.PHONY: all clean install install-headers install-kernel
+.PHONY: all clean build_acpica install install-headers install-kernel
 .SUFFIXES: .o .c .s
 
 all: rocketos.kernel
 
-rocketos.kernel: $(OBJ_LIST) $(ARCHDIR)/linker.ld
+rocketos.kernel: $(OBJ_LIST) $(ARCHDIR)/linker.ld build_acpica
 	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(IMAGE_FLAGS) $(OBJ_LIST) $(shell find arch/i686/acpica -name '*o') ../sysroot/usr/lib/libk.a -lgcc
 	grub-file --is-x86-multiboot rocketos.kernel
+
+build_acpica:
+	@cd arch/i686/acpica; $(MAKE)
 
 .c.o:
 	$(CC) -MD -c $< -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(FLAGS) $(CPPFLAGS) -Iarch/i686/acpica/acpi.h
@@ -56,6 +59,7 @@ rocketos.kernel: $(OBJ_LIST) $(ARCHDIR)/linker.ld
 	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
 
 clean:
+	-rm rocketos.kernel
 	-rm $(shell find -name '*.o')
 	-rm $(shell find -name '*.d')
 	-rm -r $(DESTDIR)$(INCLUDEDIR)/kernel/
