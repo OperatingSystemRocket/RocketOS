@@ -1,4 +1,4 @@
-#include "quicksort.h"
+#include <utils/algorithms/sort/quicksort.h>
 
 
 static uint32_t partition_array(uint32_t *const array, const uint32_t lo_index, const uint32_t hi_index) {

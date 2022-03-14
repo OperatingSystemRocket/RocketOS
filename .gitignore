@@ -8,6 +8,7 @@
 *.elf
 *.i
 build/
+sysroot/
 
 # Linker output
 *.ilk

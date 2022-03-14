@@ -5,8 +5,8 @@
 #include <stdint.h>
 
 #include "kstring.h"
-#include "hardware_io.h"
-#include "terminal_driver.h"
+//#include "hardware_io.h"
+//#include "terminal_driver.h"
 
 
 #define VGA_WIDTH 80

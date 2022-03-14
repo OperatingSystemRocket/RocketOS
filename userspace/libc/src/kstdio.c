@@ -1,6 +1,10 @@
 #include "kstdio.h"
 
-int32_t color_setting = -1;
+#include <drivers/vga_driver/default_vga_driver.h>
+#include <drivers/serial/serial_driver.h>
+
+
+static int32_t color_setting = -1;
 
 //TODO: replace with ansi escape codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 //possibly good idea: have zsh type color formatting codes

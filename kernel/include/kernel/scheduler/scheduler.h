@@ -4,16 +4,16 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "kstring.h"
-#include "paging.h"
-#include "gdt.h"
-#include "kstdlib.h"
-#include "interrupts.h"
+#include <kstring.h>
+#include <mem/paging.h>
+#include <usermode/gdt.h>
+#include <kstdlib.h>
+#include <interrupts/interrupts.h>
 
-#include "kassert.h"
-#include "kstdio.h"
+#include <kassert.h>
+#include <kstdio.h>
 
-#include "pit.h"
+#include <drivers/pit/pit.h>
 
 extern bool is_turned_on;
 

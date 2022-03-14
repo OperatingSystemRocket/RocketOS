@@ -2,13 +2,13 @@
 
 #include <stdint.h>
 
-#include "hardware_io.h"
+#include <drivers/port_mapped_io/hardware_io.h>
 #include "kstdio.h"
-#include "default_vga_driver.h"
+#include <drivers/vga_driver/default_vga_driver.h>
 #include "interrupt_types.h"
-#include "scheduler.h"
+#include <scheduler/scheduler.h>
 
-#include "system_call_implementations.h"
+#include <usermode/system_call_implementations.h>
 
 
 void pic_init(void);

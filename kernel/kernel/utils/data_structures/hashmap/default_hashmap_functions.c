@@ -1,4 +1,4 @@
-#include "default_hashmap_functions.h"
+#include <utils/data_structures/hashmap/default_hashmap_functions.h>
 
 
 uint32_t str_hash_function(const char *const str_to_hash) {

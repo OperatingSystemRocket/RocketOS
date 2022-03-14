@@ -1,4 +1,7 @@
-#include "vga_driver.h"
+#include <drivers/vga_driver/vga_driver.h>
+
+#include <drivers/port_mapped_io/hardware_io.h>
+#include <subsystems/terminal/terminal_driver.h>
 
 
 uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg);

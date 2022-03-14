@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "vga_driver.h"
+#include <drivers/vga_driver/vga_driver.h>
 
 
 void terminal_context_initialize(void);

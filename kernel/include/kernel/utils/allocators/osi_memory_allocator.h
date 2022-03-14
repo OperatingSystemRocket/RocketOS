@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #include "bitmap_allocator.h"
-#include "initialize_kernel_memory.h"
+#include <mem/initialize_kernel_memory.h>
 #include "kstdlib.h"
 
 

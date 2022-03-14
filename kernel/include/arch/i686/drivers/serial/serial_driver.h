@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "kstring.h"
-#include "hardware_io.h"
+#include <drivers/port_mapped_io/hardware_io.h>
 
 
 //TODO: put these in an enum with a `serial_` prefix on the names

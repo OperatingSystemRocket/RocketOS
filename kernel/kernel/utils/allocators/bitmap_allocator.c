@@ -1,4 +1,4 @@
-#include "bitmap_allocator.h"
+#include <utils/allocators/bitmap_allocator.h>
 
 
 void bitmap_allocator_init(uint32_t *const bitset, const uint32_t n, int32_t *const bitset_cache, const uint32_t cache_n, bool *const has_filled_bitset_cache) {

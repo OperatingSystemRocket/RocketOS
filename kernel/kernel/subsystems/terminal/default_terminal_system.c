@@ -1,4 +1,4 @@
-#include "default_terminal_system.h"
+#include <subsystems/terminal/default_terminal_system.h>
 
 
 static struct default_terminal_context terminal_context;

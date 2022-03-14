@@ -1,4 +1,4 @@
-#include "bitset.h"
+#include <utils/bitset/bitset.h>
 
 
 #define NUMBER_OF_BITS_IN_TYPE 8u

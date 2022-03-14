@@ -1,4 +1,4 @@
-#include "spinlock.h"
+#include <synchronization_primitives/spinlock.h>
 
 void acquire_spinlock(mutex_t *const mutex) {
     bool expected = false;

@@ -5,11 +5,11 @@
 #include <stdbool.h>
 
 #include "physical_mem_allocator.h"
-#include "hardware_io.h"
-#include "serial_driver.h"
+#include <drivers/port_mapped_io/hardware_io.h>
+#include <drivers/serial/serial_driver.h>
 #include "kassert.h"
 #include "mem_constants.h"
-#include "bitmap_allocator.h"
+#include <utils/allocators/bitmap_allocator.h>
 
 
 // Page Table Entry flags

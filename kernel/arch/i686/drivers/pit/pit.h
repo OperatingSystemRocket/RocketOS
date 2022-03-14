@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "hardware_io.h"
+#include <drivers/port_mapped_io/hardware_io.h>
 #include "kstdio.h"
 
 

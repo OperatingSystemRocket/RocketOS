@@ -5,16 +5,16 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "kstdio.h"
+#include <kstdio.h>
 
-#include "observer.h"
-#include "default_vga_driver.h"
-#include "default_keyboard_logic.h"
-#include "default_terminal_functions.h"
+#include <utils/communication_and_events/observer.h>
+#include <drivers/vga_driver/default_vga_driver.h>
+#include <drivers/keyboard/default_keyboard_logic.h>
+#include <subsystems/terminal/default_terminal_functions.h>
 
 
 //for testing purposes only
-#include "pit.h"
+#include <drivers/pit/pit.h>
 
 
 void catch_keycode(void* context, struct GET_EVENT_TYPENAME(key_message) event);

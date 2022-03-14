@@ -1,6 +1,6 @@
 #pragma once
 
-#include "default_vga_driver.h"
+#include <drivers/vga_driver/default_vga_driver.h>
 #include "kstdlib.h"
 
 

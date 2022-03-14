@@ -1,4 +1,4 @@
-#include "scheduler.h"
+#include <scheduler/scheduler.h>
 
 
 volatile struct process* current_process;

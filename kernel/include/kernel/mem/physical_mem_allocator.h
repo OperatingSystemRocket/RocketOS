@@ -6,9 +6,9 @@
 
 #include "kstring.h"
 #include "kstdio.h"
-#include "bitset.h"
+#include <utils/bitset/bitset.h>
 #include "mem_constants.h"
-#include "bitmap_allocator.h"
+#include <utils/allocators/bitmap_allocator.h>
 
 
 void allocate_init(void);

@@ -4,9 +4,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "swap.h"
+#include <utils/algorithms/swap.h>
 
-#include "osi_memory_allocator.h"
+#include <utils/allocators/osi_memory_allocator.h>
 
 
 //TODO: implement these two interfaces and remove the current one

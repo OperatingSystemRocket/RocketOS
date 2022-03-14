@@ -2,9 +2,9 @@
 
 #include <stdbool.h>
 
-#include "default_vga_driver.h"
-#include "keyboard_driver.h"
-#include "observer.h"
+#include <drivers/vga_driver/default_vga_driver.h>
+#include <drivers/keyboard/keyboard_driver.h>
+#include <utils/communication_and_events/observer.h>
 
 
 //for keys which are just 0 in the default keymap

@@ -2,25 +2,25 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "acpi.h"
+#include "../acpica/acpi.h"
 
-#include "bitmap_allocator.h"
-#include "initialize_kernel_memory.h"
-#include "osi_memory_allocator.h"
-#include "paging.h"
-#include "kstdlib.h"
+#include <utils/allocators/bitmap_allocator.h>
+#include <mem/initialize_kernel_memory.h>
+#include <utils/allocators/osi_memory_allocator.h>
+#include <mem/paging.h>
+#include <kstdlib.h>
 
 
-#include "pit.h"
-#include "hardware_io.h"
+#include <drivers/pit/pit.h>
+#include <drivers/port_mapped_io/hardware_io.h>
 
-#include "pci_bus.h"
+#include <drivers/pci/legacy_pci/pci_bus.h>
 
 //TODO: remove as this is for debugging only
-#include "interrupts.h"
+#include <interrupts/interrupts.h>
 
 //for debugging only:
-#include "kstdio.h"
+#include <kstdio.h>
 
 
 static struct osi_memory_allocator acpica_memory_allocator;

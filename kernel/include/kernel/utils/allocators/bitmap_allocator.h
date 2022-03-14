@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #include "kstring.h"
-#include "bitset.h"
+#include <utils/bitset/bitset.h>
 
 
 //TODO: consider whether or not to have a `;` on the end of the struct declaration **inside** of the macro

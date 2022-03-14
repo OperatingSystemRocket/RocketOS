@@ -1,4 +1,4 @@
-#include "keyboard_driver.h"
+#include <drivers/keyboard/keyboard_driver.h>
 
 
 //data context (containing keyboard map)

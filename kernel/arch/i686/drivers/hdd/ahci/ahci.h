@@ -4,12 +4,12 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "paging.h"
+#include <mem/paging.h>
 #include "kstdlib.h"
-#include "physical_mem_allocator.h"
+#include <mem/physical_mem_allocator.h>
 #include "kstring.h"
 
-#include "pcie_bus.h"
+#include <drivers/pci/pcie/pcie_bus.h>
 
 
 struct hba_port {

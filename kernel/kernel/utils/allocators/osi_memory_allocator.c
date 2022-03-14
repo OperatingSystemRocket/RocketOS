@@ -1,4 +1,4 @@
-#include "osi_memory_allocator.h"
+#include <utils/allocators/osi_memory_allocator.h>
 
 
 void osi_memory_allocator_init(struct osi_memory_allocator *const allocator, uint32_t *const start_of_virt_mem, const uint32_t number_of_pages) {

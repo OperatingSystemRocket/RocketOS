@@ -4,11 +4,11 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "default_vga_driver.h"
-#include "interrupt_types.h"
-#include "interrupts.h"
+#include <drivers/vga_driver/default_vga_driver.h>
+#include <interrupts/interrupt_types.h>
+#include <interrupts/interrupts.h>
 
-#include "scheduler.h"
+#include <scheduler/scheduler.h>
 
 
 void set_data_context(void* new_context);

@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "kassert.h"
-#include "default_keyboard_logic.h"
+#include <kassert.h>
+#include <drivers/keyboard/default_keyboard_logic.h>
 
 
 //this is a type safe dynamic (heap allocating) hashmap implementation

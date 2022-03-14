@@ -1,6 +1,8 @@
 #include "kstdlib.h"
 
-#include "kstdlib_constants.h"
+#include <sys/kstdlib_constants.h>
+#include <mem/paging.h>
+#include <mem/initialize_kernel_memory.h>
 
 
 static uint32_t* first_free_virtual_address; //points to start of first page
@@ -100,10 +102,13 @@ static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const b
 }
 
 void kdynamic_memory_init(void) {
+    serial_writestring("kdynamic_memory_init()\n");
     number_of_pages_allocated = 1u;
     first_free_virtual_address = get_heap_range_start();
     last_free_virtual_address = first_free_virtual_address;
+    serial_writestring("before map\n");
     allocate_virtual_page(last_free_virtual_address, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    serial_writestring("after map\n");
     head = last_free_virtual_address;
     last_free_virtual_address += WORDS_IN_PAGE;
 

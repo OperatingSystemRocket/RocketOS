@@ -1,36 +1,35 @@
-#include <multiboot.h>
+#include "multiboot.h"
 
 
 #include <stdbool.h>
 
-#include "kstdio.h"
-#include "kmath.h"
-#include "interrupts.h"
-#include "serial_driver.h"
-#include "kassert.h"
-#include "terminal_driver.h"
+#include <kstdio.h>
+#include <kmath.h>
+#include <interrupts/interrupts.h>
+#include <drivers/serial/serial_driver.h>
+#include <kassert.h>
 
-#include "physical_mem_allocator.h"
-#include "paging.h"
-#include "kstdlib.h"
-#include "gdt.h"
-#include "default_keyboard_logic.h"
+#include <mem/physical_mem_allocator.h>
+#include <mem/paging.h>
+#include <kstdlib.h>
+#include <usermode/gdt.h>
+#include <drivers/keyboard/default_keyboard_logic.h>
 
-#include "terminal_driver.h"
-#include "default_terminal_functions.h"
-#include "default_terminal_system.h"
-#include "keyboard_callbacks.h"
+#include <subsystems/terminal/terminal_driver.h>
+#include <subsystems/terminal/default_terminal_functions.h>
+#include <subsystems/terminal/default_terminal_system.h>
+#include <subsystems/terminal/keyboard_callbacks.h>
 
-#include "pci_bus.h"
+#include <drivers/pci/legacy_pci/pci_bus.h>
 
-#include "hashmap.h"
-#include "default_hashmap_functions.h"
+#include <utils/data_structures/hashmap/hashmap.h>
+#include <utils/data_structures/hashmap/default_hashmap_functions.h>
 
-#include "acpi.h"
+#include "../acpica/acpi.h"
 
-#include "pcie_bus.h"
+#include <drivers/pci/pcie/pcie_bus.h>
 
-#include "tar.h"
+#include <tar_fs/tar.h>
 
 
 //TODO: remove all 64 bit integer types as they are bigger than a word size

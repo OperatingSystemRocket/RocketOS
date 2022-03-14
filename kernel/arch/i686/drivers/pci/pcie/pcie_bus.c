@@ -1,4 +1,4 @@
-#include "pcie_bus.h"
+#include <drivers/pci/pcie/pcie_bus.h>
 
 
 void print_all_tables(ACPI_TABLE_RSDP* rsdp) {

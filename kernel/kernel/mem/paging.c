@@ -1,4 +1,4 @@
-#include "paging.h"
+#include <mem/paging.h>
 
 
 extern void load_page_directory(uint32_t* page_directory);

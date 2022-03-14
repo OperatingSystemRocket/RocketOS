@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <stdbool.h>
 
-#include "paging.h"
-#include "initialize_kernel_memory.h"
+//#include "paging.h"
+//#include "initialize_kernel_memory.h"
 #include "kstring.h"
 
 

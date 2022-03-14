@@ -1,4 +1,4 @@
-#include "default_vga_driver.h"
+#include <drivers/vga_driver/default_vga_driver.h>
 
 
 static struct vga_driver_context default_vga_driver_context;

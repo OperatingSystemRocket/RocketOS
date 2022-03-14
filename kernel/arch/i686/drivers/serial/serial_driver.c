@@ -1,4 +1,4 @@
-#include "serial_driver.h"
+#include <drivers/serial/serial_driver.h>
 
 
 bool serial_init(void) {

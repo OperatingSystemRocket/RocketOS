@@ -10,8 +10,8 @@
 #include "system_call_implementations.h"
 
 #include "kstdlib.h"
-#include "physical_mem_allocator.h"
-#include "osi_memory_allocator.h"
+#include <mem/physical_mem_allocator.h>
+#include <utils/allocators/osi_memory_allocator.h>
 
 
 struct tss_entry_struct {

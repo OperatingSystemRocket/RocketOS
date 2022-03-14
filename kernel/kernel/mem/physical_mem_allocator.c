@@ -1,4 +1,4 @@
-#include "physical_mem_allocator.h"
+#include <mem/physical_mem_allocator.h>
 
 //The address of this variable is set in the linker script. It has the ending address of the kernel.
 //We just need it for the address, it stores no value.

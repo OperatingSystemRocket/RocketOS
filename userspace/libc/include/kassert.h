@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kstdio.h"
-#include "default_vga_driver.h"
+#include <drivers/vga_driver/default_vga_driver.h>
 
 
 #ifndef NDEBUG

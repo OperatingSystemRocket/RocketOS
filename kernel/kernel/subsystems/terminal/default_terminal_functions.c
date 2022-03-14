@@ -1,4 +1,4 @@
-#include "default_terminal_functions.h"
+#include <subsystems/terminal/default_terminal_functions.h>
 
 
 #define DEFAULT_PROMPT "> "

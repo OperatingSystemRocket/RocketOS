@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "hardware_io.h"
+#include <drivers/port_mapped_io/hardware_io.h>
 
 
 uint32_t pci_config_read_long(uint8_t bus, uint8_t device, uint8_t function, uint8_t offset);
