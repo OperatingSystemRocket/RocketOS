@@ -1,14 +1,15 @@
 import os
 import struct
 
-ram_disk_file_dir = "./sysroot/"
+ram_disk_file_dir = "./ramdisk_files/"
+sizeof_header = 128
 
 with open("ramdisk.img", "wb") as ramdisk:
     for path, dirs, files in os.walk(ram_disk_file_dir):
         for filename in files:
             with open(path + '/' + filename, "rb") as file:
                 data = file.read()
-                ramdisk.write(struct.pack('<i', len(data)))
+                ramdisk.write(struct.pack('<i', sizeof_header+len(data)))
                 ramdisk.write(bytes(filename, 'utf-8'))
                 zero_buffer = ('\0'*(100-len(filename)))
                 ramdisk.write(bytes(zero_buffer, 'utf-8'))

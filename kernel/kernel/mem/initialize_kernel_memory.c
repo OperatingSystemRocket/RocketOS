@@ -5,6 +5,8 @@ static uint32_t malloc_heap_start;
 
 static uint32_t acpica_start;
 
+static uint32_t global_virt_allocator_start;
+
 void* get_heap_range_start(void) {
     return (void*)(malloc_heap_start*PAGE_SIZE);
 }
@@ -17,6 +19,13 @@ void* get_acpica_start(void) {
 }
 size_t get_acpica_size(void) {
     return ACPICA_SIZE;
+}
+
+void* get_global_virt_allocator_start(void) {
+    return (void*)(global_virt_allocator_start*PAGE_SIZE);
+}
+size_t get_global_virt_allocator_size(void) {
+    return NUMBER_OF_PAGES_IN_GLOBAL_VIRT_ALLOCATOR;
 }
 
 void initialize_kernel_memory(void) {
@@ -46,6 +55,9 @@ void initialize_kernel_memory(void) {
 
     load_and_turn_on_paging();
 
-    malloc_heap_start = (acpica_start+ACPICA_SIZE)+1u;
+    global_virt_allocator_start = (acpica_start+ACPICA_SIZE)+1u;
+    reserve_virtual_address(global_virt_allocator_start, NUMBER_OF_PAGES_IN_GLOBAL_VIRT_ALLOCATOR, USER_USE);
+
+    malloc_heap_start = (global_virt_allocator_start+NUMBER_OF_PAGES_IN_GLOBAL_VIRT_ALLOCATOR)+1u;
     reserve_virtual_address(malloc_heap_start, MAX_SIZE_OF_HEAP, USER_USE);
 }

@@ -1,3 +1,4 @@
+
 #include "multiboot.h"
 
 
@@ -8,14 +9,15 @@
 #include <interrupts/interrupts.h>
 #include <drivers/serial/serial_driver.h>
 #include <kassert.h>
+#include <subsystems/terminal/terminal_driver.h>
 
 #include <mem/physical_mem_allocator.h>
 #include <mem/paging.h>
 #include <kstdlib.h>
+#include <mem/global_virt_allocator.h>
 #include <usermode/gdt.h>
 #include <drivers/keyboard/default_keyboard_logic.h>
 
-#include <subsystems/terminal/terminal_driver.h>
 #include <subsystems/terminal/default_terminal_functions.h>
 #include <subsystems/terminal/default_terminal_system.h>
 #include <subsystems/terminal/keyboard_callbacks.h>
@@ -31,36 +33,6 @@
 
 #include <tar_fs/tar.h>
 
-
-//TODO: remove all 64 bit integer types as they are bigger than a word size
-
-typedef const char* str;
-
-GENERATE_HASHMAP_DECLARATION(str, uint32_t)
-GENERATE_HASHMAP_DEFINITION(str, uint32_t, str_comp)
-
-multiboot_info_t* mb_info = NULL;
-
-void kernel_early(const uint32_t mboot_magic, const multiboot_info_t *const mboot_header) {
-    (void) mboot_header; //needed for calling convention reasons, but currently unused
-
-    if(serial_init()) { //fails if serial is faulty
-        serial_writestring("Serial driver works\n");
-    }
-
-    terminal_context_initialize();
-
-    default_keyboard_map_state_init();
-
-    set_default_functions();
-
-    if (mboot_magic != MULTIBOOT_BOOTLOADER_MAGIC) {
-        terminal_context_writestring_color("Invalid Multiboot Magic!\n", VGA_COLOR_RED);
-    } else {
-        terminal_context_writestring("The multiboot structure was loaded properly\n");
-        mb_info = mboot_header;
-    }
-}
 
 static const char* AcpiGbl_ExceptionNames_Env[] = {
     "AE_OK",
@@ -96,7 +68,17 @@ static const char* AcpiGbl_ExceptionNames_Env[] = {
     "AE_IO_ERROR"
 };
 
-void kernel_main(void) {
+void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
+    if(serial_init()) { //fails if serial is faulty
+        serial_writestring("Serial driver works\n");
+    }
+
+    terminal_context_initialize();
+
+    default_keyboard_map_state_init();
+
+    set_default_functions();
+
     init_gdt();
     gdt_load();
 
@@ -105,6 +87,44 @@ void kernel_main(void) {
 
     initialize_kernel_memory();
     kdynamic_memory_init();
+    global_virt_allocator_init();
+
+    if (mboot_magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
+        kprintf("Invalid Multiboot Magic!\n");
+    } else {
+        kprintf("The multiboot structure was loaded properly\n");
+    }
+
+    struct multiboot_tag_module* module = NULL;
+
+    struct multiboot_tag* tag = (struct multiboot_tag*)(mboot_header + 8);
+    kprintf("tag address: %p\n", tag);
+    uint32_t size = *(uint32_t*)mboot_header;
+    for(; tag->type != MULTIBOOT_TAG_TYPE_END; tag = (struct multiboot_tag*)((multiboot_uint8_t*)tag  + ((tag->size+7) & ~7))) {
+        if(tag->type == MULTIBOOT_TAG_TYPE_MODULE) {
+            module = (struct multiboot_tag_module*)tag;
+            kprintf("Module at 0x%X-0x%X. Command line [%s]\n",
+                    module->mod_start,
+                    module->mod_end,
+                    module->cmdline);
+        }
+    }
+
+    const uint32_t addr = module->mod_start;
+
+    kprintf("first_module: %p\n", module);
+    kprintf("addr: %p\n", addr);
+    kprintf("module->mod_start: %X\n", module->mod_start);
+
+    kprintf("Module at 0x%X-0x%X. Command line [%s]\n",
+            module->mod_start,
+            module->mod_end,
+            module->cmdline);
+
+    parse_headers(addr);
+    print_file("bar.txt");
+    kprintf("\n");
+    enable_interrupts();
 
     //write_tss();
 
@@ -138,16 +158,6 @@ void kernel_main(void) {
     kprintf("AcpiInitializeObjects passed\n");
 
     kprintf("\nACPICA initialized\n\n\n");
-
-/*
-    AcpiEnterSleepStatePrep(5);
-    kprintf("\tAcpiEnterSleepStatePrep(5); passed\n");
-    disable_interrupts();
-    kprintf("\tdisable_interrupts(); passed\n");
-    AcpiEnterSleepState(5);
-
-    kprintf("\nIt did not shutdown\n");
-*/
 
     disable_interrupts();
 
@@ -202,6 +212,7 @@ void kernel_main(void) {
     default_context_terminal_start();
     enable_keyboard();
 
+    parse_elf_file("test_program");
     enable_interrupts();
 
 
@@ -210,13 +221,9 @@ void kernel_main(void) {
 /*
     create_process(&example_function_task);
     create_process(&foo_function_task);
-
-
-    //uint32_t count = 0u;
+    enable_interrupts();
 */
-
     for(;;) {
-        //kprintf("kernel.c with count: %u\n", count++);
         asm volatile("hlt");
     }
 }

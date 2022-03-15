@@ -37,7 +37,7 @@ KERNEL_H_NAMES = $(shell find kernel/ -name '*.h')
 #sysroot
 INCLUDE_HEADERS = $(shell find include/ -name '*.h')
 
-OBJ_LIST = $(patsubst %.c,%.o,$(ARCH_C_NAMES)) $(patsubst %.c,%.o,$(KERNEL_C_NAMES)) $(patsubst %.s,%.o,$(ARCH_AS_NAMES)) $(patsubst %.s,%.o,$(KERNEL_AS_NAMES))
+OBJ_LIST = $(patsubst %.s,%.o,$(ARCH_AS_NAMES)) $(patsubst %.s,%.o,$(KERNEL_AS_NAMES)) $(patsubst %.c,%.o,$(ARCH_C_NAMES)) $(patsubst %.c,%.o,$(KERNEL_C_NAMES))
 
 
 .PHONY: all clean build_acpica install install-headers install-kernel
@@ -47,7 +47,7 @@ all: rocketos.kernel
 
 rocketos.kernel: $(OBJ_LIST) $(ARCHDIR)/linker.ld build_acpica
 	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(IMAGE_FLAGS) $(OBJ_LIST) $(shell find arch/i686/acpica -name '*o') ../sysroot/usr/lib/libk.a -lgcc
-	grub-file --is-x86-multiboot rocketos.kernel
+	../is_multiboot.sh rocketos.kernel
 
 build_acpica:
 	@cd arch/i686/acpica; $(MAKE)

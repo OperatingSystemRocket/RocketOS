@@ -24,7 +24,7 @@ __attribute__((interrupt)) static void keyboard_irq(struct interrupt_frame *cons
 
     current_process_keystroke_implementation(data_context, scancode);
 
-	pic_send_eoi(1);
+    pic_send_eoi(1);
 }
 
 

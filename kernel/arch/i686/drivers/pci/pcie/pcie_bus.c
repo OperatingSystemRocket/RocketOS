@@ -94,7 +94,7 @@ void enumerate_device(const uint64_t bus_addr, const uint64_t device) {
     const uint64_t offset = device << 15;
 
     const uint32_t device_addr = (bus_addr + offset) & 0xFFFFFFFFu;
-    identity_map_page((uint32_t)get_default_page_directory(), device_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    identity_map_page((uint32_t)get_default_page_directory(), device_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     struct pci_device_header *const device_header = (struct pci_device_header*)device_addr;
 
     if(device_header->device_id == 0u || device_header->device_id == 0xFFFFu) return;
@@ -108,7 +108,7 @@ void enumerate_bus(const uint64_t base_addr, const uint64_t bus) {
     const uint64_t offset = bus << 20;
 
     const uint32_t bus_addr = (base_addr + offset) & 0xFFFFFFFFu;
-    identity_map_page((uint32_t)get_default_page_directory(), bus_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    identity_map_page((uint32_t)get_default_page_directory(), bus_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     struct pci_device_header *const bus_header = (struct pci_device_header*)bus_addr;
 
     if(bus_header->device_id == 0u || bus_header->device_id == 0xFFFFu) return;
@@ -123,7 +123,7 @@ void enumerate_pcie(const ACPI_TABLE_MCFG *const mcfg) {
 
     for (uint32_t i = 0; i < entries; ++i) {
         const uint32_t device_config_addr = (((uint64_t)mcfg) + sizeof(ACPI_TABLE_MCFG) + (sizeof(ACPI_MCFG_ALLOCATION) * i)) & 0xFFFFFFFFu;
-        identity_map_page((uint32_t)get_default_page_directory(), device_config_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+        identity_map_page((uint32_t)get_default_page_directory(), device_config_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
         ACPI_MCFG_ALLOCATION* new_device_config = (ACPI_MCFG_ALLOCATION*)device_config_addr;
         for(uint32_t bus = new_device_config->StartBusNumber; bus <= new_device_config->EndBusNumber; ++bus) {
             enumerate_bus(new_device_config->Address, bus);

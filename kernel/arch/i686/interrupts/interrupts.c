@@ -33,14 +33,14 @@ void idt_register_handler(const uint8_t interrupt, const uint32_t address) {
 }
 
 void pic_irq_enable(uint8_t no) {
-	if (no >= 8) {
-		no -= 8;
-		pic2_mask &= (uint8_t) ~(1u << no);
-		outb(PIC2_DATA, pic2_mask);
-	} else {
-		pic1_mask &= (uint8_t) ~(1u << no);
-		outb(PIC1_DATA, pic1_mask);
-	}
+    if (no >= 8) {
+        no -= 8;
+        pic2_mask &= (uint8_t) ~(1u << no);
+        outb(PIC2_DATA, pic2_mask);
+    } else {
+        pic1_mask &= (uint8_t) ~(1u << no);
+        outb(PIC1_DATA, pic1_mask);
+    }
 }
 
 void pic_init(void) {
@@ -255,10 +255,10 @@ __attribute__((interrupt)) static void isr_reserved(struct interrupt_frame *cons
 
 
 void pic_send_eoi(const uint8_t no) {
-	if (no >= 8) {
-		outb(PIC2_COMMAND, PIC_EOI);
-	}
-	outb(PIC1_COMMAND, PIC_EOI);
+    if (no >= 8) {
+        outb(PIC2_COMMAND, PIC_EOI);
+    }
+    outb(PIC1_COMMAND, PIC_EOI);
 }
 
 
@@ -330,6 +330,8 @@ void isr_install(void) {
 
     idt_register_handler(128, (uint32_t)irq_common_handler); //system call, 0x80
     idt[128].type_attr = IDT_PRESENT | IDT_RING_3 | INTERRUPT_GATE;
+
+    enable_timer();
 
     idt_init();
 }

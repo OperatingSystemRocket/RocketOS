@@ -145,14 +145,14 @@ int32_t kstrcmp(const char *const lhs, const char *const rhs) {
 int32_t kstrncmp(const char *const lhs, const char *const rhs, const size_t sz) {
     kassert(lhs != NULL && rhs != NULL, -2);
 
-	for(size_t index = 0u; index < sz; ++index) {
-		if(lhs[index] < rhs[index]) {
-			return -1;
-		} else if(lhs[index] > rhs[index]) {
-			return 1;
-		}
-	}
-	return 0;
+    for(size_t index = 0u; index < sz; ++index) {
+        if(lhs[index] < rhs[index]) {
+            return -1;
+        } else if(lhs[index] > rhs[index]) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 char* kstrcpy(char* destination, const char* source) {

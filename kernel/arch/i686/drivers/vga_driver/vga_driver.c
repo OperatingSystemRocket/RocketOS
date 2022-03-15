@@ -54,14 +54,14 @@ void terminal_putentryat(struct vga_driver_context *const context, const char c,
 }
 
 void terminal_putchar(struct vga_driver_context *const context, const char c) {
-	if (c == '\n') {
-		if(++context->terminal_row == VGA_HEIGHT) {
-			terminal_scroll_down(context);
-		}
-		context->terminal_column = 0u;
+    if (c == '\n') {
+        if(++context->terminal_row == VGA_HEIGHT) {
+            terminal_scroll_down(context);
+        }
+        context->terminal_column = 0u;
         terminal_updatecursor(context);
-		return;
-	}
+        return;
+    }
     if(c == '\t') {
         return terminal_writestring(context, "    ");
     }
@@ -69,7 +69,7 @@ void terminal_putchar(struct vga_driver_context *const context, const char c) {
     if (++context->terminal_column == VGA_WIDTH) {
         context->terminal_column = 0;
         if (++context->terminal_row == VGA_HEIGHT) {
-			terminal_scroll_down(context);
+            terminal_scroll_down(context);
         }
     }
     terminal_updatecursor(context);
@@ -149,16 +149,16 @@ void terminal_scroll_up(struct vga_driver_context *const context) {
         if(context->terminal_downward_history_size >= VGA_WIDTH * VGA_HEIGHT) context->terminal_downward_history_size = 0;
         context->terminal_downward_history[context->terminal_downward_history_size++] = context->terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x];
     }
-	for(size_t y = VGA_HEIGHT - 1; y > 0u; y--) {
-		for(size_t x = 0; x < VGA_WIDTH; x++) {
-			context->terminal_buffer[y * VGA_WIDTH + x] = context->terminal_buffer[(y - 1) * VGA_WIDTH + x];
-		}
-	}
+    for(size_t y = VGA_HEIGHT - 1; y > 0u; y--) {
+        for(size_t x = 0; x < VGA_WIDTH; x++) {
+            context->terminal_buffer[y * VGA_WIDTH + x] = context->terminal_buffer[(y - 1) * VGA_WIDTH + x];
+        }
+    }
     for(size_t x = 1u; x < VGA_WIDTH + 1; x++) {
         context->terminal_buffer[VGA_WIDTH - x] = context->terminal_upward_history[--context->terminal_upward_history_size];
     }
-	context->terminal_row = 0u;
-	context->terminal_column = 0u;
+    context->terminal_row = 0u;
+    context->terminal_column = 0u;
 }
 
 void terminal_cursor_up(struct vga_driver_context *const context) {
@@ -201,9 +201,9 @@ void terminal_backspace(struct vga_driver_context *const context) {
 }
 
 void terminal_updatecursor(struct vga_driver_context *const context) {
-	const size_t pos = context->terminal_row * VGA_WIDTH + context->terminal_column;
-	outb(0x3D4u, 14u);
-	outb(0x3D5u, (uint8_t)(pos >> 8u));
-	outb(0x3D4u, 15u);
-	outb(0x3D5u, (uint8_t)pos);
+    const size_t pos = context->terminal_row * VGA_WIDTH + context->terminal_column;
+    outb(0x3D4u, 14u);
+    outb(0x3D5u, (uint8_t)(pos >> 8u));
+    outb(0x3D4u, 15u);
+    outb(0x3D5u, (uint8_t)pos);
 }

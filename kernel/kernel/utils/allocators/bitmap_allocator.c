@@ -2,7 +2,7 @@
 
 
 void bitmap_allocator_init(uint32_t *const bitset, const uint32_t n, int32_t *const bitset_cache, const uint32_t cache_n, bool *const has_filled_bitset_cache) {
-    kmemset(bitset, 0u, n*sizeof(uint32_t));
+    kmemset(bitset, 0u, n/32);
     *has_filled_bitset_cache = false;
     for(int32_t i = 0; i < cache_n; i++) {
         bitset_cache[i] = -1;

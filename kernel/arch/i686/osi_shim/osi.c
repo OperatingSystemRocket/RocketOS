@@ -8,7 +8,7 @@
 #include <mem/initialize_kernel_memory.h>
 #include <utils/allocators/osi_memory_allocator.h>
 #include <mem/paging.h>
-#include <kstdlib.h>
+#include "kstdlib.h"
 
 
 #include <drivers/pit/pit.h>
@@ -20,7 +20,7 @@
 #include <interrupts/interrupts.h>
 
 //for debugging only:
-#include <kstdio.h>
+#include "kstdio.h"
 
 
 static struct osi_memory_allocator acpica_memory_allocator;
@@ -41,9 +41,9 @@ ACPI_STATUS AcpiOsTerminate() {
 }
 
 ACPI_PHYSICAL_ADDRESS AcpiOsGetRootPointer() {
-	ACPI_PHYSICAL_ADDRESS ret = 0;
-	AcpiFindRootPointer(&ret);
-	return ret;
+    ACPI_PHYSICAL_ADDRESS ret = 0;
+    AcpiFindRootPointer(&ret);
+    return ret;
 }
 
 ACPI_STATUS AcpiOsPredefinedOverride(const ACPI_PREDEFINED_NAMES *PredefinedObject, ACPI_STRING *NewValue) {
@@ -76,7 +76,7 @@ void* AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
     }
     const uint32_t virtual_page_address = (uint32_t)virtual_range;
     for(uint32_t i = 0u; i < physical_memory_size; ++i) {
-        map_page((void*)(virtual_page_address+(i*PAGE_SIZE)), (physical_page_address+(i*PAGE_SIZE)), PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+        map_page((void*)(virtual_page_address+(i*PAGE_SIZE)), (physical_page_address+(i*PAGE_SIZE)), PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     }
     return (void*)(virtual_page_address+physical_page_offset);
 }
@@ -199,8 +199,6 @@ ACPI_STATUS AcpiOsSignalSemaphore(ACPI_SEMAPHORE Handle, UINT32 Units) {
 }
 
 ACPI_STATUS AcpiOsInstallInterruptHandler(UINT32 InterruptNumber, ACPI_OSD_HANDLER ServiceRoutine, void *Context) {
-    kprintf("AcpiOsInstallInterruptHandler\n");
-    kprintf("ServiceRoutine: %p\n", (void*)ServiceRoutine);
     return AE_OK;
 }
 
