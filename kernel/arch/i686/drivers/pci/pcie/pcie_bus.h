@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "../../../../../../../../../kernel/arch/i686/acpica/acpi.h"
+#include "acpi.h"
 #include <mem/paging.h>
 #include "kstring.h"
 

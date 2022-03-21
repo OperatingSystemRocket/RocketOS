@@ -25,19 +25,27 @@ include $(ARCHDIR)/make.config
 
 
 #arch
-ARCH_AS_NAMES = $(shell find arch/ -name '*.s')
-ARCH_C_NAMES = $(shell find arch/ -name '*.c' | grep -v arch/i686/acpica/)
-ARCH_H_NAMES = $(shell find arch/ -name '*.h' | grep -v arch/i686/acpica/)
+ARCH_AS_NAMES := $(shell find arch/ -name '*.s')
+ARCH_C_NAMES := $(shell find arch/ -name '*.c' | grep -v arch/i686/acpica/)
+ARCH_H_NAMES := $(shell find arch/ -name '*.h' | grep -v arch/i686/acpica/)
 
 #kernel
-KERNEL_AS_NAMES = $(shell find kernel/ -name '*.s')
-KERNEL_C_NAMES = $(shell find kernel/ -name '*.c')
-KERNEL_H_NAMES = $(shell find kernel/ -name '*.h')
+KERNEL_AS_NAMES := $(shell find kernel/ -name '*.s')
+KERNEL_C_NAMES := $(shell find kernel/ -name '*.c')
+KERNEL_H_NAMES := $(shell find kernel/ -name '*.h')
+
+#libk
+LIBK_C_NAMES := $(shell find libk/ -name '*.c')
+LIBK_H_NAMES := $(shell find libk/ -name '*.h')
 
 #sysroot
-INCLUDE_HEADERS = $(shell find include/ -name '*.h')
+INCLUDE_HEADERS := $(shell find include/ -name '*.h')
 
-OBJ_LIST = $(patsubst %.s,%.o,$(ARCH_AS_NAMES)) $(patsubst %.s,%.o,$(KERNEL_AS_NAMES)) $(patsubst %.c,%.o,$(ARCH_C_NAMES)) $(patsubst %.c,%.o,$(KERNEL_C_NAMES))
+#list of all kernel headers with include prefix
+INCLUDE_LIST := $(addprefix -I,$(dir $(INCLUDE_HEADERS) $(LIBK_H_NAMES) $(ARCH_H_NAMES) $(KERNEL_H_NAMES)))
+
+
+OBJ_LIST := $(patsubst %.s,%.o,$(ARCH_AS_NAMES)) $(patsubst %.s,%.o,$(KERNEL_AS_NAMES)) $(patsubst %.c,%.o,$(ARCH_C_NAMES)) $(patsubst %.c,%.o,$(KERNEL_C_NAMES)) $(patsubst %.c,%.o,$(LIBK_C_NAMES))
 
 
 .PHONY: all clean build_acpica install install-headers install-kernel
@@ -46,14 +54,14 @@ OBJ_LIST = $(patsubst %.s,%.o,$(ARCH_AS_NAMES)) $(patsubst %.s,%.o,$(KERNEL_AS_N
 all: rocketos.kernel
 
 rocketos.kernel: $(OBJ_LIST) $(ARCHDIR)/linker.ld build_acpica
-	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(IMAGE_FLAGS) $(OBJ_LIST) $(shell find arch/i686/acpica -name '*o') ../sysroot/usr/lib/libk.a -lgcc
+	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(IMAGE_FLAGS) $(OBJ_LIST) arch/i686/acpica/acpica.a -lgcc
 	../is_multiboot.sh rocketos.kernel
 
 build_acpica:
 	@cd arch/i686/acpica; $(MAKE)
 
 .c.o:
-	$(CC) -MD -c $< -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(FLAGS) $(CPPFLAGS) -Iarch/i686/acpica/acpi.h
+	$(CC) -MD -c $< -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(FLAGS) $(CPPFLAGS) $(INCLUDE_LIST) -Iarch/i686/acpica/
 
 .S.o:
 	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
@@ -63,6 +71,7 @@ clean:
 	-rm $(shell find -name '*.o')
 	-rm $(shell find -name '*.d')
 	-rm -r $(DESTDIR)$(INCLUDEDIR)/kernel/
+	@cd arch/i686/acpica; $(MAKE) clean
 
 install: install-headers install-kernel
 

@@ -1,4 +1,5 @@
-PROJECTS := userspace/ kernel/
+#PROJECTS := userspace/ kernel/
+PROJECTS := kernel/
 HEADER_PROJECTS := ${PROJECTS}
 
 .PHONY: all build_iso clean build headers
@@ -34,3 +35,4 @@ clean :
 	@for e in ${PROJECTS}; do \
 	(cd $$e; $(MAKE) clean); done
 	-rm -r sysroot/
+	-rm -r isodir/

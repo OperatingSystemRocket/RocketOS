@@ -4,3 +4,6 @@
 [submodule "acpica"]
 	path = acpica
 	url = https://github.com/OperatingSystemRocket/acpica.git
+[submodule "mlibc"]
+	path = mlibc
+	url = https://github.com/managarm/mlibc.git

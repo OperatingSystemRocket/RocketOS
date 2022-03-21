@@ -5,8 +5,8 @@ LIBDIR ?= $(EXEC_PREFIX)/lib
 
 CFLAGS := $(CFLAGS) -ffreestanding -Wall -Wextra
 CPPFLAGS := $(CPPFLAGS) -I../sysroot/usr/include/userspace -I../sysroot/usr/include/kernel/kernel -I../sysroot/usr/include/kernel/arch/i686
-LIBK_CFLAGS := $(CFLAGS)
-LIBK_CPPFLAGS := $(CPPFLAGS) -D__is_libk
+LIBC_CFLAGS := $(CFLAGS)
+LIBC_CPPFLAGS := $(CPPFLAGS) -D__is_libc
 
 include ../make.config
 
@@ -19,7 +19,7 @@ IMAGE_FLAGS := -ffreestanding $(DEBUG_LINK_FLAGS) -nostdlib
 endif
 
 
-BINARIES = libk.a
+BINARIES = libc.a
 
 
 #libc
@@ -29,16 +29,16 @@ LIBC_H_NAMES = $(shell find libc/ -name '*.h')
 #sysroot
 INCLUDE_HEADERS = $(shell find include/ -name '*.h')
 
-LIBK_OBJS = $(LIBC_C_NAMES:.c=.libk.o)
+LIBC_OBJS = $(LIBC_C_NAMES:.c=.libc.o)
 
 
 .PHONY: all clean install install-headers install-libs
-.SUFFIXES: .o .libk.o .c .S
+.SUFFIXES: .o .libc.o .c .S
 
 all: $(BINARIES)
 
-libk.a: $(LIBK_OBJS)
-	$(AR) rcs $@ $(LIBK_OBJS) -lgcc
+libc.a: $(LIBC_OBJS)
+	$(AR) rcs $@ $(LIBC_OBJS) -lgcc
 
 .c.o:
 	$(CC) -MD -c $< -o $@ $(KERNEL_FLAGS) $(WARNING_FLAGS) $(FLAGS)
@@ -46,14 +46,14 @@ libk.a: $(LIBK_OBJS)
 .c.S:
 	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS)
 
-.c.libk.o:
-	$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(LIBK_CPPFLAGS)
+.c.libc.o:
+	$(CC) -MD -c $< -o $@ $(LIBC_CFLAGS) $(LIBC_CPPFLAGS)
 
-.S.libk.o:
-	$(CC) -MD -c $< -o $@ $(LIBK_CFLAGS) $(LIBK_CPPFLAGS)
+.S.libc.o:
+	$(CC) -MD -c $< -o $@ $(LIBC_CFLAGS) $(LIBC_CPPFLAGS)
 
 clean:
-	-rm libk.a
+	-rm libc.a
 	-rm $(shell find -name '*.o')
 	-rm $(shell find -name '*.d')
 	-rm -r $(DESTDIR)$(INCLUDEDIR)/userspace/
