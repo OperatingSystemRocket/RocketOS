@@ -46,7 +46,7 @@ extern void save_current_task(volatile struct task_context* current_task);
 extern void load_task(volatile struct task_context* current_task);
 extern void resume_task(volatile struct task_context* current_task);
 
-void create_process(void (*entry_point)(void));
+void create_thread(void (*entry_point)(void));
 
 void scheduler_init(void);
 void enable_timer(void);

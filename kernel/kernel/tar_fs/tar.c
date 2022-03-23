@@ -3,17 +3,6 @@
 
 static uint8_t num_of_files = 0u;
 static struct file_header* file_headers[32] = {NULL};
-static uint8_t num_of_elf_files = 0u;
-static struct file_header* elf_files[32] = {NULL};
-
-static bool ends_with_elf(const char *const filename) {
-    for(uint32_t i = 0u; filename[i] != '\0'; ++i) {
-        if(filename[i] == '.') {
-            return false;
-        }
-    }
-    return true;
-}
 
 void parse_headers(const uint32_t address) {
     for(struct file_header* file_header = (struct file_header*)address; file_header->size != 0; file_header = (struct file_header*)((uint32_t)file_header + file_header->size)) {
@@ -29,13 +18,6 @@ void parse_headers(const uint32_t address) {
         struct file_header *const new_file_header = kmalloc(file_header->size);
         kmemcpy(new_file_header, file_header, file_header->size);
         file_headers[num_of_files++] = new_file_header;
-        if(ends_with_elf(file_header->filename)) {
-            if(num_of_elf_files >= 32) {
-                kprintf("Too many elf files in file list!\n");
-                break;
-            }
-            elf_files[num_of_elf_files++] = new_file_header;
-        }
     }
 }
 
@@ -62,7 +44,7 @@ void print_file(const char *const filename) {
 
 void print_elf_file(const char *const filename) {
     kprintf("print_file: %s\n", filename);
-    struct file_header *const file_header = get_file_header(filename, elf_files, num_of_elf_files);
+    struct file_header *const file_header = get_file_header(filename, file_header, num_of_files);
     if(file_header == NULL) {
         kprintf("ELF file not found!\n");
         return;
@@ -95,7 +77,7 @@ static const char* get_section_type_name(const uint32_t type) {
 }
 
 bool parse_elf_file(const char *const filename) {
-    struct file_header *const file_header = get_file_header(filename, elf_files, num_of_elf_files);
+    struct file_header *const file_header = get_file_header(filename, file_headers, num_of_files);
     struct Elf32_Ehdr *const elf_header = (struct Elf32_Ehdr*)file_header->file;
     if(!is_valid_elf_sig(elf_header)) {
         kprintf("Not an elf file!\n");

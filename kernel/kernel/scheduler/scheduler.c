@@ -9,7 +9,7 @@ volatile struct process* process_queue_end; //"end" of circular linked list, use
 #define TIME_QUANTUM_VALUE 10u
 
 
-void create_process(void (*const entry_point)(void)) {
+void create_thread(void (*const entry_point)(void)) {
     if(process_queue_begin == NULL) return;
 
     kassert_void(process_queue_end != NULL);
@@ -17,17 +17,19 @@ void create_process(void (*const entry_point)(void)) {
     process_queue_end->next = zeroed_out_kmalloc(sizeof(struct process));
     process_queue_end = process_queue_end->next;
 
-    process_queue_end->stack = zeroed_out_kmalloc(4096);
-
     process_queue_end->previously_loaded = false;
+    process_queue_end->is_finished = false;
+    process_queue_end->stack = zeroed_out_kmalloc(PAGE_SIZE);
+
     process_queue_end->id = 1;
     process_queue_end->time_quantum = TIME_QUANTUM_VALUE;
 
     process_queue_end->register_states.ebp = (uint32_t) process_queue_end->stack;
-    process_queue_end->register_states.esp = ((uint32_t) process_queue_end->stack)+4096u;
+    process_queue_end->register_states.esp = ((uint32_t) process_queue_end->stack)+PAGE_SIZE;
     process_queue_end->register_states.eip = (uint32_t) entry_point;
 
     process_queue_end->page_directory = get_default_page_directory();
+
     process_queue_end->next = process_queue_begin;
 
     if(process_queue_begin->next == NULL) {
@@ -35,15 +37,38 @@ void create_process(void (*const entry_point)(void)) {
     }
 }
 
+void create_userspace_process(const uint32_t num_of_kernel_pages, const uint32_t num_of_user_pages, void (*const entry_point)(void)) {
+    if(process_queue_begin == NULL) return;
+
+    kassert_void(process_queue_end != NULL);
+
+    process_queue_end->next = zeroed_out_kmalloc(sizeof(struct process));
+    process_queue_end = process_queue_end->next;
+
+    process_queue_end->previously_loaded = false;
+    process_queue_end->is_finished = false;
+    process_queue_end->stack = allocate_page(USER_USE);
+
+    
+}
+
+void create_process(const uint32_t num_of_kernel_pages, void (*const entry_point)(void)) {
+
+}
+
 
 void scheduler_init(void) {
     current_process = zeroed_out_kmalloc(sizeof(struct process));
 
     current_process->previously_loaded = true;
+    current_process->is_finished = false;
     current_process->stack = NULL;
+
     current_process->id = 0;
     current_process->time_quantum = TIME_QUANTUM_VALUE;
+
     current_process->page_directory = get_default_page_directory();
+
     current_process->next = NULL;
 
     process_queue_begin = current_process;

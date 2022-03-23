@@ -213,16 +213,16 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     enable_keyboard();
 
     parse_elf_file("test_program");
+//    enable_interrupts();
+
+
+//    jump_usermode();
+
+
+    create_thread(&example_function_task);
+    create_thread(&foo_function_task);
     enable_interrupts();
 
-
-    jump_usermode();
-
-/*
-    create_process(&example_function_task);
-    create_process(&foo_function_task);
-    enable_interrupts();
-*/
     for(;;) {
         asm volatile("hlt");
     }
