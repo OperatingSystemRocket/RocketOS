@@ -84,18 +84,15 @@ void init_gdt(void) {
     gdt_entries_ptr.base = (uint32_t) &gdt_entries[0];
 }
 
-struct osi_memory_allocator* get_default_virt_allocator(void);
-
 void write_tss(void) {
     kmemset(&tss_entry, 0, sizeof(struct tss_entry_struct));
 
     tss_entry.ss0 = 2*sizeof(struct gdt_entry);
 
-    void *const physical_page = allocate_page(USER_USE);
+    void *const physical_page = global_allocate_page(USER_USE);
     void *const virtual_page = osi_memory_allocator_allocate(get_default_virt_allocator(), 1u);
     map_page(virtual_page, (uint32_t)physical_page, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     tss_entry.esp0 = ((uint32_t) virtual_page) + PAGE_SIZE;
-    //tss_entry.esp0 = ((uint32_t) kmalloc(4096u))+4096u;
 
     flush_tss();
 }

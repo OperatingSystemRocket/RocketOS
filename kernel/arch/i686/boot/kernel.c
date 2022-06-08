@@ -2,6 +2,8 @@
 #include "multiboot.h"
 
 
+#include <stddef.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 #include <kstdio.h>
@@ -11,7 +13,7 @@
 #include <kassert.h>
 #include <subsystems/terminal/terminal_driver.h>
 
-#include <mem/physical_mem_allocator.h>
+#include <buddy_memory_allocator.h>
 #include <mem/paging.h>
 #include <kstdlib.h>
 #include <mem/global_virt_allocator.h>
@@ -26,12 +28,16 @@
 
 #include <utils/data_structures/hashmap/hashmap.h>
 #include <utils/data_structures/hashmap/default_hashmap_functions.h>
+#include <vector.h>
+#include <string.h>
 
 #include "../acpica/acpi.h"
 
 #include <drivers/pci/pcie/pcie_bus.h>
 
 #include <tar_fs/tar.h>
+
+#include <scheduler.h>
 
 
 static const char* AcpiGbl_ExceptionNames_Env[] = {
@@ -86,7 +92,9 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     isr_install();
 
     initialize_kernel_memory();
+    serial_writestring("after initialize_kernel_memory\n");
     kdynamic_memory_init();
+    serial_writestring("Kernel memory initialized\n");
     global_virt_allocator_init();
 
     if (mboot_magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
@@ -128,9 +136,9 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
 
     //write_tss();
 
-    scheduler_init();
+    //scheduler_init();
 
-    init_pit(1000, PIT_CHANNEL_0, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
+    //init_pit(1024, PIT_CHANNEL_0, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
     disable_interrupts();
 
     ACPI_STATUS status = AcpiInitializeSubsystem();
@@ -158,8 +166,6 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     kprintf("AcpiInitializeObjects passed\n");
 
     kprintf("\nACPICA initialized\n\n\n");
-
-    disable_interrupts();
 
     write_tss();
 
@@ -212,18 +218,32 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     default_context_terminal_start();
     enable_keyboard();
 
-    parse_elf_file("test_program");
-//    enable_interrupts();
+    enable_interrupts();
 
 
 //    jump_usermode();
 
 
-    create_thread(&example_function_task);
-    create_thread(&foo_function_task);
+    //create_thread(&example_function_task);
+    //create_thread(&foo_function_task);
     enable_interrupts();
+    parse_elf_file("test_program");
+
+
+    kprintf("before scheduler_init()\n");
+    scheduler_init();
+    vector_type(struct string) params = create_vector(sizeof(struct string));
+    struct string first_str = string_new("foo");
+    struct string second_str = string_new("bar");
+    push_back(params, &first_str);
+    push_back(params, &second_str);
+    //scheduler_exec(string_new("test_program"), params);
+    scheduler_start();
+    //init_task();
+
 
     for(;;) {
+        kprintf("in the main function\n");
         asm volatile("hlt");
     }
 }

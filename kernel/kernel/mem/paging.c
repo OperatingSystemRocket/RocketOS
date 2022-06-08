@@ -31,7 +31,7 @@ void identity_map_page(const uint32_t page_directory, const uint32_t address, co
     // Check if this table is present and allocate it if not
     uint32_t *const pd_virt = (uint32_t*)page_directory;
     if ((pd_virt[table_index] & PD_PRESENT) != PD_PRESENT) {
-        const uint32_t pt_phys = (uint32_t)allocate_page(CRITICAL_KERNEL_USE);
+        const uint32_t pt_phys = (uint32_t)global_allocate_page(CRITICAL_KERNEL_USE);
 
         pd_virt[table_index] = pt_phys | pd_flags;
     }
@@ -53,7 +53,7 @@ void paging_init(void) {
     kmemset(bitmap_page_permissions, 1u, sizeof(bitmap_page_permissions));
 
 
-    default_page_directory = allocate_page(CRITICAL_KERNEL_USE); //page frame allocator returns page aligned blocks of 4KiB of memory
+    default_page_directory = global_allocate_page(CRITICAL_KERNEL_USE); //page frame allocator returns page aligned blocks of 4KiB of memory
 
     for(int32_t i = 0; i < 1024; ++i) {
         // This sets the following flags to the pages:
@@ -64,7 +64,7 @@ void paging_init(void) {
     }
 
 
-    uint32_t *const first_page_table = allocate_page(CRITICAL_KERNEL_USE);
+    uint32_t *const first_page_table = global_allocate_page(CRITICAL_KERNEL_USE);
     for(uint32_t i = 0u; i < 1024u; ++i) {
         // As the address is page aligned, it will always leave 12 bits zeroed.
         // Those bits are used by the attributes
@@ -73,7 +73,7 @@ void paging_init(void) {
 
 
     // attributes: user level, read/write, present
-    default_page_directory[0] = ((uint32_t)first_page_table) | (PT_PRESENT | PT_RW | PT_USER);
+    default_page_directory[0] = ((uint32_t)first_page_table) | (PD_PRESENT | PD_RW | PD_USER);
 }
 
 void load_and_turn_on_paging(void) {
@@ -154,16 +154,16 @@ bool is_writable(const void* virtual_address) {
     return true;
 }
 
-void map_page(void *const virtual_address, const uint32_t phys_frame, const uint32_t pt_flags, const uint32_t pd_flags) {
-    kassert_void(((uint32_t)virtual_address % PAGE_SIZE == 0) && (phys_frame % PAGE_SIZE == 0));
+bool map_page_with_page_dir(const uint32_t page_directory, void *const virtual_address, const uint32_t phys_frame, const uint32_t pt_flags, const uint32_t pd_flags) {
+    kassert(((uint32_t)virtual_address % PAGE_SIZE == 0) && (phys_frame % PAGE_SIZE == 0), false);
 
     const uint32_t page_index = ((uint32_t)virtual_address) / PAGE_SIZE;
     const uint32_t table_index = page_index / 1024;
     const uint32_t page_index_in_table = page_index % 1024;
 
-    uint32_t *const virt_page_directory = default_page_directory;
+    uint32_t *const virt_page_directory = (uint32_t*)page_directory;
     if((virt_page_directory[table_index] & PD_PRESENT) != PD_PRESENT) {
-        const uint32_t phys_page_table = (uint32_t)allocate_page(CRITICAL_KERNEL_USE); //will be identity mapped
+        const uint32_t phys_page_table = (uint32_t)global_allocate_page(CRITICAL_KERNEL_USE); //will be identity mapped
 
         virt_page_directory[table_index] = phys_page_table | pd_flags;
     }
@@ -172,15 +172,37 @@ void map_page(void *const virtual_address, const uint32_t phys_frame, const uint
     if((virt_page_table[page_index_in_table] & PT_PRESENT) == PT_PRESENT) {
         kprintf("Woah, mapping an already mapped page. You should fix this.\n");
     }
-    //TODO: properly handle the case of someone mapping an already mapped page
+    //TODO: properly handle the case of someone mapping an already mapped page, maybe return `false`?
 
     virt_page_table[page_index_in_table] = phys_frame | pt_flags;
 
     flush_tlb_single_page((uint32_t)virtual_address);
+
+    return true;
+}
+
+bool map_page(void *const virtual_address, const uint32_t phys_frame, const uint32_t pt_flags, const uint32_t pd_flags) {
+    return map_page_with_page_dir((uint32_t)default_page_directory, virtual_address, phys_frame, pt_flags, pd_flags);
+}
+
+bool map_pages(void *const virtual_address, const uint32_t phys_frame, const size_t num_of_pages, const uint32_t pt_flags, const uint32_t pd_flags) {
+    kassert(((uint32_t)virtual_address % PAGE_SIZE == 0) && (phys_frame % PAGE_SIZE == 0), false);
+
+    const uint32_t virtual_address_value = (uint32_t)virtual_address;
+
+    for(uint32_t i = 0u; i < num_of_pages; ++i) {
+        if(!map_page((void*)(virtual_address_value + i*PAGE_SIZE), phys_frame + i*PAGE_SIZE, pt_flags, pd_flags)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 uint32_t allocate_virtual_page(void *const virtual_address, const uint32_t pt_flags, const uint32_t pd_flags) {
-    const uint32_t phys_frame = (uint32_t)allocate_page(USER_USE);
+    //kprintf("before global_allocate_page\n");
+    const uint32_t phys_frame = (uint32_t)global_allocate_page(USER_USE);
+    //kprintf("after global_allocate_page\n");
 
     //NULL can only be returned on failure for user allocations
     if(phys_frame) {
@@ -212,13 +234,86 @@ uint32_t unmap_page(const void *const virtual_address) {
     return phys_frame;
 }
 
+uint32_t unmap_pages(const void *const virtual_address, const size_t num_of_pages) {
+    const uint32_t ret = unmap_page(virtual_address);
+    for(size_t i = 1; i < num_of_pages; i++) {
+        unmap_page((void*)((uint32_t)virtual_address + (i * PAGE_SIZE)));
+    }
+    return ret;
+}
+
 void free_virtual_page(const void *const virtual_address) {
     const uint32_t phys_frame = unmap_page(virtual_address);
 
     kassert_void(phys_frame != 0 && phys_frame % PAGE_SIZE == 0);
 
-    free_page(phys_frame, (void*) USER_USE);
+    global_free_page(USER_USE, (void*)phys_frame);
 }
+
+
+void map_kernel_inside_user(struct process_t *const process){
+    struct physical_pointer cr3_ptr = create_physical_pointer(process->physical_cr3, 1);
+
+    //As we are ensuring that the first PML4T entries are reserved to the
+    //kernel, it is enough to link these ones to the kernel ones
+
+    uint32_t *const virt_page_directory = cr3_ptr.virt;
+    for(size_t i = 0; i < 1024; ++i) {
+        virt_page_directory[i] = (default_page_directory[i] & 0xFFFFF000u) | PD_USER | PD_PRESENT;
+    }
+}
+
+void clear_physical_page(const size_t physical) {
+    struct physical_pointer ptr = create_physical_pointer(physical, 1);
+
+    kmemset((void*)ptr.virt, 0, PAGE_SIZE);
+}
+
+bool user_map(struct process_t *const process, const size_t virt, const size_t physical) {
+    struct physical_pointer cr3_ptr = create_physical_pointer(process->physical_cr3, 1);
+    if(cr3_ptr.virt == 0) {
+        return false;
+    }
+
+    const uint32_t page_index = ((uint32_t)cr3_ptr.virt) / PAGE_SIZE;
+    const uint32_t table_index = page_index / 1024;
+    const uint32_t page_index_in_table = page_index % 1024;
+
+    uint32_t *const virt_page_directory = (uint32_t*)cr3_ptr.virt;
+    if((virt_page_directory[table_index] & PD_PRESENT) != PD_PRESENT) {
+        const uint32_t physical_pd = (uint32_t)global_binary_buddy_memory_allocator_allocate_page(USER_USE);
+
+        virt_page_directory[table_index] = physical_pd | PD_RW | PD_USER | PD_PRESENT;
+
+        clear_physical_page(physical_pd);
+
+        process->paging_size += PAGE_SIZE;
+        const struct segment_t segment = {physical_pd, 1u};
+        push_back(process->segments, &segment);
+    }
+
+    uint32_t *const virt_page_table = (uint32_t*)((virt_page_directory[table_index]) & 0xFFFFF000u);
+
+    virt_page_table[page_index_in_table] = physical | PT_RW | PT_USER | PT_PRESENT;
+
+    return true;
+}
+
+bool user_map_pages(struct process_t *const process, const size_t virt, const size_t physical, const size_t pages) {
+    //Map each page
+    for(size_t page = 0; page < pages; ++page) {
+        const size_t virt_addr = virt + page * PAGE_SIZE;
+        const size_t phys_addr = physical + page * PAGE_SIZE;
+
+        if(!user_map(process, virt_addr, phys_addr)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
 
 uint32_t* get_default_page_directory(void) {
     return default_page_directory;

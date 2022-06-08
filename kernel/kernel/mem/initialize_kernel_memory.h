@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #include "mem_constants.h"
-#include "physical_mem_allocator.h"
+#include <buddy_memory_allocator.h>
 #include "paging.h"
 
 

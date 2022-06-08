@@ -33,3 +33,6 @@ struct osi_memory_allocator {
 void osi_memory_allocator_init(struct osi_memory_allocator* allocator, uint32_t* start_of_virt_mem, uint32_t number_of_pages);
 void* osi_memory_allocator_allocate(struct osi_memory_allocator* allocator, uint32_t num_of_pages);
 void osi_memory_allocator_free(struct osi_memory_allocator* allocator, const void* ptr, uint32_t num_of_pages);
+
+
+struct osi_memory_allocator* get_default_virt_allocator(void);

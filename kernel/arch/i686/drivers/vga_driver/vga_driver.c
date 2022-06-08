@@ -63,7 +63,8 @@ void terminal_putchar(struct vga_driver_context *const context, const char c) {
         return;
     }
     if(c == '\t') {
-        return terminal_writestring(context, "    ");
+        terminal_writestring(context, "    ");
+        return;
     }
     terminal_putentryat(context, c, context->terminal_color, context->terminal_column, context->terminal_row);
     if (++context->terminal_column == VGA_WIDTH) {

@@ -11,6 +11,7 @@
 #include <drivers/vga_driver/default_vga_driver.h>
 #include <drivers/keyboard/default_keyboard_logic.h>
 #include <subsystems/terminal/default_terminal_functions.h>
+#include <terminal_driver.h>
 
 
 //for testing purposes only

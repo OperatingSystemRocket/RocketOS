@@ -1,5 +1,7 @@
 #include <tar_fs/tar.h>
 
+#include "scheduler.h"
+
 
 static uint8_t num_of_files = 0u;
 static struct file_header* file_headers[32] = {NULL};
@@ -21,7 +23,7 @@ void parse_headers(const uint32_t address) {
     }
 }
 
-struct file_header* get_file_header(const char *const filename, struct file_header *const *const file_list, const uint8_t file_list_len) {
+struct file_header* get_file_header_from_list(const char *const filename, struct file_header *const *const file_list, const uint8_t file_list_len) {
     for(uint8_t i = 0u; i < file_list_len; ++i) {
         if(kstrcmp(filename, file_list[i]->filename) == 0) {
             return file_list[i];
@@ -30,9 +32,13 @@ struct file_header* get_file_header(const char *const filename, struct file_head
     return NULL;
 }
 
+struct file_header* get_file_header(const char *const filename) {
+    return get_file_header_from_list(filename, file_headers, num_of_files);
+}
+
 void print_file(const char *const filename) {
     kprintf("print_file: %s\n", filename);
-    struct file_header *const file_header = get_file_header(filename, file_headers, num_of_files);
+    struct file_header *const file_header = get_file_header_from_list(filename, file_headers, num_of_files);
     if(file_header == NULL) {
         kprintf("File not found!\n");
         return;
@@ -44,7 +50,7 @@ void print_file(const char *const filename) {
 
 void print_elf_file(const char *const filename) {
     kprintf("print_file: %s\n", filename);
-    struct file_header *const file_header = get_file_header(filename, file_header, num_of_files);
+    struct file_header *const file_header = get_file_header_from_list(filename, file_headers, num_of_files);
     if(file_header == NULL) {
         kprintf("ELF file not found!\n");
         return;
@@ -54,7 +60,7 @@ void print_elf_file(const char *const filename) {
     }
 }
 
-static bool is_valid_elf_sig(struct Elf32_Ehdr *const elf_header) {
+bool is_valid_elf_sig(struct Elf32_Ehdr *const elf_header) {
     return elf_header->e_ident[EI_MAG0] == ELFMAG0 && elf_header->e_ident[EI_MAG1] == ELFMAG1 && elf_header->e_ident[EI_MAG2] == ELFMAG2 && elf_header->e_ident[EI_MAG3] == ELFMAG3;
 }
 
@@ -77,7 +83,7 @@ static const char* get_section_type_name(const uint32_t type) {
 }
 
 bool parse_elf_file(const char *const filename) {
-    struct file_header *const file_header = get_file_header(filename, file_headers, num_of_files);
+    struct file_header *const file_header = get_file_header_from_list(filename, file_headers, num_of_files);
     struct Elf32_Ehdr *const elf_header = (struct Elf32_Ehdr*)file_header->file;
     if(!is_valid_elf_sig(elf_header)) {
         kprintf("Not an elf file!\n");
@@ -193,7 +199,7 @@ bool parse_elf_file(const char *const filename) {
     }
 
     const uint32_t num_of_pages = memsz/PAGE_SIZE + (memsz%PAGE_SIZE > 0u);
-    char *const process_memory = virtual_base_addr;
+    char *const process_memory = (char*)virtual_base_addr;
     for(uint32_t i = 0u; i < num_of_pages; ++i) {
         allocate_virtual_page(process_memory + i*PAGE_SIZE, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     }
@@ -201,10 +207,20 @@ bool parse_elf_file(const char *const filename) {
 
     kprintf("before call\n");
 
-    void (*start)(void) = (void (*)(void))(entry_point);
-    start();
+    void (*entry_start)(void) = (void (*)(void))(entry_point);
+    //entry_start();
 
     kprintf("after call\n");
+
+    kprintf("before process creation\n");
+
+    //create_kernel_process(&example_function_task);
+    //create_kernel_process(&foo_function_task);
+    //create_thread(&example_function_task);
+    //create_thread(&foo_function_task);
+//    create_user_process(virtual_base_addr/PAGE_SIZE, num_of_pages, entry_start);
+
+    kprintf("after process creation\n");
 
     return true;
 }

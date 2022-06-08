@@ -23,7 +23,7 @@ void* global_allocate_phys_virt_mem(const uint32_t num_of_pages) {
     }
     const uint32_t virtual_page_address = (uint32_t)virt_mem;
     for(uint32_t i = 0; i < num_of_pages; ++i) {
-        map_page((void*)(virtual_page_address+(i*PAGE_SIZE)), allocate_page(USER_USE), PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+        map_page((void*)(virtual_page_address+(i*PAGE_SIZE)), global_allocate_page(USER_USE), PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     }
     return virt_mem;
 }
@@ -32,7 +32,7 @@ void global_free_phys_virt_mem(const void *const ptr, const uint32_t num_of_page
     for(uint32_t i = 0; i < num_of_pages; ++i) {
         const uint32_t physical_page = get_physical_address(virtual_page_address+(i*PAGE_SIZE));
         unmap_page((void*)(virtual_page_address+(i*PAGE_SIZE)));
-        free_page(USER_USE, physical_page);
+        global_free_page(USER_USE, physical_page);
     }
     global_free_phys_virt_mem(ptr, num_of_pages);
 }

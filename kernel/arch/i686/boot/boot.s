@@ -15,7 +15,7 @@ _start:
 
         align  8
 
-multiboot_header:
+multiboot_header: ; TODO: don't have the stack and other static data sections inside section .text
         dd   MULTIBOOT2_HEADER_MAGIC
         dd   GRUB_MULTIBOOT_ARCHITECTURE_I386
         dd   multiboot_header_end - multiboot_header

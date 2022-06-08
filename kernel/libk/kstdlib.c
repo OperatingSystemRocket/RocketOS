@@ -105,7 +105,9 @@ void kdynamic_memory_init(void) {
     number_of_pages_allocated = 1u;
     first_free_virtual_address = get_heap_range_start();
     last_free_virtual_address = first_free_virtual_address;
+    kprintf("before allocate_virtual_page\n");
     allocate_virtual_page(last_free_virtual_address, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    kprintf("after allocate_virtual_page\n");
     head = last_free_virtual_address;
     last_free_virtual_address += WORDS_IN_PAGE;
 

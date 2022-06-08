@@ -6,7 +6,7 @@
 
 #include <mem/paging.h>
 #include "kstdlib.h"
-#include <mem/physical_mem_allocator.h>
+#include <buddy_memory_allocator.h>
 #include "kstring.h"
 
 #include <drivers/pci/pcie/pcie_bus.h>

@@ -42,9 +42,18 @@ struct syscall_regs {
     uint32_t esi;
     uint32_t edi;
     uint32_t ebp;
+
+    uint32_t padding; // TODO: make sure this is correct
+
+    uint32_t code;
+    uint32_t eip;
+    uint32_t cs;
+    uint32_t eflags;
+    uint32_t esp;
+    uint32_t ds;
 };
 
-struct IDT_entry{
+struct IDT_entry {
     uint16_t offset_lowerbits;
     uint16_t selector;
     uint8_t zero;

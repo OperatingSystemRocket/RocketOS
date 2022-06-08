@@ -18,11 +18,6 @@ struct file_header {
     char file[];
 };
 
-void parse_headers(uint32_t address);
-void print_file(const char* filename);
-void print_file(const char* filename);
-void print_elf_file(const char* filename);
-
 
 typedef uint32_t Elf32_Addr;
 typedef uint16_t Elf32_Half;
@@ -229,4 +224,11 @@ struct Elf32_Dyn {
 extern struct Elf32_Dyn DYNAMIC[];
 
 
+bool is_valid_elf_sig(struct Elf32_Ehdr* elf_header);
+void parse_headers(uint32_t address);
 bool parse_elf_file(const char* filename);
+struct file_header* get_file_header_from_list(const char* filename, struct file_header *const * file_list, uint8_t file_list_len);
+struct file_header* get_file_header(const char* filename);
+void print_file(const char* filename);
+void print_elf_file(const char* filename);
+

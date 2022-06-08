@@ -51,5 +51,8 @@ void simple_program(void) {
 }
 
 void _start(void) {
-    simple_program();
+    for(;;) {
+        simple_program();
+        asm volatile("hlt");
+    }
 }

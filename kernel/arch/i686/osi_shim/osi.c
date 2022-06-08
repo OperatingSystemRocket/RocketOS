@@ -4,7 +4,7 @@
 
 #include "../acpica/acpi.h"
 
-#include <utils/allocators/bitmap_allocator.h>
+#include <bitmap_allocator.h>
 #include <mem/initialize_kernel_memory.h>
 #include <utils/allocators/osi_memory_allocator.h>
 #include <mem/paging.h>

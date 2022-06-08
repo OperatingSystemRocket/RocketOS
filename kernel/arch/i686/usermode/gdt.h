@@ -10,7 +10,7 @@
 #include "system_call_implementations.h"
 
 #include "kstdlib.h"
-#include <mem/physical_mem_allocator.h>
+#include <buddy_memory_allocator.h>
 #include <utils/allocators/osi_memory_allocator.h>
 
 

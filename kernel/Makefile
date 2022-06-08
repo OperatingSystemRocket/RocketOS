@@ -5,17 +5,15 @@ INCLUDEDIR ?= $(PREFIX)/include
 
 CFLAGS := $(CFLAGS) -ffreestanding -Wall -Wextra
 CPPFLAGS := $(CPPFLAGS) -D__is_kernel -I../sysroot/usr/include/userspace -I../sysroot/usr/include/kernel/kernel -I../sysroot/usr/include/kernel/arch/i686 -I../kernel/arch/i686/ -I../kernel/kernel/
-LDFLAGS := $(LDFLAGS)
-LIBS := $(LIBS) -nostdlib -lk -lgcc
 
 include ../make.config
 
 KERNEL_FLAGS ?= -std=gnu17 -ffreestanding -DRocketOS -mgeneral-regs-only
 
 ifdef RELEASE
-IMAGE_FLAGS := -ffreestanding $(RELEASE_LINK_FLAGS) -nostdlib
+IMAGE_FLAGS := -ffreestanding $(RELEASE_LINK_FLAGS) -nostdlib -lgcc
 else
-IMAGE_FLAGS := -ffreestanding $(DEBUG_LINK_FLAGS) -nostdlib
+IMAGE_FLAGS := -ffreestanding $(DEBUG_LINK_FLAGS) -nostdlib -lgcc
 endif
 
 

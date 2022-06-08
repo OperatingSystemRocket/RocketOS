@@ -7,6 +7,7 @@
 #include <drivers/vga_driver/default_vga_driver.h>
 #include <utils/communication_and_events/observer.h>
 #include <kmath.h>
+#include <terminal_driver.h>
 
 
 //TODO: consider making this user tweakable

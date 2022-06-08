@@ -49,7 +49,7 @@ static int32_t has_color(const char *const format, const size_t format_size) {
 
 
 static void print_char(const char c) {
-    terminal_context_putchar(c);
+    //terminal_context_putchar(c);
     serial_putchar(c);
 }
 
@@ -58,7 +58,7 @@ static void print_char_color(const char c, const enum vga_color color) {
 }
 
 static void print_string(const char *const str) {
-    terminal_context_writestring(str);
+    //terminal_context_writestring(str);
     serial_writestring(str);
 }
 

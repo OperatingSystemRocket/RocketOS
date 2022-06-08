@@ -29,18 +29,18 @@ size_t get_global_virt_allocator_size(void) {
 }
 
 void initialize_kernel_memory(void) {
-    allocate_init();
+    global_allocator_init();
     paging_init();
 
 
     //kernel itself
-    reserve_physical_address(0x0, get_number_of_permanently_reserved_pages(), CRITICAL_KERNEL_USE);
+    global_reserve_physical_address(0x0, get_number_of_permanently_reserved_pages(), CRITICAL_KERNEL_USE);
     reserve_virtual_address(0x0, get_number_of_permanently_reserved_pages(), CRITICAL_KERNEL_USE);
 
     //kernel heap
     const uint32_t kernel_heap_start = get_number_of_permanently_reserved_pages()+1u;
     const size_t kernel_heap_size = get_number_of_pages_used()-get_number_of_permanently_reserved_pages(); //in pages
-    reserve_physical_address(kernel_heap_start, kernel_heap_size, KERNEL_USE);
+    global_reserve_physical_address(kernel_heap_start, kernel_heap_size, KERNEL_USE);
     reserve_virtual_address(kernel_heap_start, kernel_heap_size, KERNEL_USE);
 
     //acpica virtual memory range

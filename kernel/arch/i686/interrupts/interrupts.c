@@ -192,6 +192,7 @@ __attribute__((interrupt)) static void isr13(struct interrupt_frame *const frame
 
 __attribute__((interrupt)) static void isr14(struct interrupt_frame *const frame) {
     (void) frame; //silence unused parameter warning as this param is needed for hardware reasons
+    asm volatile("cli");
 
     kprintf("Page Fault\n");
 
@@ -210,7 +211,7 @@ __attribute__((interrupt)) static void isr14(struct interrupt_frame *const frame
 
     kprintf("address in cr2: %X\n", get_faulting_address());
 
-    asm("hlt");
+    asm volatile("hlt");
 }
 
 __attribute__((interrupt)) static void isr15(struct interrupt_frame *const frame) {
@@ -326,12 +327,10 @@ void isr_install(void) {
     idt_register_handler(30, (uint32_t)isr_reserved);
     idt_register_handler(31, (uint32_t)isr_reserved);
 
-    enable_timer();
-
     idt_register_handler(128, (uint32_t)irq_common_handler); //system call, 0x80
     idt[128].type_attr = IDT_PRESENT | IDT_RING_3 | INTERRUPT_GATE;
 
-    enable_timer();
+    timer_install();
 
     idt_init();
 }
