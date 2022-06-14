@@ -224,3 +224,9 @@ int32_t kprintf(const char *const format, ...) {
 
     return 0; //TODO: implement return value
 }
+
+int32_t kputs(const char *const str) {
+    print_string(str);
+    print_char('\n');
+    return kstrlen(str);
+}

@@ -70,7 +70,7 @@ void scheduler_init(void);
 /*!
  * \brief Start the scheduler and starts the first process
  */
-void scheduler_start(void) __attribute__((noreturn));
+void scheduler_start(void); //__attribute__((noreturn));
 
 /*!
  * \brief Indicates if the scheduler is started or not
@@ -86,7 +86,7 @@ struct OPTIONAL_NAME(pid_t) scheduler_exec(struct string file, const vector_type
 /*!
  * \brief Kill the current process
  */
-void scheduler_kill_current_process(void) __attribute__((noreturn));
+void scheduler_kill_current_process(void); //__attribute__((noreturn));
 
 /*!
  * \brief Wait for the given process to terminate

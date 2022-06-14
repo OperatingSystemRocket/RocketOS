@@ -132,13 +132,8 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     parse_headers(addr);
     print_file("bar.txt");
     kprintf("\n");
-    enable_interrupts();
 
-    //write_tss();
 
-    //scheduler_init();
-
-    //init_pit(1024, PIT_CHANNEL_0, ACCESS_MODE_LOBYTE_HIBYTE, PIT_MODE_SQUARE_WAVE_GENERATOR);
     disable_interrupts();
 
     ACPI_STATUS status = AcpiInitializeSubsystem();
@@ -167,46 +162,9 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
 
     kprintf("\nACPICA initialized\n\n\n");
 
+    disable_interrupts();
+
     write_tss();
-
-#if 0
-    ACPI_TABLE_RSDP* rsdp = AcpiOsMapMemory(AcpiOsGetRootPointer(), sizeof(ACPI_TABLE_RSDP));
-    kprintf("rsdp: %p\n", AcpiOsGetRootPointer());
-    print_all_tables(rsdp);
-    ACPI_TABLE_MCFG* mcfg = AcpiOsMapMemory(find_mcfg(rsdp), sizeof(ACPI_TABLE_MCFG));
-    kprintf("mcfg: %p\n", mcfg);
-    for(uint32_t i = 0u; i < ACPI_NAMESEG_SIZE; ++i) {
-        kprintf("%c", mcfg->Header.Signature[i]);
-    }
-    kprintf("\n");
-    enumerate_pcie(mcfg);
-    ACPI_TABLE_MADT* madt = AcpiOsMapMemory(find_madt(rsdp), sizeof(ACPI_TABLE_MADT));
-    /*kprintf("madt: %p\n", madt);
-    for(uint32_t i = 0u; i < ACPI_NAMESEG_SIZE; ++i) {
-        kprintf("%c", madt->Header.Signature[i]);
-    }
-    kprintf("\n");*/
-    detect_cores(madt);
-    //print_cores_info();
-    AcpiOsUnmapMemory(madt, sizeof(ACPI_TABLE_MADT));
-    AcpiOsUnmapMemory(mcfg, sizeof(ACPI_TABLE_MCFG));
-    AcpiOsUnmapMemory(rsdp, sizeof(ACPI_TABLE_RSDP));
-    //brute_force_check_all_buses();
-
-    identity_map_page((uint32_t)get_default_page_directory(), mb_info->mods_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
-    multiboot_module_t *const first_module = (multiboot_module_t*)mb_info->mods_addr;
-    identity_map_page((uint32_t)get_default_page_directory(), first_module, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
-    const uint32_t addr = first_module->mod_start;
-    identity_map_page((uint32_t)get_default_page_directory(), addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
-
-    kprintf("first_module: %p\n", first_module);
-    kprintf("addr: %p\n", addr);
-    kprintf("mb_info->mods_addr: %X\n", mb_info->mods_addr);
-    kprintf("mb_info->mods_count: %u\n", mb_info->mods_count);
-
-    parse_headers(addr);
-    //print_file("bar.txt");
-#endif
 
 
 
@@ -218,28 +176,12 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     default_context_terminal_start();
     enable_keyboard();
 
-    enable_interrupts();
-
-
-//    jump_usermode();
-
-
-    //create_thread(&example_function_task);
-    //create_thread(&foo_function_task);
-    enable_interrupts();
-    parse_elf_file("test_program");
-
 
     kprintf("before scheduler_init()\n");
     scheduler_init();
-    vector_type(struct string) params = create_vector(sizeof(struct string));
-    struct string first_str = string_new("foo");
-    struct string second_str = string_new("bar");
-    push_back(params, &first_str);
-    push_back(params, &second_str);
-    //scheduler_exec(string_new("test_program"), params);
+    scheduler_exec(string_new("test_program"), NULL);
+    enable_interrupts();
     scheduler_start();
-    //init_task();
 
 
     for(;;) {

@@ -53,8 +53,6 @@ struct process_t {
 
     size_t priority; ///< The priority of the process
 
-    size_t tty; ///< The terminal the process is linked to
-
     size_t physical_cr3; ///< The physical address of the CR3
     size_t paging_size; ///< The  size of the paging structure
 

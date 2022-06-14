@@ -9,6 +9,7 @@
 #include "kassert.h"
 #include <utils/algorithms/comparison.h>
 #include <mem/paging.h>
+#include <optional.h>
 
 
 struct file_header {
@@ -226,7 +227,10 @@ extern struct Elf32_Dyn DYNAMIC[];
 
 bool is_valid_elf_sig(struct Elf32_Ehdr* elf_header);
 void parse_headers(uint32_t address);
-bool parse_elf_file(const char* filename);
+
+GENERATE_OPTIONAL(uint32_t)
+struct OPTIONAL_NAME(uint32_t) parse_elf_file(const char* filename);
+
 struct file_header* get_file_header_from_list(const char* filename, struct file_header *const * file_list, uint8_t file_list_len);
 struct file_header* get_file_header(const char* filename);
 void print_file(const char* filename);

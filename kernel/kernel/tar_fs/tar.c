@@ -82,36 +82,36 @@ static const char* get_section_type_name(const uint32_t type) {
     return "Unknown";
 }
 
-bool parse_elf_file(const char *const filename) {
+struct OPTIONAL_NAME(uint32_t) parse_elf_file(const char *const filename) {
     struct file_header *const file_header = get_file_header_from_list(filename, file_headers, num_of_files);
     struct Elf32_Ehdr *const elf_header = (struct Elf32_Ehdr*)file_header->file;
     if(!is_valid_elf_sig(elf_header)) {
         kprintf("Not an elf file!\n");
-        return false;
+        return (struct OPTIONAL_NAME(uint32_t)){0u, false};
     }
     if(elf_header->e_ident[EI_CLASS] != ELFCLASS32) {
         kprintf("Not a 32-bit elf file!\n");
-        return false;
+        return (struct OPTIONAL_NAME(uint32_t)){0u, false};
     }
     if(elf_header->e_ident[EI_DATA] != ELFDATA2LSB) {
         kprintf("Not a little-endian elf file!\n");
-        return false;
+        return (struct OPTIONAL_NAME(uint32_t)){0u, false};
     }
     if(elf_header->e_ident[EI_VERSION] != EV_CURRENT) {
         kprintf("Not a current elf file!\n");
-        return false;
+        return (struct OPTIONAL_NAME(uint32_t)){0u, false};
     }
 
     if(elf_header->e_type != ET_REL && elf_header->e_type != ET_EXEC) {
         kprintf("Not a REL or EXEC elf file!\n");
-        return false;
+        return (struct OPTIONAL_NAME(uint32_t)){0u, false};
     }
     if(elf_header->e_machine != EM_386) {
         kprintf("Not a x86 elf file!\n");
     }
     if(elf_header->e_version != EV_CURRENT) {
         kprintf("Not a current elf file!\n");
-        return false;
+        return (struct OPTIONAL_NAME(uint32_t)){0u, false};
     }
 
     const uint32_t entry_point = elf_header->e_entry;
@@ -122,7 +122,7 @@ bool parse_elf_file(const char *const filename) {
     const uint32_t section_header_size = elf_header->e_shentsize;
     const uint32_t section_header_count = elf_header->e_shnum;
     const uint32_t section_header_strtab_offset = elf_header->e_shstrndx;
-    kassert(elf_header->e_ehsize == sizeof(struct Elf32_Ehdr), false);
+    kassert(elf_header->e_ehsize == sizeof(struct Elf32_Ehdr), ((struct OPTIONAL_NAME(uint32_t)){0u, false}));
 
 
     kprintf("Entry point: %X\n", entry_point);
@@ -140,7 +140,7 @@ bool parse_elf_file(const char *const filename) {
     struct Elf32_Shdr *const section_header = (struct Elf32_Shdr*)(file_header->file + section_header_offset);
     //assume for now that that `section_header_strtab_offset` is non-zero and that it is a valid offset
     struct Elf32_Shdr *const section_header_strtab = (struct Elf32_Shdr*)(&section_header[section_header_strtab_offset]);
-    kassert(section_header_strtab->sh_type == SHT_STRTAB, false);
+    kassert(section_header_strtab->sh_type == SHT_STRTAB, ((struct OPTIONAL_NAME(uint32_t)){0u, false}));
     char *const section_header_strtab_data = (char*)(file_header->file + section_header_strtab->sh_offset);
     kprintf("Section header strtab data: %s\n", section_header_strtab_data);
     for(uint32_t i = 0u; i < section_header_count; ++i) {
@@ -210,17 +210,5 @@ bool parse_elf_file(const char *const filename) {
     void (*entry_start)(void) = (void (*)(void))(entry_point);
     //entry_start();
 
-    kprintf("after call\n");
-
-    kprintf("before process creation\n");
-
-    //create_kernel_process(&example_function_task);
-    //create_kernel_process(&foo_function_task);
-    //create_thread(&example_function_task);
-    //create_thread(&foo_function_task);
-//    create_user_process(virtual_base_addr/PAGE_SIZE, num_of_pages, entry_start);
-
-    kprintf("after process creation\n");
-
-    return true;
+    return (struct OPTIONAL_NAME(uint32_t)){entry_point, true};
 }

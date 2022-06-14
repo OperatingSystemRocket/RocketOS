@@ -2,8 +2,9 @@
 
 
 //Provided by task_switch.s
-extern void task_switch(size_t current, size_t next);
-extern void init_task_switch(size_t current) __attribute__((noreturn));
+extern void save_current_task(volatile struct syscall_regs* current_task);
+extern void init_task_switch(volatile struct syscall_regs* current_task); //__attribute__((noreturn));
+extern void resume_task(volatile struct syscall_regs* current_task);
 
 #define STACK_ALIGNMENT 16     ///< In bytes
 #define ROUND_ROBIN_QUANTUM 25 ///< In milliseconds
@@ -28,7 +29,7 @@ static size_t idle_pid = 0;
 static size_t init_pid = 0;
 static size_t post_init_pid = 0;
 
-static vector_type(pid_t) run_queue(size_t priority) {
+static vector_type(pid_t) run_queue(const size_t priority) {
     return run_queues[priority - MIN_PRIORITY];
 }
 
@@ -157,37 +158,14 @@ static void gc_task(void) {
 static vector_type(void(*)(void)) init_tasks;
 
 static void post_init_task(void) {
-    kprintf("post_init_task()\n");
-    for(size_t i = 0u; i < size(init_tasks); ++i) {
-        uint32_t *const func_addr = at(init_tasks, i);
-        void (*func)(void) = *func_addr;
-        func();
+    for(int32_t i = 0; i < 10; ++i) {
+        kprintf("post_init_task()\n");
     }
-
-    scheduler_kill_current_process();
 }
 
-//TODO tsh should be configured somewhere
 static void init_task(void) {
-    kprintf("init_task\n");
-
-    while(true) {
-        kprintf("while(true) in init_task\n");
-
-        vector_type(struct string) params = create_vector(sizeof(struct string));
-        struct string first_str = string_new("foo");
-        struct string second_str = string_new("bar");
-        push_back(params, &first_str);
-        push_back(params, &second_str);
-
-        struct OPTIONAL_NAME(pid_t) pid = scheduler_exec(string_new("test_program"), params);
-
-        if(!pid.has_value) {
-            kprintf("!pid.has_value\n");
-            return;
-        }
-
-        scheduler_await_termination(pid.data);
+    for(int32_t i = 0; i < 10; ++i) {
+        kprintf("init_task()\n");
     }
 }
 
@@ -202,7 +180,7 @@ void suspend_kernel(void) {
 static pid_t get_free_pid(void) {
     kprintf("get_free_pid()\n");
     // Normally, the next pid should be empty
-    if(likely(pcb[next_pid].state == PROCESS_EMPTY)){
+    if(likely(pcb[next_pid].state == PROCESS_EMPTY)) {
         size_t pid = next_pid;
         next_pid = (next_pid + 1) % MAX_PROCESS;
         return pid;
@@ -213,13 +191,13 @@ static pid_t get_free_pid(void) {
     size_t pid = (next_pid + 1) % MAX_PROCESS;
     size_t i = 0;
 
-    while(pcb[pid].state != PROCESS_EMPTY && i < MAX_PROCESS){
+    while(pcb[pid].state != PROCESS_EMPTY && i < MAX_PROCESS) {
         pid = (pid + 1) % MAX_PROCESS;
         ++i;
     }
 
     // Make sure there was one free
-    if(unlikely(i == MAX_PROCESS)){
+    if(unlikely(i == MAX_PROCESS)) {
         kprintf("Ran out of processes");
         suspend_kernel();
     }
@@ -230,9 +208,8 @@ static pid_t get_free_pid(void) {
     return pid;
 }
 
-static struct process_t* new_process(void) {
-    kprintf("new_process()\n");
-    pid_t pid = get_free_pid();
+static struct process_t* scheduler_create_new_process(void) {
+    const pid_t pid = get_free_pid();
 
     struct process_control_t *const process = &pcb[pid];
 
@@ -241,7 +218,6 @@ static struct process_t* new_process(void) {
     process->process.ppid = current_pid;
     process->process.priority = DEFAULT_PRIORITY;
     process->state = PROCESS_NEW;
-    process->process.tty = pcb[current_pid].process.tty;
 
     process->process.brk_start = 0;
     process->process.brk_end = 0;
@@ -252,8 +228,7 @@ static struct process_t* new_process(void) {
     return &process->process;
 }
 
-static void queue_process(pid_t pid) {
-    kprintf("queue_process called\n");
+static void queue_process(const pid_t pid) {
     kassert_message_void(pid < MAX_PROCESS, "pid out of bounds");
 
     struct process_control_t *const process = &pcb[pid];
@@ -270,79 +245,51 @@ static void queue_process(pid_t pid) {
     int_unlock(&queue_lock);
 }
 
-static void foo_func(void) {
-    while(true) {
-        kprintf("foo_func with current_pid: %u\n", current_pid);
-        asm("hlt");
-    }
-}
 
 static void create_idle_task(void) {
-    kprintf("create_idle_task()\n");
-    struct process_t *const idle_process = scheduler_create_kernel_task("idle", kmalloc(user_stack_size), kmalloc(kernel_stack_size), &idle_task);
+    struct process_t *const idle_process = scheduler_create_kernel_task("idle", zeroed_out_kmalloc(4096), zeroed_out_kmalloc(4096), &idle_task);
 
     idle_process->ppid = 0;
     idle_process->priority = MIN_PRIORITY;
 
-    scheduler_queue_system_process(idle_process->pid);
-
     idle_pid = idle_process->pid;
-}
 
-//TODO: actually implement this and rewrite the terminal and vga code, this is just a simple mock for now
-size_t terminals_count(void) {
-    kprintf("terminals_count()\n");
-    return 1;
+    kprintf("idle_process->pid: %u\n", idle_process->pid);
+
+    scheduler_queue_system_process(idle_process->pid);
 }
 
 static void create_init_tasks(void) {
-    kprintf("create_init_tasks()\n");
-    for(size_t i = 0; i < terminals_count(); ++i){
-        struct process_t *const init_process = scheduler_create_kernel_task("init", kmalloc(user_stack_size), kmalloc(kernel_stack_size), &init_task);
+    struct process_t *const init_process = scheduler_create_kernel_task("init", zeroed_out_kmalloc(4096), zeroed_out_kmalloc(4096), &init_task);
 
-        init_process->ppid = 0;
-        init_process->priority = MIN_PRIORITY + 1;
+    init_process->ppid = 0;
+    init_process->priority = MIN_PRIORITY + 1;
 
-        init_process->tty = i;
+    init_pid = init_process->pid;
 
-        pid_t pid = init_process->pid;
-        if(i == 0){
-            init_pid = pid;
-        }
-/*
-        char tty_name[512] = "/dev/tty";
-        char integer_str_buf[512];
-        kint_to_string(i, integer_str_buf, sizeof(integer_str_buf), 10, false);
-        kstrncat(tty_name, integer_str_buf, sizeof(tty_name));
-
-        struct string tty = string_new(tty_name);
-*/
-        scheduler_queue_system_process(pid);
-    }
+    scheduler_queue_system_process(init_process->pid);
 }
 
 static void create_gc_task(void) {
-    kprintf("create_gc_task()\n");
-    struct process_t *const gc_process = scheduler_create_kernel_task("gc", kmalloc(user_stack_size), kmalloc(kernel_stack_size), &gc_task);
+    struct process_t *const gc_process = scheduler_create_kernel_task("gc", zeroed_out_kmalloc(4096), zeroed_out_kmalloc(4096), &gc_task);
 
     gc_process->ppid = 0;
     gc_process->priority = MIN_PRIORITY + 1;
 
-    scheduler_queue_system_process(gc_process->pid);
-
     gc_pid = gc_process->pid;
+
+    scheduler_queue_system_process(gc_process->pid);
 }
 
 static void create_post_init_task(void) {
-    kprintf("create_post_init_task()\n");
-    struct process_t *const post_init_process = scheduler_create_kernel_task("post_init", kmalloc(user_stack_size), kmalloc(kernel_stack_size), &post_init_task);
+    struct process_t *const post_init_process = scheduler_create_kernel_task("post_init", zeroed_out_kmalloc(4096), zeroed_out_kmalloc(4096), &post_init_task);
 
     post_init_process->ppid = 0;
     post_init_process->priority = MAX_PRIORITY;
 
     post_init_pid = post_init_process->pid;
 
-    scheduler_queue_system_process(post_init_pid);
+    scheduler_queue_system_process(post_init_process->pid);
 }
 
 static void switch_to_process_with_lock(const size_t new_pid) {
@@ -356,34 +303,27 @@ static void switch_to_process_with_lock(const size_t new_pid) {
     }
 
     current_pid = new_pid;
-    //current_pid = old_pid; //new_pid;
     kprintf("current_pid: %u, old_pid: %u, new_pid: %u\n", current_pid, old_pid, new_pid);
 
     struct process_control_t *const process = &pcb[new_pid];
-    //struct process_control_t *const process = &pcb[old_pid]; //&pcb[new_pid];
     process->state = PROCESS_RUNNING;
 
     tss_entry.esp0 = process->process.kernel_esp;
-    //gdt::tss().rsp0_low = process.process.kernel_esp & 0xFFFFFFFF;
-    //gdt::tss().rsp0_high = process.process.kernel_esp >> 32;
 
     kprintf("old_pid: %u, current_pid: %u\n", old_pid, current_pid);
 
-    //task_switch(old_pid, old_pid);
-    task_switch(old_pid, current_pid);
+    save_current_task(pcb[old_pid].process.context);
+    resume_task(pcb[current_pid].process.context);
     kprintf("task_switch done\n");
-    //task_switch(old_pid, current_pid);
 }
 
 static void switch_to_process(const size_t new_pid) {
-    kprintf("switch_to_process()\n");
-    // This should never be interrupted
-    struct int_lock l;
-    int_lock(&l);
+    struct int_lock lock;
+    int_lock(&lock);
 
     switch_to_process_with_lock(new_pid);
 
-    int_unlock(&l);
+    int_unlock(&lock);
 }
 
 /*!
@@ -425,6 +365,12 @@ static size_t select_next_process_with_lock(void) {
 
             if(pcb[pid].state == PROCESS_READY || pcb[pid].state == PROCESS_RUNNING) {
                 kprintf("step 2 return\n");
+                if(pcb[pid].state == PROCESS_READY) {
+                    kputs("PROCESS_READY");
+                } else {
+                    kassert(pcb[pid].state == PROCESS_RUNNING, 0u);
+                    kputs("PROCESS_RUNNING");
+                }
                 return pid;
             }
         }
@@ -450,8 +396,6 @@ static size_t select_next_process_with_lock(void) {
 }
 
 static size_t select_next_process(void) {
-    kprintf("select_next_process()\n");
-    // Cannot be interrupted
     struct int_lock lock;
     int_lock(&lock);
 
@@ -470,7 +414,7 @@ static size_t ceil_divide(const size_t base, const size_t divisor) {
     return (base + divisor - 1) / divisor;
 }
 
-static size_t pages(const size_t size){
+static size_t pages(const size_t size) {
     return ceil_divide(size, PAGE_SIZE);
 }
 static bool is_page_aligned(const uint32_t mem_addr) {
@@ -478,239 +422,19 @@ static bool is_page_aligned(const uint32_t mem_addr) {
 }
 
 static bool allocate_user_memory(struct process_t *const process, const size_t address, const size_t size, size_t *const ref) {
-    kprintf("allocate_user_memory()\n");
-    //1. Calculate some stuff
-    const size_t first_page = page_align(address);
-    const size_t left_padding = address - first_page;
 
-    const size_t bytes = left_padding + size;
-    const size_t pages_var = pages(bytes);
-
-    //2. Get enough physical memory
-    const uint32_t physical_memory = global_allocate_pages(USER_USE, pages_var);
-
-    if(!physical_memory) {
-        return false;
-    }
-
-    //3. Find a start of a page inside the physical memory
-
-    const uint32_t aligned_physical_memory = is_page_aligned(physical_memory) ? physical_memory :
-            (physical_memory / PAGE_SIZE + 1) * PAGE_SIZE;
-
-    //4. Map physical allocated memory to the necessary virtual memory
-    if(!user_map_pages(process, first_page, aligned_physical_memory, pages_var)) {
-        return false;
-    }
-
-    *ref = physical_memory;
-
-    kprintf("allocate_user_memory()\n");
-
-    return true;
 }
 
 static void clear_physical_memory(size_t memory, size_t pages) {
-    kprintf("clear_physical_memory()\n");
-    struct physical_pointer phys_ptr = create_physical_pointer(memory, pages);
 
-    uint32_t *const it = (uint32_t*)phys_ptr.virt;
-    kmemset(it, 0, pages * PAGE_SIZE);
 }
 
 static bool create_paging(char* buffer, struct process_t *const process) {
-    kprintf("create_paging\n");
-    //1. Prepare page directory
 
-    //Get memory for cr3
-    process->physical_cr3 = global_allocate_page(USER_USE);
-    process->paging_size = PAGE_SIZE;
-
-    clear_physical_memory(process->physical_cr3, 1);
-
-    //Map the kernel pages inside the user memory space
-    map_kernel_inside_user(process);
-
-    //2. Create all the other necessary structures
-
-    //2.1 Allocate user stack
-    allocate_user_memory(process, user_stack_start, user_stack_size, &process->physical_user_stack);
-
-    //2.2 Allocate all user segments
-
-    struct Elf32_Ehdr *const header = (struct Elf32_Ehdr*)buffer;
-    struct Elf32_Phdr *const program_header_table = (struct Elf32_Phdr*)(buffer + header->e_phoff);
-
-    for(size_t p = 0; p < header->e_phnum; ++p) {
-        struct Elf32_Phdr *const p_header = &program_header_table[p];
-
-        if(p_header->p_type == 1) {
-            Elf32_Addr first_page = p_header->p_vaddr;
-            Elf32_Addr left_padding = p_header->p_vaddr - first_page;
-
-            uint32_t bytes = left_padding + p_header->p_memsz;
-
-            //Make sure only complete pages are allocated
-            if(bytes % PAGE_SIZE != 0) {
-                bytes += PAGE_SIZE - (bytes % PAGE_SIZE);
-            }
-
-            uint32_t pages = bytes / PAGE_SIZE;
-
-            struct segment_t segment;
-            segment.size = bytes;
-
-            allocate_user_memory(process, first_page, bytes, &segment.physical);
-
-            //kprintf("create_paging\n");
-            push_back(process->segments, &segment);
-
-            //Copy the code into memory
-
-            struct physical_pointer phys_ptr = create_physical_pointer(segment.physical, pages);
-
-            auto memory_start = phys_ptr.virt + left_padding;
-
-            //In the case of the BSS segment, the segment must be
-            //filled with zero
-            if(p_header->p_filesz != p_header->p_memsz) {
-                kmemcpy(memory_start, buffer + p_header->p_offset, p_header->p_filesz);
-                kmemset(memory_start + p_header->p_filesz, 0, p_header->p_memsz - p_header->p_filesz);
-            } else {
-                kmemcpy(memory_start, buffer + p_header->p_offset, p_header->p_memsz);
-            }
-        }
-    }
-
-    //2.3 Allocate kernel stack
-    //TODO: STOP USING THIS ALLOCATOR FOR VIRTUAL MEMORY ON PROCESS CREATION OR GENERAL ADDRESS SPACE VIRTUAL MEMORY ALLOCATION, it should only be used for memory pools (like for OSI), use binary buddy (like with physical pages) instead
-    void *const virtual_kernel_stack = osi_memory_allocator_allocate(get_default_virt_allocator(), kernel_stack_size / PAGE_SIZE);
-
-    void *const physical_kernel_stack = global_allocate_pages(USER_USE, kernel_stack_size / PAGE_SIZE);
-
-    //auto virtual_kernel_stack = virtual_allocator::allocate(kernel_stack_size / PAGE_SIZE);
-    //auto physical_kernel_stack = physical_allocator::allocate(kernel_stack_size / PAGE_SIZE);
-
-
-    if(!map_pages(virtual_kernel_stack, physical_kernel_stack, kernel_stack_size / PAGE_SIZE, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW)) {
-        return false;
-    }
-
-    process->physical_kernel_stack = physical_kernel_stack;
-    process->virtual_kernel_stack = virtual_kernel_stack;
-    process->kernel_esp = virtual_kernel_stack + (user_stack_size - 8);
-
-    //3. Clear stacks
-    clear_physical_memory(process->physical_user_stack, user_stack_size / PAGE_SIZE);
-    clear_physical_memory(process->physical_kernel_stack, kernel_stack_size / PAGE_SIZE);
-
-    return true;
 }
 
 static void init_context(struct process_t *const process, const char *const buffer, const struct string file, const vector_type(struct string) params) {
-    kprintf("init_context()\n");
-    struct Elf32_Ehdr *const header = (const struct Elf32_Ehdr*)buffer;
 
-    size_t pages = user_stack_size / PAGE_SIZE;
-
-    struct physical_pointer phys_ptr = create_physical_pointer(process->physical_user_stack, pages);
-
-    //1. Compute the size of the arguments on the stack
-
-    //One pointer for each args
-    size_t args_size = sizeof(size_t) * (1 + size(params));
-
-    //Add the size of the default argument (+ terminating char)
-    args_size += file.length + 1;
-
-    //Add the size of all the other arguments (+ terminating char)
-    for(size_t i = 0; i < size(params); ++i) {
-        kprintf("args_size += ((const struct string*)at_const(params, i))->length + 1;\n");
-        args_size += ((const struct string*)at_const(params, i))->length + 1;
-    }
-
-    //Align the size on 16 bytes
-    if(args_size % 16 != 0){
-        args_size = ((args_size / 16) + 1) * 16;
-    }
-
-    //2. Modify the stack to add the args
-
-    uintptr_t esp = phys_ptr.virt + user_stack_size - 8;
-    size_t arrays_start = user_esp - sizeof(size_t) * (1 + size(params));
-
-    //Add pointer to each string
-    size_t acc = 0;
-    for(int64_t i = size(params) - 1; i >= 0; --i) {
-        kprintf("Add pointer to each string: const struct string *const param = at_const(params, i);\n");
-        const struct string *const param = at_const(params, i);
-
-        acc += param->length;
-
-        *((uint32_t*)esp) = arrays_start - acc;
-        esp -= sizeof(size_t);
-
-        ++acc;
-    }
-
-    //Add pointer to the default argument string
-    *((uint32_t*)esp) = arrays_start - acc - file.length;
-    esp -= sizeof(size_t);
-
-    //Add the strings of the arguments
-    for(int64_t i = size(params) - 1; i >= 0; --i) {
-        kprintf("Add the strings of the arguments: const struct string *const param = at_const(params, i);\n");
-        const struct string *const param = at_const(params, i);
-
-        *((char*)(esp--)) = '\0';
-        for(int64_t j = param->length - 1; j >= 0; --j){
-            *((char*)(esp--)) = param->data[j];
-        }
-    }
-
-    //Add the the string of the default argument
-    *((char*)(esp--)) = '\0';
-    for(int64_t i = file.length - 1; i >= 0; --i){
-        *((char*)(esp--)) = file.data[i];
-    }
-
-    //3. Modify the stack to configure the context
-
-    esp = phys_ptr.virt + user_stack_size - sizeof(struct syscall_regs) - 8 - args_size;
-    struct syscall_regs *const regs = (struct syscall_regs*)esp;
-
-    regs->esp = user_esp - sizeof(struct syscall_regs) - args_size; //Not sure about that
-    regs->ebp = 0;
-    regs->eip = header->e_entry;
-    //((void(*)(void))(header->e_entry))();
-    regs->cs = 0x20 + 3;
-    regs->ds = 0x28 + 3;
-    regs->eflags = 0x200;
-
-    regs->edi = 1 + size(params); //argc
-    regs->esi = user_esp - size(params) * sizeof(size_t); //argv
-
-    process->context = (struct syscall_regs*)(user_esp - sizeof(struct syscall_regs) - args_size);
-}
-
-//Provided for task_switch.s
-
-extern void print_place(void) {
-    kprintf("print_place called with current_pid: %u\n", current_pid);
-}
-
-extern uint32_t get_context_address(const uint32_t old_pid, const uint32_t pid) {
-    kprintf("get_context_address called with pid value: %u, old_pid: %u\n", pid, old_pid);
-    return (uint32_t)&pcb[pid].process.context;
-}
-
-extern void print_reg(const uint32_t reg) {
-    kprintf("print_reg called with reg: %X\n", reg);
-}
-
-extern uint32_t get_process_cr3(const size_t old_pid, const uint32_t pid) {
-    kprintf("get_process_cr3 called with pid value: %u, old_pid: %u\n", pid, old_pid);
-    return pcb[pid].process.physical_cr3;
 }
 
 
@@ -742,8 +466,9 @@ void scheduler_start(void) {
 
     kprintf("Scheduler started with current_pid: %u\n", current_pid);
 
-    init_task_switch(current_pid);
-    kprintf("init_task_switch ended\n");
+    kputs("right before init_task_switch");
+    init_task_switch(pcb[current_pid].process.context);
+    kputs("init_task_switch ended");
 }
 
 bool scheduler_is_started(void) {
@@ -752,116 +477,32 @@ bool scheduler_is_started(void) {
 
 //TODO: load from ramdisk
 struct OPTIONAL_NAME(pid_t) scheduler_exec(struct string file, const vector_type(struct string) params) {
-    kprintf("scheduler_exec called with size(param): %u\n", size(params));
-    struct file_header *const file_header = get_file_header(file.data);
-    if(!file_header) {
-        kprintf("if(!file_header) {\n");
-        return (struct OPTIONAL_NAME(pid_t)){0, false};
+    struct OPTIONAL_NAME(uint32_t) file_entry_point = parse_elf_file(file.data);
+
+    if(!file_entry_point.has_value) {
+        return (struct OPTIONAL_NAME(pid_t)){0u, false};
     }
 
-    const size_t string_len = file_header->size - sizeof(struct file_header);
-    if(file_header->size == 0 || string_len == 0) {
-        return (struct OPTIONAL_NAME(pid_t)){0, false};
-    }
-    struct string content = string_new_with_len(file_header->file, string_len);
+    const uint32_t entry_point_address = file_entry_point.data;
+    void (*entry_start)(void) = (void (*)(void))(entry_point_address);
 
-    char *const buffer = content.data;
+    struct process_t *const entry_point_process = scheduler_create_kernel_task("test_program", zeroed_out_kmalloc(4096), zeroed_out_kmalloc(4096), entry_start);
+    entry_point_process->ppid = 0;
+    entry_point_process->priority = MIN_PRIORITY;
 
-    if(!is_valid_elf_sig((struct Elf32_Ehdr*)buffer)){
-        return (struct OPTIONAL_NAME(pid_t)){0, false};
-    }
-
-    struct process_t *const process = new_process();
-    process->priority = DEFAULT_PRIORITY;
-    process->segments = create_vector(sizeof(struct segment_t));
-
-    process->name = file;
-
-    if(!create_paging(buffer, process)) {
-        return (struct OPTIONAL_NAME(pid_t)){0, false};
-    }
-
-    process->brk_start = program_break;
-    process->brk_end = program_break;
-
-    init_context(process, buffer, file, params);
-
-    queue_process(process->pid);
-
-    destroy_string(&content);
-
-    kprintf("scheduler_exec: process->pid: %u\n", process->pid);
-
-    return (struct OPTIONAL_NAME(pid_t)){process->pid, true};
+    scheduler_queue_system_process(entry_point_process->pid);
 }
 
 void scheduler_sbrk(const size_t inc) {
-    kprintf("scheduler_sbrk called with inc: %u\n", inc);
-    struct process_t *const process = &pcb[current_pid].process;
 
-    const size_t size = (inc + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
-    const size_t pages = size / PAGE_SIZE;
-
-    //Get some physical memory
-    void *const physical = global_allocate_pages(USER_USE, pages);
-
-    if(!physical){
-        return;
-    }
-
-    size_t virtual_start = process->brk_end;
-
-    //Map the memory inside the process memory space
-    if(!user_map_pages(process, virtual_start, physical, pages)){
-        global_free_pages(USER_USE, physical, pages);
-        return;
-    }
-
-    const struct segment_t segment = {physical, pages};
-    //kprintf("scheduler_sbrk\n");
-    push_back(process->segments, &segment);
-
-    process->brk_end += size;
 }
 
 void scheduler_await_termination(const pid_t pid) {
-    kprintf("scheduler_await_termination called with pid: %u\n", pid);
-    while(true) {
-        {
-            struct int_lock lock;
-            int_lock(&lock);
 
-            bool found = false;
-            for(size_t i = 0u; i < MAX_PROCESS; ++i) {
-                struct process_control_t *const process = &pcb[i];
-
-                if(process->process.ppid == current_pid && process->process.pid == pid) {
-                    if(process->state == PROCESS_KILLED || process->state == PROCESS_EMPTY) {
-                        return;
-                    }
-
-                    found = true;
-                    break;
-                }
-            }
-
-            // The process may have already been cleaned, we can simply return
-            if(!found) {
-                return;
-            }
-
-            pcb[current_pid].state = PROCESS_WAITING;
-
-            int_unlock(&lock);
-        }
-
-        // Reschedule is out of the critical section
-        scheduler_reschedule();
-        kprintf("scheduler_await_termination: rescheduled\n");
-    }
 }
 
 void scheduler_kill_current_process(void) {
+    const current_current_pid = current_pid;
     kprintf("scheduler_kill_current_process called\n");
     {
         struct int_lock lock;
@@ -869,6 +510,7 @@ void scheduler_kill_current_process(void) {
 
         // The process is now considered killed
         pcb[current_pid].state = PROCESS_KILLED;
+        kprintf("Process %u killed\n", current_pid);
 
         //Notify parent if waiting
         const pid_t ppid = pcb[current_pid].process.ppid;
@@ -893,10 +535,14 @@ void scheduler_kill_current_process(void) {
     //Run another process
     scheduler_reschedule();
 
+    if(pcb[current_current_pid].state == PROCESS_KILLED) {
+        kprintf("PROCESS_KILLED: %u\n", current_current_pid);
+    }
+
     //thor_unreachable("A killed process has been run!");
     //kassert_message_void(false, "A killed process has been run!");
     kprintf("A killed process has been run!\n");
-    //__builtin_unreachable();
+    __builtin_unreachable();
 }
 
 void scheduler_tick(void) {
@@ -915,6 +561,7 @@ void scheduler_tick(void) {
             --process->sleep_timeout;
 
             if(process->sleep_timeout == 0) {
+                kputs("if(process->sleep_timeout == 0)");
                 process->state = PROCESS_READY;
             }
         }
@@ -933,11 +580,13 @@ void scheduler_tick(void) {
         // Change to Ready if it was not blocked
         // If it was blocked, we still prempt and it will end up in reschedule
         // later but with a full time quanta
-        if(previous_state != PROCESS_BLOCKED && previous_state != PROCESS_BLOCKED_TIMEOUT){
+        if(previous_state != PROCESS_BLOCKED && previous_state != PROCESS_BLOCKED_TIMEOUT && previous_state != PROCESS_KILLED) {
+            kputs("if(previous_state != PROCESS_BLOCKED && previous_state != PROCESS_BLOCKED_TIMEOUT) {");
             process->state = PROCESS_READY;
         }
 
         const size_t pid = select_next_process();
+        kprintf("next process pid: %u, current_pid: %u\n", pid, current_pid);
 
         //If it is the same, no need to go to the switching process
         if(pid == current_pid) {
@@ -1072,7 +721,7 @@ void scheduler_unblock_process_hint(const pid_t pid) {
 
     const enum process_state state = pcb[pid].state;
 
-    if(state != PROCESS_RUNNING){
+    if(state != PROCESS_RUNNING) {
         pcb[pid].state = PROCESS_READY;
     }
 }
@@ -1098,13 +747,13 @@ void scheduler_proc_sleep_ms(const pid_t pid, const size_t time) {
 }
 
 struct process_t* scheduler_create_kernel_task(const char *const name, char *const user_stack, char *const kernel_stack, void (*const fun)(void)) {
-    kprintf("scheduler_create_kernel_task(name: %s, user_stack: %p, kernel_stack: %p, fun: %p)\n", name, user_stack, kernel_stack, fun);
-    struct process_t *const process = new_process();
+    struct process_t *const process = scheduler_create_new_process();
 
+    // TODO: figure out how we're supposed to set all of these stack members up
     process->system = true;
-    process->physical_cr3 = get_default_page_directory(); //paging::get_physical_pml4t(); // TODO: double check to see if this is correct
+    process->physical_cr3 = get_default_page_directory(); // use the same `cr3` as the kernel since this is a kernel task and not a user task
     process->paging_size = 0;
-    assign_string(&process->name, name); //process->name = name;
+    process->name = string_new(name);
 
     // Directly uses memory of the executable
     process->physical_user_stack = 0;
@@ -1112,55 +761,42 @@ struct process_t* scheduler_create_kernel_task(const char *const name, char *con
     process->virtual_kernel_stack = 0;
 
     process->user_stack = user_stack;
-    process->user_stack = kernel_stack;
+    process->kernel_stack = kernel_stack;
 
-    char* esp = &user_stack[user_stack_size - STACK_ALIGNMENT];
-    esp -= sizeof(struct syscall_regs);
-
-    process->context = (struct syscall_regs*)esp;
-
+    // TODO: check if this is correct
+    char *const esp = user_stack+4096;
+    process->context = zeroed_out_kmalloc(sizeof(struct syscall_regs));
     process->context->eflags = 0x200;
-    process->context->eip = (size_t)fun;
-    process->context->esp = (size_t)esp;
-    process->context->cs = 0x08; //gdt::LONG_SELECTOR;
-    process->context->ds = 0x10; //gdt::DATA_SELECTOR;
+    process->context->eip = (uint32_t)fun;
+    process->context->esp = (uint32_t)esp;
+    process->context->ebp = (uint32_t)user_stack;
+    process->context->cr3 = process->physical_cr3;
+    process->kernel_esp = kernel_stack+4096;
 
-    process->kernel_esp = (size_t)&kernel_stack[kernel_stack_size - STACK_ALIGNMENT];
-
-    //kprintf("process->context: %p, process->context modulo STACK_ALIGNMENT: %u\n", process->context, ((size_t)process->context - sizeof(struct syscall_regs)) % STACK_ALIGNMENT);
-    kassert_message(((size_t)process->context - sizeof(struct syscall_regs)) % STACK_ALIGNMENT == 0, "Process context must be correctly aligned", NULL);
-    kassert_message((process->context->esp - sizeof(struct syscall_regs)) % STACK_ALIGNMENT == 0, "Process user stack must be correctly aligned", NULL);
-    kassert_message(process->kernel_esp % STACK_ALIGNMENT == 0, "Process kernel stack must be correctly aligned", NULL);
+    process->context->esp -= 4;
+    *((uint32_t*)process->context->esp) = (uint32_t)scheduler_kill_current_process;
 
     return process;
 }
 
-struct process_t* scheduler_create_kernel_task_args(const char *const name, char *const user_stack, char *const kernel_stack, void (*const fun)(void*), void *const data){
-    kprintf("scheduler_create_kernel_task_args(name: %s, user_stack: %p, kernel_stack: %p, fun: %p, data: %p)\n", name, user_stack, kernel_stack, fun, data);
-    struct process_t *const process = scheduler_create_kernel_task(name, user_stack, kernel_stack, (void(*)(void))fun);
-
-    // rdi is the first register used for integers parameter passing
-    process->context->edi = (size_t)data;
-
-    return process;
+struct process_t* scheduler_create_kernel_task_args(const char *const name, char *const user_stack, char *const kernel_stack, void (*const fun)(void*), void *const data) {
+    kputs("scheduler_create_kernel_task_args is not implemented yet!");
 }
 
-void scheduler_queue_system_process(pid_t pid) {
-    kprintf("scheduler_queue_system_process(pid: %u)\n", pid);
+void scheduler_queue_system_process(const pid_t pid) {
     kassert_message_void(pid < MAX_PROCESS, "pid out of bounds");
 
     struct process_control_t *const process = &pcb[pid];
 
-    kassert_message_void(process->process.priority <= MAX_PRIORITY, "Invalid priority");
-    kassert_message_void(process->process.priority >= MIN_PRIORITY, "Invalid priority");
+    kassert_message_void(process->process.priority <= MAX_PRIORITY, "Process priority out of bounds");
+    kassert_message_void(process->process.priority >= MIN_PRIORITY, "Process priority out of bounds");
 
     process->state = PROCESS_READY;
 
     push_back(run_queue(process->process.priority), &pid);
 }
 
-void scheduler_queue_async_init_task(void (*fun)(void)) {
-    kprintf("scheduler_queue_async_init_task(fun: %p)\n", fun);
+void scheduler_queue_async_init_task(void (*const fun)(void)) {
     const uint32_t fun_addr = (uint32_t)fun;
     push_back(init_tasks, &fun_addr);
 }
@@ -1180,7 +816,7 @@ void scheduler_frequency_updated(const uint64_t old_frequency, const uint64_t ne
     for(size_t i = 0; i < MAX_PROCESS; ++i) {
         struct process_control_t *const process = &pcb[i];
 
-        if(process->state == PROCESS_SLEEPING){
+        if(process->state == PROCESS_SLEEPING) {
             process->sleep_timeout *= ratio;
         }
     }

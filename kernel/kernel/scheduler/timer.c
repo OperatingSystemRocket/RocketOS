@@ -20,6 +20,8 @@ uint64_t pit_counter(void) {
 __attribute__((interrupt)) static void timer_handler(struct interrupt_frame *const frame) {
     ++pit_counter_var;
 
+    kprintf("timer_handler()\n");
+
     timer_tick();
 
     kprintf("after timer_tick()\n");
@@ -37,7 +39,7 @@ bool pit_counter_install(void) {
     // Indicate the timer frequency
     timer_set_timer_frequency(PIT_FREQUENCY);
 
-    pic_irq_enable(32);
+    pic_irq_enable(0);
     idt_register_handler(32, (uint32_t)timer_handler);
 
     // Let the timer know about the counter

@@ -1,123 +1,119 @@
-%macro restore_context_light 0
-    pop eax
-    pop ebx
-    pop ecx
-    pop edx
-    pop esi
-    pop edi
-    pop ebp
-%endmacro
-
-%macro save_context 0
-    push ebp
-    push edi
-    push esi
-    push edx
-    push ecx
-    push ebx
-    push eax
-%endmacro
-
-%macro restore_context 0
-    pop eax
-    pop ebx
-    pop ecx
-    pop edx
-    pop esi
-    pop edi
-    pop ebp
-%endmacro
-
-
-
 section .text
-extern print_place
+
+extern scheduler_kill_current_process
 
 global init_task_switch
 init_task_switch:
-; Switch to the new CR3
-    call print_place
-    mov eax, esp
-    add eax, 4
-    mov ecx, [eax]
+    ; stack registers
+    mov ebp, [eax + (6 * 4)]
+    mov esp, [eax + (9 * 4)]
+
+    ; eflags
+    mov ecx, [eax + (8 * 4)]
     push ecx
-    push 0
-    extern get_process_cr3
-    call get_process_cr3
-    add esp, 4
-    pop ecx
-;    mov cr3, eax
+    popfd
 
+    ; eip
+    lea ecx, [scheduler_kill_current_process]
     push ecx
-    push 0
-    extern get_context_address
-    call get_context_address
-    add esp, 4
-    pop ecx
-    mov esp, [eax]
+    mov ecx, [eax + (7 * 4)]
+    push ecx
 
-    restore_context_light
+    ; general purpose registers
+    mov edi, [eax + (5 * 4)]
+    mov esi, [eax + (4 * 4)]
+    mov edx, [eax + (3 * 4)]
+    mov ecx, [eax + (2 * 4)]
+    push ecx ; avoid trashing ecx when we grab cr3, since we can't set cr3 from memory directly
+    mov ebx, [eax + (1 * 4)]
+    mov ecx, [eax + (10 * 4)] ; set ecx to the cr3 value
+    mov eax, [eax + (0 * 4)]
 
-    add esp, 8
+    ; cr3
+    mov cr3, ecx
+    pop ecx ; restore our proper ecx register value we saved earlier
 
-    iret
+    ret
 
 
-global task_switch
-task_switch:
-    mov eax, esp
-    add eax, 8
-    mov edx, [eax]
-    sub eax, 4
-    mov ecx, [eax]
+global save_current_task
+save_current_task:
+    ; stack registers
+    mov [eax + (6 * 4)], ebp
+    mov [eax + (9 * 4)], esp
 
-    mov eax, ss
-    push eax
-    mov eax, esp
-    push eax
+    ; save ecx so we can trash it safely within this function
+    mov [ebp + (2 * 4)], ecx
 
+    ; eflags
     pushfd
-    mov eax, cs
-    push eax
-    lea eax, [resume_eip]
-    push eax
-
-    push 0
-
-    push 0
-
-    save_context
-
-    push edx
-    push ecx
-    call get_context_address
     pop ecx
-    pop edx
-    mov [eax], esp
+    mov [eax + (8 * 4)], ecx
 
+    ; eip
+    lea ecx, [resume_eip]
+    mov [eax + (7 * 4)], ecx
 
-    push edx
-    push ecx
-    call get_process_cr3
-    pop ecx
-    pop edx
-;    mov cr3, eax
+    ; general purpose registers
+    mov [eax + (5 * 4)], edi
+    mov [eax + (4 * 4)], esi
+    mov [eax + (3 * 4)], edx
+    mov [eax + (1 * 4)], ebx
+    mov [eax + (0 * 4)], eax
 
-    push edx
-    push ecx
-    call get_context_address
-    pop ecx
-    pop edx
-    mov esp, [eax]
-
-    restore_context
-
-    add esp, 8
-
-    iret
+    ; cr3
+    mov ecx, cr3
+    mov [eax + (10 * 4)], ecx
 
 resume_eip:
-    call print_place
-    add esp, 8
-    call print_place
     ret
+
+
+extern pic_send_eoi
+
+global resume_task
+resume_task:
+    mov ebp, [eax + (6 * 4)]
+    mov esp, [eax + (9 * 4)]
+
+    ; eflags
+    mov ecx, [eax + (8 * 4)]
+    push ecx
+    popfd
+
+    ; eip and iret setup
+    pushf
+    push cs
+    mov ecx, [eax + (7 * 4)]
+    push ecx
+
+    ; general purpose registers
+    mov edi, [eax + (5 * 4)]
+    mov esi, [eax + (4 * 4)]
+    mov edx, [eax + (3 * 4)]
+    mov ebx, [eax + (1 * 4)]
+
+    mov ecx, [eax + (2 * 4)]
+    push ecx ; avoid trashing ecx when we grab cr3, since we can't set cr3 from memory directly
+    mov ecx, [eax + (10 * 4)] ; set ecx to the cr3 value
+
+    mov eax, [eax + (0 * 4)]
+
+    ; cr3
+    mov cr3, ecx
+    pop ecx ; restore our proper ecx register value we saved earlier
+
+    push eax
+    mov eax, 1
+    call pic_send_eoi
+    pop eax
+
+    iret
+
+
+
+
+
+
+
+

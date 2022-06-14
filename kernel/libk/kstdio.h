@@ -12,3 +12,4 @@
 
 int32_t kprintf_implementation(const char* format, va_list* pargs);
 int32_t kprintf(const char *format, ...);
+int32_t kputs(const char* str);
