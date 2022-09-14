@@ -21,8 +21,8 @@ void test_user_function(void) {
     for(volatile int i = 0; ; ++i);
 }
 
-extern void* stack_bottom;
-extern void* stack_top;
+//extern void* stack_bottom;
+//extern void* stack_top;
 
 
 struct gdt_entry {
@@ -39,36 +39,27 @@ struct gdt_ptr {
     uint32_t base;
 } __attribute__((packed));
 
-struct gdt_entry gdt_entries[7];
-struct gdt_ptr gdt_entries_ptr;
+//binary literals are clearer/more readable than hex in this case
+//`#pragma GCC diagnostic ignored "-Wpedantic"` does not work, hence why `__extension__` is used instead
+struct gdt_entry gdt_entries[7] = {
+    {0, 0, 0, 0, 0, 0},
+    {0xffff, 0, 0, __extension__ 0b10011010, __extension__ 0b11001111, 0},
+    {0xffff, 0, 0, __extension__ 0b10010010, __extension__ 0b11001111, 0},
+    {0xffff, 0, 0, __extension__ 0b11111010, __extension__ 0b11011111, 0},
+    {0xffff, 0, 0, __extension__ 0b11110010, __extension__ 0b11011111, 0},
+    {0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0}
+};
+struct gdt_ptr gdt_entries_ptr = {
+    (sizeof(struct gdt_entry) * 7) - 1,
+    (uint32_t) &gdt_entries[0]
+};
 
 
 struct tss_entry_struct tss_entry;
 
 
 void init_gdt(void) {
-    kmemset(gdt_entries, 0, sizeof(gdt_entries));
-
-
-    //binary literals are clearer/more readable than hex in this case
-    //`#pragma GCC diagnostic ignored "-Wpedantic"` does not work, hence why `__extension__` is used instead
-    gdt_entries[1].limit_low = 0xffff;
-    gdt_entries[1].settings_flags = __extension__ 0b10011010;
-    gdt_entries[1].size_flags = __extension__ 0b11001111;
-
-    gdt_entries[2].limit_low = 0xffff;
-    gdt_entries[2].settings_flags = __extension__ 0b10010010;
-    gdt_entries[2].size_flags = __extension__ 0b11001111;
-
-    gdt_entries[3].limit_low = 0xffff;
-    gdt_entries[3].settings_flags = __extension__ 0b11111010;
-    gdt_entries[3].size_flags = __extension__ 0b11011111;
-
-    gdt_entries[4].limit_low = 0xffff;
-    gdt_entries[4].settings_flags = __extension__ 0b11110010;
-    gdt_entries[4].size_flags = __extension__ 0b11011111;
-
-
     const uint32_t base = (uint32_t) &tss_entry;
     const uint32_t limit = sizeof(struct tss_entry_struct);
 
@@ -78,10 +69,6 @@ void init_gdt(void) {
     gdt_entries[5].settings_flags = __extension__ 0b11101001;
     gdt_entries[5].size_flags = (uint8_t) (limit & 0xF0000);
     gdt_entries[5].base_high = (uint8_t) ((base & 0xFF000000) >> 24);
-
-
-    gdt_entries_ptr.limit = (sizeof(struct gdt_entry) * 7) - 1;
-    gdt_entries_ptr.base = (uint32_t) &gdt_entries[0];
 }
 
 void write_tss(void) {

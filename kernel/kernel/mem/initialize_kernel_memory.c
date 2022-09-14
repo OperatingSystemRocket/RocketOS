@@ -29,8 +29,11 @@ size_t get_global_virt_allocator_size(void) {
 }
 
 void initialize_kernel_memory(void) {
+    serial_writestring("initialize_kernel_memory() called\n");
     global_allocator_init();
+    serial_writestring("after global_allocator_init() called\n");
     paging_init();
+    serial_writestring("after paging_init() called\n");
 
 
     //kernel itself

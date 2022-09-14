@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <higher_half_utils.h>
+
 #include "kstring.h"
 //#include "hardware_io.h"
 //#include "terminal_driver.h"

@@ -20,6 +20,7 @@ uint64_t pit_counter(void) {
 __attribute__((interrupt)) static void timer_handler(struct interrupt_frame *const frame) {
     ++pit_counter_var;
 
+    //NOTE: you CANNOT WRITE to VGA in a timer interrupt as this can cause a deadlock since spinlocks are used for synchronization and timer does not early return
     kprintf("timer_handler()\n");
 
     timer_tick();

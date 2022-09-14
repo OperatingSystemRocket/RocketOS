@@ -15,6 +15,10 @@ https://web.archive.org/web/20151025081259if_/http://www.intel.com/content/dam/w
 
 static uint32_t* default_page_directory;
 
+extern uint32_t* boot_page_directory;
+
+
+
 GENERATE_BITMAP(virtual_memory, NUMBER_OF_PAGES, PAGE_SIZE)
 static struct BITMAP_TYPENAME(virtual_memory) virtual_pages;
 static uint32_t bitmap_page_permissions[NUMBER_OF_PAGES/32u]; //store 0 for kernel, 1 for user

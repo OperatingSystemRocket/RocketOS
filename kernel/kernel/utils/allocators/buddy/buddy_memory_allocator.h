@@ -10,6 +10,8 @@
 #include <bitmap_allocator.h>
 #include <mem_constants.h>
 
+#include <higher_half_utils.h>
+
 #include <kstdio.h>
 
 

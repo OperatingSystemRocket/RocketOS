@@ -16,6 +16,7 @@ static uint32_t* first_nonreserved_address;
 
 
 void global_binary_buddy_memory_allocator_init(struct global_binary_buddy_memory_allocator *const allocator) {
+    serial_writestring("global_binary_buddy_memory_allocator_init called\n");
     kmemset(allocator, 0, sizeof(struct global_binary_buddy_memory_allocator));
 }
 struct array_level {
@@ -330,14 +331,18 @@ void global_binary_buddy_memory_allocator_free_page(struct global_binary_buddy_m
 
 
 void global_allocator_init(void) {
+    serial_writestring("global_allocator_init() called\n");
+    kprintf("&global_physical_memory_bitmaps: %p\n", &global_physical_memory_bitmaps);
     global_binary_buddy_memory_allocator_init(&global_physical_memory_bitmaps);
+    serial_writestring("after global_binary_buddy_memory_allocator_init() called\n");
 
     //reserve the memory for the kernel heap so that it isn't allocated in the global heap
     bitmap_allocator_init(kernel_heap_bitmap.bitset, NUMBER_OF_PAGES_IN_KERNEL_HEAP, kernel_heap_bitmap.bitset_cache, CACHE_N, &kernel_heap_bitmap.has_filled_bitset_cache);
+    serial_writestring("after bitmap_allocator_init() called\n");
 
 
     const uintptr_t end_address = (uintptr_t)&endkernel;
-    number_of_pages_used = end_address / PAGE_SIZE;
+    number_of_pages_used = V2P(end_address) / PAGE_SIZE;
     if(number_of_pages_used % PAGE_SIZE) {
         ++number_of_pages_used;
     }
@@ -349,7 +354,7 @@ void global_allocator_init(void) {
 
     number_of_pages_used += NUMBER_OF_PAGES_IN_KERNEL_HEAP;
 
-    first_nonreserved_address = (void*)(number_of_pages_used*PAGE_SIZE);
+    first_nonreserved_address = (void*)P2V(number_of_pages_used*PAGE_SIZE);
 }
 
 static void mark_level(uint32_t *const allocator_bitmap_level, const uint32_t start_page_index, const uint32_t end_page_index, const uint32_t layer_num) {

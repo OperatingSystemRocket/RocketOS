@@ -91,6 +91,8 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     pic_init();
     isr_install();
 
+    serial_writestring("after interrupts installed\n");
+
     initialize_kernel_memory();
     serial_writestring("after initialize_kernel_memory\n");
     kdynamic_memory_init();

@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 #include <drivers/vga_driver/vga_driver.h>
+#include <spinlock.h>
 
 
 void terminal_context_initialize(void);

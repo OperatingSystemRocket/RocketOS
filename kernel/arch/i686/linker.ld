@@ -1,47 +1,30 @@
-/*todo read the linker script documentation*/
 
-/* The bootloader will look at this image and start execution at the symbol
-   designated as the entry point. */
 ENTRY(_start)
 
-/* Tell where the various sections of the object files will be put in the final
-   kernel image. */
+KERNEL_OFFSET = 0xC0000000;
+KERNEL_START = 0x10000;
+
 SECTIONS
 {
-	/* Begin putting sections at 1 MiB, a conventional place for kernels to be
-	   loaded at by the bootloader. */
-	. = 1M;
-
-	/* First put the multiboot header, as it is required to be put very early
-	   early in the image or the bootloader won't recognize the file format.
-	   Next we'll put the .text section. */
-	.text BLOCK(4K) : ALIGN(4K)
-	{
-		*(.multiboot)
-		*(.text)
-	}
-
-	/* Read-only data. */
-	.rodata BLOCK(4K) : ALIGN(4K)
-	{
-		*(.rodata)
-	}
-
-	/* Read-write data (initialized) */
-	.data BLOCK(4K) : ALIGN(4K)
-	{
-		*(.data)
-	}
-
-	/* Read-write data (uninitialized) and stack */
-	.bss BLOCK(4K) : ALIGN(4K)
-	{
-		*(COMMON)
-		*(.bss)
-	}
-
-	/* The compiler may produce other sections, by default it will put them in
-	   a segment with the same name. Simply add stuff here as needed. */
-
+    . = KERNEL_START + KERNEL_OFFSET;
+    startkernel = .;
+    .text : AT(ADDR(.text) - KERNEL_OFFSET)
+    {
+        *(.multiboot)
+        *(.text)
+    }
+    .rodata : AT(ADDR(.rodata) - KERNEL_OFFSET)
+    {
+        *(.rodata)
+    }
+    .data : AT(ADDR(.data) - KERNEL_OFFSET)
+    {
+        *(.data)
+    }
+    .bss : AT(ADDR(.bss) - KERNEL_OFFSET)
+    {
+        *(.COMMON)
+        *(.bss)
+    }
 	endkernel = .; /*define address of extern variable to mark the end of the kernel address space*/
 }
