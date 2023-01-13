@@ -14,9 +14,9 @@
 #include <subsystems/terminal/terminal_driver.h>
 
 #include <buddy_memory_allocator.h>
-#include <mem/paging.h>
+#include <paging.h>
 #include <kstdlib.h>
-#include <mem/global_virt_allocator.h>
+#include <initialize_kernel_memory.h>
 #include <usermode/gdt.h>
 #include <drivers/keyboard/default_keyboard_logic.h>
 
@@ -74,10 +74,21 @@ static const char* AcpiGbl_ExceptionNames_Env[] = {
     "AE_IO_ERROR"
 };
 
+static volatile uint32_t v;
+
+static volatile uint32_t j;
+
 void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     if(serial_init()) { //fails if serial is faulty
         serial_writestring("Serial driver works\n");
     }
+
+    kprintf("j: %X\n", j);
+    kprintf("&j: %p\n", &j);
+
+    kprintf("&v: %p\n", &v);
+
+    paging_init();
 
     terminal_context_initialize();
 
@@ -93,11 +104,20 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
 
     serial_writestring("after interrupts installed\n");
 
+    v = 900;
+    kprintf("v: %u\n", v);
+
     initialize_kernel_memory();
     serial_writestring("after initialize_kernel_memory\n");
+    
+    v = 250;
+    kprintf("v: %u\n", v);
     kdynamic_memory_init();
+
+    v = 700;
+    kprintf("v: %u\n", v);
+
     serial_writestring("Kernel memory initialized\n");
-    global_virt_allocator_init();
 
     if (mboot_magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
         kprintf("Invalid Multiboot Magic!\n");

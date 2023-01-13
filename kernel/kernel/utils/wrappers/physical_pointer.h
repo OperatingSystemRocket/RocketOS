@@ -4,16 +4,18 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <osi_memory_allocator.h>
+#include <kernel_virt_allocator.h>
 #include <paging.h>
 
 
 struct physical_pointer {
-    const size_t phys; ///< The physical memory address
-    const size_t pages; ///< The number of pages
+    size_t phys; ///< The physical memory address, DO NOT MODIFY YOURSELF (not marked `const` since it is mutated by the below functions)
+    size_t pages; ///< The number of pages, DO NOT MODIFY YOURSELF (not marked `const` since it is mutated by the below functions)
     size_t virt; ///< The virtual memory
 };
 
+
 struct physical_pointer create_physical_pointer(size_t phys_p, size_t pages_p);
 
-
+// frees resources allocated in `create_physical_pointer`, it does NOT free the physical memory
+bool free_physical_pointer(struct physical_pointer* physical_pointer);

@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #include "acpi.h"
-#include <mem/paging.h>
+#include <paging.h>
 #include "kstring.h"
 
 #include "kstdio.h"

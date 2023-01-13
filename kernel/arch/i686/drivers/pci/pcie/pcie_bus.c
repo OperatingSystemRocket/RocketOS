@@ -61,7 +61,8 @@ void enumerate_function(const uint64_t device_addr, const uint64_t function) {
     const uint64_t offset = function << 12;
 
     const uint32_t function_addr = (device_addr + offset) & 0xFFFFFFFFu;
-    identity_map_page((uint32_t)get_default_page_directory(), function_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+    identity_map_page_in_kernel_addr(function_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     struct pci_device_header *const function_header = (struct pci_device_header*)function_addr;
 
     if(function_header->device_id == 0u || function_header->device_id == 0xFFFFu) return;
@@ -94,7 +95,8 @@ void enumerate_device(const uint64_t bus_addr, const uint64_t device) {
     const uint64_t offset = device << 15;
 
     const uint32_t device_addr = (bus_addr + offset) & 0xFFFFFFFFu;
-    identity_map_page((uint32_t)get_default_page_directory(), device_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+    identity_map_page_in_kernel_addr(device_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     struct pci_device_header *const device_header = (struct pci_device_header*)device_addr;
 
     if(device_header->device_id == 0u || device_header->device_id == 0xFFFFu) return;
@@ -108,7 +110,8 @@ void enumerate_bus(const uint64_t base_addr, const uint64_t bus) {
     const uint64_t offset = bus << 20;
 
     const uint32_t bus_addr = (base_addr + offset) & 0xFFFFFFFFu;
-    identity_map_page((uint32_t)get_default_page_directory(), bus_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+    identity_map_page_in_kernel_addr(bus_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     struct pci_device_header *const bus_header = (struct pci_device_header*)bus_addr;
 
     if(bus_header->device_id == 0u || bus_header->device_id == 0xFFFFu) return;
@@ -123,7 +126,8 @@ void enumerate_pcie(const ACPI_TABLE_MCFG *const mcfg) {
 
     for (uint32_t i = 0; i < entries; ++i) {
         const uint32_t device_config_addr = (((uint64_t)mcfg) + sizeof(ACPI_TABLE_MCFG) + (sizeof(ACPI_MCFG_ALLOCATION) * i)) & 0xFFFFFFFFu;
-        identity_map_page((uint32_t)get_default_page_directory(), device_config_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+        //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+        identity_map_page_in_kernel_addr(device_config_addr, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
         ACPI_MCFG_ALLOCATION* new_device_config = (ACPI_MCFG_ALLOCATION*)device_config_addr;
         for(uint32_t bus = new_device_config->StartBusNumber; bus <= new_device_config->EndBusNumber; ++bus) {
             enumerate_bus(new_device_config->Address, bus);
@@ -139,7 +143,8 @@ static uint32_t ioapic_ptr = 0u;      // pointer to the IO APIC MMIO registers
 
 void detect_cores(ACPI_TABLE_MADT *const madt) {
     lapic_ptr = madt->Address;
-    identity_map_page((uint32_t)get_default_page_directory(), lapic_ptr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+    identity_map_page_in_kernel_addr(lapic_ptr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     const uint32_t length = madt->Header.Length;
     uint8_t *const end_of_madt_struct = (uint8_t*)(((uint32_t)madt) + sizeof(ACPI_TABLE_MADT));
     uint8_t *const end_of_madt = (uint8_t*)(((uint32_t)madt) + length);
@@ -152,11 +157,13 @@ void detect_cores(ACPI_TABLE_MADT *const madt) {
                 break;
             case 1u: // I/O APIC
                 ioapic_ptr = *((uint32_t*)(current_addr+4));
-                identity_map_page((uint32_t)get_default_page_directory(), ioapic_ptr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+                //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+                identity_map_page_in_kernel_addr(ioapic_ptr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
                 break;
             case 5u: // Local APIC Address Override
                 lapic_ptr = (uint32_t)((*((uint64_t*)(current_addr+4))) & 0xFFFFFFFFu);
-                identity_map_page((uint32_t)get_default_page_directory(), lapic_ptr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+                //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+                identity_map_page_in_kernel_addr(lapic_ptr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
                 break;
         }
     }

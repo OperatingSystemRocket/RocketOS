@@ -6,9 +6,9 @@
 
 #include <bitmap_allocator.h>
 #include <mem/initialize_kernel_memory.h>
-#include <utils/allocators/osi_memory_allocator.h>
-#include <mem/paging.h>
-#include "kstdlib.h"
+#include <osi_virt_mem_allocator.h>
+#include <paging.h>
+#include <kstdlib.h>
 
 
 #include <drivers/pit/pit.h>
@@ -20,19 +20,15 @@
 #include <interrupts/interrupts.h>
 
 //for debugging only:
-#include "kstdio.h"
+#include <kstdio.h>
 
 
-static struct osi_memory_allocator acpica_memory_allocator;
-
-//TODO: move to `osi_memory_allocator.c`
-struct osi_memory_allocator* get_default_virt_allocator(void) {
-    return &acpica_memory_allocator;
-}
 
 
 ACPI_STATUS AcpiOsInitialize() {
-    osi_memory_allocator_init(&acpica_memory_allocator, get_acpica_start(), get_acpica_size());
+    if(!osi_virt_mem_allocator_init()) {
+        return AE_ERROR;
+    }
     return AE_OK;
 }
 
@@ -70,14 +66,15 @@ void* AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
 
     const uint32_t physical_memory_size = (adjusted_length/PAGE_SIZE) + ((adjusted_length%PAGE_SIZE)>0u); //in pages, round up
 
-    void *const virtual_range = osi_memory_allocator_allocate(&acpica_memory_allocator, physical_memory_size);
+    void *const virtual_range = osi_virt_mem_allocator_allocate_pages(physical_memory_size);
     if(virtual_range == NULL) {
         return NULL;
     }
     const uint32_t virtual_page_address = (uint32_t)virtual_range;
-    for(uint32_t i = 0u; i < physical_memory_size; ++i) {
-        map_page((void*)(virtual_page_address+(i*PAGE_SIZE)), (physical_page_address+(i*PAGE_SIZE)), PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
-    }
+    //for(uint32_t i = 0u; i < physical_memory_size; ++i) {
+    //    map_page_in_kernel_addr((void*)(virtual_page_address+(i*PAGE_SIZE)), (physical_page_address+(i*PAGE_SIZE)), PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    //}
+    map_pages_in_kernel_addr(virtual_page_address, physical_page_address, physical_memory_size, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     return (void*)(virtual_page_address+physical_page_offset);
 }
 
@@ -97,15 +94,16 @@ void AcpiOsUnmapMemory(void *where, ACPI_SIZE length) {
 
     const uint32_t virtual_memory_size = (adjusted_length/PAGE_SIZE) + ((adjusted_length%PAGE_SIZE)>0u); //in pages, round up
 
-    for(uint32_t i = 0u; i < virtual_memory_size; ++i) {
-        unmap_page((void*)(virtual_page_address+(i*PAGE_SIZE)));
-    }
+    //for(uint32_t i = 0u; i < virtual_memory_size; ++i) {
+    //    unmap_page_in_kernel_addr((void*)(virtual_page_address+(i*PAGE_SIZE)));
+    //}
+    unmap_pages_in_kernel_addr(virtual_page_address, virtual_memory_size);
 
-    osi_memory_allocator_free(&acpica_memory_allocator, (void*)virtual_page_address, virtual_memory_size);
+    osi_virt_mem_allocator_free_pages((void*)virtual_page_address, virtual_memory_size);
 }
 
 ACPI_STATUS AcpiOsGetPhysicalAddress(void *LogicalAddress, ACPI_PHYSICAL_ADDRESS *PhysicalAddress) {
-    *PhysicalAddress = get_physical_address(LogicalAddress);
+    *PhysicalAddress = get_physical_address_in_kernel_addr(LogicalAddress);
     return AE_OK;
 }
 
@@ -132,7 +130,7 @@ BOOLEAN AcpiOsReadable(void *Memory, ACPI_SIZE Length) {
     const uint32_t virtual_memory_size = (adjusted_length/PAGE_SIZE) + ((adjusted_length%PAGE_SIZE)>0u); //in pages, round up
 
     for(uint32_t i = 0u; i < virtual_memory_size; ++i) {
-        if(!is_readable((void*)(virtual_page_address+(i*PAGE_SIZE)))) {
+        if(!is_readable_in_kernel_addr((void*)(virtual_page_address+(i*PAGE_SIZE)))) {
             return false;
         }
     }
@@ -155,7 +153,7 @@ BOOLEAN AcpiOsWritable(void *Memory, ACPI_SIZE Length) {
     const uint32_t virtual_memory_size = (adjusted_length/PAGE_SIZE) + ((adjusted_length%PAGE_SIZE)>0u); //in pages, round up
 
     for(uint32_t i = 0u; i < virtual_memory_size; ++i) {
-        if(!is_writable((void*)(virtual_page_address+(i*PAGE_SIZE)))) {
+        if(!is_writable_in_kernel_addr((void*)(virtual_page_address+(i*PAGE_SIZE)))) {
             return false;
         }
     }

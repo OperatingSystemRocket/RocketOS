@@ -4,14 +4,15 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "kstring.h"
-#include "kstdio.h"
-
 #include "system_call_implementations.h"
 
-#include "kstdlib.h"
-#include <buddy_memory_allocator.h>
-#include <utils/allocators/osi_memory_allocator.h>
+#include <kstring.h>
+#include <kstdio.h>
+#include <kstdlib.h>
+
+#include <global_phys_allocator.h>
+#include <kernel_virt_allocator.h>
+#include <paging.h>
 
 
 struct tss_entry_struct {

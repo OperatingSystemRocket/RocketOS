@@ -8,7 +8,7 @@
 #include "kstdio.h"
 #include "kassert.h"
 #include <utils/algorithms/comparison.h>
-#include <mem/paging.h>
+#include <paging.h>
 #include <optional.h>
 
 

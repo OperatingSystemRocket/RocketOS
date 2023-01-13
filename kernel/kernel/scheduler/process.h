@@ -29,7 +29,8 @@ enum process_state {
     PROCESS_SLEEPING= 5, ///< A sleeping process
     PROCESS_WAITING = 6, ///< A waiting process (for a child)
     PROCESS_KILLED = 7, ///< A killed process
-    PROCESS_BLOCKED_TIMEOUT = 8 ///< A blocked, with timeout, process
+    PROCESS_BLOCKED_TIMEOUT = 8, ///< A blocked, with timeout, process
+    PROCESS_ERROR = 9 /// < used for error return codes involving processes
 };
 
 /*!

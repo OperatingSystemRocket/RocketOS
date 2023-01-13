@@ -4,9 +4,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include <mem/paging.h>
+#include <paging.h>
 #include "kstdlib.h"
-#include <buddy_memory_allocator.h>
+#include <global_phys_allocator.h>
 #include "kstring.h"
 
 #include <drivers/pci/pcie/pcie_bus.h>

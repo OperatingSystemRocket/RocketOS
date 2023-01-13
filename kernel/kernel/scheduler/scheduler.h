@@ -11,8 +11,8 @@
 #include <int_lock.h>
 
 #include <gdt.h>
-#include <buddy_memory_allocator.h>
-#include <osi_memory_allocator.h>
+#include <global_phys_allocator.h>
+#include <kernel_virt_allocator.h>
 #include <paging.h>
 #include <interrupt_types.h>
 #include <physical_pointer.h>

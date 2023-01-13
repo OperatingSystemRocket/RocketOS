@@ -200,9 +200,11 @@ struct OPTIONAL_NAME(uint32_t) parse_elf_file(const char *const filename) {
 
     const uint32_t num_of_pages = memsz/PAGE_SIZE + (memsz%PAGE_SIZE > 0u);
     char *const process_memory = (char*)virtual_base_addr;
-    for(uint32_t i = 0u; i < num_of_pages; ++i) {
-        allocate_virtual_page(process_memory + i*PAGE_SIZE, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
-    }
+    void *const physical_memory = global_phys_allocator_allocate_pages(num_of_pages);
+    //for(uint32_t i = 0u; i < num_of_pages; ++i) {
+    //    allocate_virtual_page(process_memory + i*PAGE_SIZE, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    //}
+    map_pages_in_kernel_addr(process_memory, physical_memory, num_of_pages, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     kmemcpy(process_memory, file_header->file + phdr->p_offset, memsz);
 
     kprintf("before call\n");

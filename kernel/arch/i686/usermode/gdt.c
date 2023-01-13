@@ -76,9 +76,9 @@ void write_tss(void) {
 
     tss_entry.ss0 = 2*sizeof(struct gdt_entry);
 
-    void *const physical_page = global_allocate_page(USER_USE);
-    void *const virtual_page = osi_memory_allocator_allocate(get_default_virt_allocator(), 1u);
-    map_page(virtual_page, (uint32_t)physical_page, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    void *const physical_page = global_phys_allocator_allocate_page();
+    void *const virtual_page = kernel_virt_allocator_allocate_page();
+    map_page_in_kernel_addr(virtual_page, (uint32_t)physical_page, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     tss_entry.esp0 = ((uint32_t) virtual_page) + PAGE_SIZE;
 
     flush_tss();

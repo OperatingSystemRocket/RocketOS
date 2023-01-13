@@ -26,14 +26,16 @@ void stop_cmd(struct ahci_port *const port) {
 void configure_port(struct ahci_port *const port) {
     stop_cmd(port);
 
-    uint32_t new_base = (uint32_t)global_allocate_page(USER_USE);
-    identity_map_page((uint32_t)get_default_page_directory(), new_base, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    uint32_t new_base = (uint32_t)global_phys_allocator_allocate_page();
+    //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+    identity_map_page_in_kernel_addr(new_base, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     port->port->command_list_base = new_base;
     port->port->command_list_base_upper = 0u;
     kmemset((void*)port->port->command_list_base, 0u, 1024u);
 
-    uint32_t fis_base = (uint32_t)global_allocate_page(USER_USE);
-    identity_map_page((uint32_t)get_default_page_directory(), fis_base, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    uint32_t fis_base = (uint32_t)global_phys_allocator_allocate_page();
+    //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+    identity_map_page_in_kernel_addr(fis_base, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     port->port->fis_base_addr = fis_base;
     port->port->fis_base_addr_upper = 0u;
     kmemset((void*)port->port->fis_base_addr, 0u, 256u);
@@ -43,8 +45,9 @@ void configure_port(struct ahci_port *const port) {
     for(uint32_t i = 0u; i < 32u; ++i) {
         cmd_header[i].prdt_length = 8u;
 
-        const uint32_t cmd_table_addr = (uint32_t)global_allocate_page(USER_USE);
-        identity_map_page((uint32_t)get_default_page_directory(), cmd_table_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+        const uint32_t cmd_table_addr = (uint32_t)global_phys_allocator_allocate_page();
+        //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+        identity_map_page_in_kernel_addr(cmd_table_addr, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
         const uint32_t address = cmd_table_addr + (i << 8u);
         cmd_header[i].command_table_base_addr = address;
         cmd_header[i].command_table_base_addr_upper = 0u;
@@ -109,7 +112,8 @@ void init_ahci(struct pci_device_header *const pci_device) {
     pci_device_base_addr = pci_device;
 
     abar = (struct hba_memory*)((struct pci_header0*)pci_device)->bar[5];
-    identity_map_page((uint32_t)get_default_page_directory(), (uint32_t)abar, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+    identity_map_page_in_kernel_addr((uint32_t)abar, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
 
     probe_ports();
 
@@ -118,14 +122,15 @@ void init_ahci(struct pci_device_header *const pci_device) {
 
         configure_port(port);
 
-        void *const buffer = global_allocate_page(USER_USE);
-        identity_map_page((uint32_t)get_default_page_directory(), (uint32_t)buffer, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+        void *const buffer = global_phys_allocator_allocate_page();
+        //TODO: maybe replace all of these kernel space identity maps with `struct physical_pointer` objects instead
+        identity_map_page_in_kernel_addr((uint32_t)buffer, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
         port->buffer = buffer;
         kmemset(buffer, 0u, PAGE_SIZE);
 
         read_sector(port, 0, 4, port->buffer);
-        for(uint32_t i = 0u; i < 512u; ++i) {
-            kprintf("%c", port->buffer[i]);
+        for(uint32_t j = 0u; j < 512u; ++j) {
+            kprintf("%c", port->buffer[j]);
         }
         kprintf("\n");
     }

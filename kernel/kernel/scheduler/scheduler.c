@@ -74,20 +74,20 @@ static void gc_task(void) {
                     }
                 }
 
-                // 1. Release physical memory of PML4T (if not system task)
+                // 1. Release physical memory of page tables (if not system task)
 
                 if(!desc->system) {
-                    global_free_page(USER_USE, (void*)desc->physical_cr3);
+                    global_phys_allocator_free_page((void*)desc->physical_cr3);
                 }
 
                 // 2. Release physical stacks (if dynamically allocated)
 
                 if(desc->physical_kernel_stack) {
-                    global_free_pages(USER_USE, (void*)desc->physical_kernel_stack, kernel_stack_size / PAGE_SIZE);
+                    global_phys_allocator_free_pages((void*)desc->physical_kernel_stack, kernel_stack_size / PAGE_SIZE);
                 }
 
                 if(desc->physical_user_stack) {
-                    global_free_pages(USER_USE, (void*)desc->physical_user_stack, user_stack_size / PAGE_SIZE);
+                    global_phys_allocator_free_pages((void*)desc->physical_user_stack, user_stack_size / PAGE_SIZE);
                 }
 
                 // kernel processes can either use dynamic memory or static memory
@@ -107,15 +107,16 @@ static void gc_task(void) {
                 for(size_t j = 0u; j < size(desc->segments); ++j) {
                     struct segment_t *const segment = at(desc->segments, j);
 
-                    global_free_pages(USER_USE, (void*)segment->physical, segment->size / PAGE_SIZE);
+                    global_phys_allocator_free_pages((void*)segment->physical, segment->size / PAGE_SIZE);
                 }
                 clear(desc->segments);
 
                 // 4. Release virtual kernel stack
 
                 if(desc->virtual_kernel_stack) {
-                    global_free_pages(USER_USE, (void*)desc->virtual_kernel_stack, kernel_stack_size / PAGE_SIZE);
-                    unmap_pages((void*)desc->virtual_kernel_stack, kernel_stack_size / PAGE_SIZE);
+                    global_phys_allocator_free_pages((void*)desc->virtual_kernel_stack, kernel_stack_size / PAGE_SIZE);
+                    //TODO: double check that the kernel virtual stack for a process should be unmapped from the kernel address space and not some other address space
+                    unmap_pages_in_kernel_addr((void*)desc->virtual_kernel_stack, kernel_stack_size / PAGE_SIZE);
                 }
 
                 // 5. Remove process from run queue
@@ -491,6 +492,8 @@ struct OPTIONAL_NAME(pid_t) scheduler_exec(struct string file, const vector_type
     entry_point_process->priority = MIN_PRIORITY;
 
     scheduler_queue_system_process(entry_point_process->pid);
+
+    return (struct OPTIONAL_NAME(pid_t)) {entry_point_process->pid, true};
 }
 
 void scheduler_sbrk(const size_t inc) {
@@ -666,7 +669,7 @@ struct process_t* scheduler_get_process(const pid_t pid) {
 }
 
 enum process_state scheduler_get_process_state(const pid_t pid) {
-    kassert_message_void(pid < MAX_PROCESS, "pid out of bounds");
+    kassert_message(pid < MAX_PROCESS, "pid out of bounds", PROCESS_ERROR);
 
     return pcb[pid].state;
 }
@@ -751,7 +754,7 @@ struct process_t* scheduler_create_kernel_task(const char *const name, char *con
 
     // TODO: figure out how we're supposed to set all of these stack members up
     process->system = true;
-    process->physical_cr3 = get_default_page_directory(); // use the same `cr3` as the kernel since this is a kernel task and not a user task
+    process->physical_cr3 = get_kernel_page_directory(); // use the same `cr3` as the kernel since this is a kernel task and not a user task
     process->paging_size = 0;
     process->name = string_new(name);
 

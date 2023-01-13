@@ -8,8 +8,8 @@ pop eax
 ret
 
 
-global get_cr3
-get_cr3:
+global get_current_cr3
+get_current_cr3:
 mov eax, cr3
 
 

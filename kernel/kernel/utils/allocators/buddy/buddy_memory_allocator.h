@@ -1,52 +1,23 @@
 #pragma once
 
-#include <stddef.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 #include <kstring.h>
-#include <kassert.h>
-#include <bitset.h>
 #include <bitmap_allocator.h>
-#include <mem_constants.h>
-
-#include <higher_half_utils.h>
-
-#include <kstdio.h>
 
 
-#define GLOBAL_PHYS_MEM_SIZE 0x100000000u // 4GiB in bytes
-
-struct global_binary_buddy_memory_allocator {
-    uint32_t level10[32]; // in 4MiB blocks
-    uint32_t level11[64];
-    uint32_t level12[128];
-    uint32_t level13[256];
-    uint32_t level14[512];
-    uint32_t level15[1024];
-    uint32_t level16[2048];
-    uint32_t level17[4096];
-    uint32_t level18[8192];
-    uint32_t level19[16384];
-    uint32_t level20[32768]; // in individual pages
+bool binary_buddy_memory_allocator_init(uint32_t* allocator, size_t allocator_type_size);
+// `num_of_lowest_order_blocks` is the number of bits for the entry for the lowest size memory blocks
+/* expected layout of `allocator` type:
+struct alloc {
+    uint32_t highest_mem_size[num_of_lowest_mem_size_in_allocator/4]; // index 2
+    uint32_t medium_mem_size[num_of_lowest_mem_size_in_allocator/2]; // index 1
+    uint32_t lowest_mem_size[num_of_lowest_mem_size_in_allocator]; // index 0
 };
+*/
+bool binary_buddy_memory_allocator_reserve(uint32_t* allocator, uint32_t start_index, uint32_t end_index, const uint32_t num_of_elements_in_level, uint32_t level_in_allocator, uint32_t number_of_levels);
+void* binary_buddy_memory_allocator_allocate(uint32_t* allocator, uint32_t lowest_mem_size, uint32_t num_of_lowest_mem_size_in_allocator, uint32_t number_of_levels, uint32_t amount_to_allocate); // `amount_to_allocate` is in terms of `lowest_mem_size`
+bool binary_buddy_memory_allocator_free(uint32_t* allocator, uint32_t lowest_mem_size, uint32_t num_of_lowest_mem_size_in_allocator, uint32_t number_of_levels, void* address_to_free, uint32_t amount_to_free); // `amount_to_free` is in terms of `lowest_mem_size`
 
-void global_binary_buddy_memory_allocator_init(struct global_binary_buddy_memory_allocator* allocator);
-void* global_binary_buddy_memory_allocator_allocate_pages(struct global_binary_buddy_memory_allocator* allocator, size_t num_of_pages);
-void* global_binary_buddy_memory_allocator_allocate_page(struct global_binary_buddy_memory_allocator* allocator);
-void global_binary_buddy_memory_allocator_free_pages(struct global_binary_buddy_memory_allocator* allocator, const void* first_page, size_t num_of_pages);
-void global_binary_buddy_memory_allocator_free_page(struct global_binary_buddy_memory_allocator* allocator, const void* page);
-
-
-void global_allocator_init(void);
-void global_reserve_physical_address(uint32_t physical_address, size_t num_of_pages, enum memory_type type);
-void* global_allocate_page(enum memory_type allocation_type);
-void* global_allocate_pages(enum memory_type allocation_type, size_t num_of_pages);
-void global_free_page(enum memory_type allocation_type, const void* page);
-void global_free_pages(enum memory_type allocation_type, const void* page, size_t num_of_pages);
-size_t get_number_of_permanently_reserved_pages(void);
-size_t get_number_of_pages_used(void);
-void* get_first_nonreserved_address(void);
-//in pages, not bytes:
-size_t get_amount_of_nonreserved_memory(void);
-uint32_t get_endkernel(void);

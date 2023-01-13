@@ -20,6 +20,10 @@ _start:
     ; Set up a known stack
     mov esp, (V2P(BootStack))
 
+    ; extern sus_test
+    ; mov eax, (V2P(sus_test))
+    ; call eax
+
     ; Load boot_page_directory
     extern boot_page_directory
     mov eax, (V2P(boot_page_directory))

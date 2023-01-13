@@ -3,11 +3,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdbool.h>
 
 //#include "paging.h"
 //#include "initialize_kernel_memory.h"
 #include "kstring.h"
+
+#include <mem_constants.h>
+#include <kernel_virt_allocator.h>
 
 
 inline uint32_t bytes_to_words(const uint32_t bytes) {
