@@ -5,7 +5,7 @@
 #include <mem/initialize_kernel_memory.h>
 
 
-static uint32_t first_free_virtual_address; //points to start of first page
+/*static*/ uint32_t first_free_virtual_address; //points to start of first page
 static uint32_t* last_free_virtual_address; //points to start of last page
 static size_t number_of_pages_allocated; //TODO might remove `last_free_virtual_address`
 static uint32_t* head;
@@ -60,6 +60,8 @@ static bool increase_memory_pool(void) {
 }
 
 static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const block) {
+    kprintf("allocate_block(%u, %p): \n", size_to_allocate, block);
+    //kprintf("block[0] = %u\n", block[0]);
     kassert(get_allocated_bit(block[0]) == false, NULL);
 
     if(get_size(block[0]) <= (size_to_allocate+(2*MIN_BLOCK_SIZE))) {
@@ -107,29 +109,32 @@ static uint32_t* allocate_block(const size_t size_to_allocate, uint32_t *const b
 }
 
 void kdynamic_memory_init(void) {
-    number_of_pages_allocated = 1u;
-    first_free_virtual_address = 0xC0030000;
-    kprintf("first_free_virtual_address: %X\n", first_free_virtual_address);
-#if 0
-    last_free_virtual_address = first_free_virtual_address;
-    kprintf("before allocate_virtual_page\n");
-    //allocate_virtual_page(last_free_virtual_address, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
     const uint32_t phys_frame = global_phys_allocator_allocate_page();
-    map_page_in_kernel_addr(last_free_virtual_address, phys_frame, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
-    kprintf("after allocate_virtual_page\n");
-    kprintf("last_free_virtual_page: %X, phys_frame: %X\n", last_free_virtual_address, phys_frame);
+    kprintf("phys_frame: %X\n", phys_frame);
+
+    number_of_pages_allocated = 1u;
+    first_free_virtual_address = HEAP_START_ADDR;
+    kprintf("&first_free_virtual_address: %p\n", &first_free_virtual_address);
+    kprintf("HEAP_START_ADDR: %X\n", HEAP_START_ADDR);
+    kprintf("get_physical_address_in_kernel_addr(return_page_address(&first_free_virtual_address)): %X\n", get_physical_address_in_kernel_addr(return_page_address((uint32_t)&first_free_virtual_address)));
+    kprintf("first_free_virtual_address: %X\n", first_free_virtual_address);
+    last_free_virtual_address = first_free_virtual_address;
+
+    map_page_in_kernel_addr(last_free_virtual_address, phys_frame, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    kmemset(last_free_virtual_address, 0, PAGE_SIZE);
+
     head = last_free_virtual_address;
+
     last_free_virtual_address += WORDS_IN_PAGE;
 
     head[0] = WORDS_IN_PAGE; //first word of block is size of the block in words (including bookkeeping words like this size),
     //top bit is whether or not it is allocated
-
     //both of these pointers point to first byte of block
     head[1] = (uint32_t) NULL; //prev pointer
     head[2] = (uint32_t) NULL; //next pointer
 
-    head[WORDS_IN_PAGE-1] = WORDS_IN_PAGE; //duplicate of first word of block
-#endif
+    head[head[0]-1] = WORDS_IN_PAGE; //duplicate of first word of block
+    kprintf("first_free_virtual_address: %X\n", first_free_virtual_address);
 }
 
 void* kmalloc(const size_t size) {

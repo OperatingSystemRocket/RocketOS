@@ -9,6 +9,7 @@ void default_context_init_context(void) {
 }
 
 void default_context_terminal_start(void) {
+    kprintf("default_context_terminal_start\n");
     run_terminal_start(&terminal_context);
 }
 void default_context_terminal_end(void) {

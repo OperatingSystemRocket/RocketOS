@@ -20,11 +20,6 @@ _start:
     ; Set up a known stack
     mov esp, (V2P(BootStack))
 
-    ; extern sus_test
-    ; mov eax, (V2P(sus_test))
-    ; call eax
-
-    ; Load boot_page_directory
     extern boot_page_directory
     mov eax, (V2P(boot_page_directory))
     mov cr3, eax
@@ -39,13 +34,14 @@ _start:
     lea eax, [upper_memory]
     jmp eax
 
+global upper_memory
 upper_memory:
     ; Move stack pointer to kernel space
     mov eax, KERNEL_OFFSET
     add esp, eax
 
     ; Remove identity mapping
-    mov eax, 0 ; TODO: change to `xor eax, eax`
+    xor eax, eax
     mov [boot_page_directory], eax
 
     ; Update page tables
@@ -55,6 +51,8 @@ upper_memory:
     ; Jump to kernel_main()
     extern kernel_main
     mov eax, (kernel_main)
+    push esi
+    push edi
     call eax
 
     hlt

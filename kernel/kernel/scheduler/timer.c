@@ -21,11 +21,11 @@ __attribute__((interrupt)) static void timer_handler(struct interrupt_frame *con
     ++pit_counter_var;
 
     //NOTE: you CANNOT WRITE to VGA in a timer interrupt as this can cause a deadlock since spinlocks are used for synchronization and timer does not early return
-    kprintf("timer_handler()\n");
+    //kprintf("timer_handler()\n");
 
     timer_tick();
 
-    kprintf("after timer_tick()\n");
+    //kprintf("after timer_tick()\n");
 
     pic_send_eoi(1);
 }
@@ -59,7 +59,7 @@ void scheduler_tick(void); // can't include scheduler.h because of circular incl
 void timer_tick(void) {
     // Simply let the scheduler know about the tick
     scheduler_tick();
-    kprintf("timer_tick end\n");
+    //kprintf("timer_tick end\n");
 }
 
 uint64_t timer_seconds(void) {

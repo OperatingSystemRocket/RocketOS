@@ -3,6 +3,8 @@
 #include <drivers/port_mapped_io/hardware_io.h>
 #include <subsystems/terminal/terminal_driver.h>
 
+#include <paging.h>
+
 
 uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg);
 uint16_t vga_entry(char uc, enum vga_color color);
@@ -10,6 +12,7 @@ uint16_t vga_entry(char uc, enum vga_color color);
 
 void terminal_initialize(struct vga_driver_context *const context) {
     terminal_resetcolor(context);
+    map_page_in_kernel_addr(P2V(0xB8000u), 0xB8000u, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     context->terminal_buffer = (volatile uint16_t*) P2V(0xB8000u);
     context->terminal_upward_history_size = 0;
     context->terminal_downward_history_size = 0;

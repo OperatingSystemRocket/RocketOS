@@ -550,7 +550,7 @@ void scheduler_kill_current_process(void) {
 
 void scheduler_tick(void) {
     if(!started) {
-        kprintf("!started\n");
+        //kprintf("!started\n");
         return;
     }
 
@@ -754,7 +754,7 @@ struct process_t* scheduler_create_kernel_task(const char *const name, char *con
 
     // TODO: figure out how we're supposed to set all of these stack members up
     process->system = true;
-    process->physical_cr3 = get_kernel_page_directory(); // use the same `cr3` as the kernel since this is a kernel task and not a user task
+    process->physical_cr3 = V2P(get_kernel_page_directory()); // use the same `cr3` as the kernel since this is a kernel task and not a user task
     process->paging_size = 0;
     process->name = string_new(name);
 

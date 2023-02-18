@@ -30,6 +30,7 @@ void notify_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS(struct subject_##TYPE_OF_DAT
 
 #define GENERATE_SUBJECT_DEFINITION(MAX_NUM_OF_OBSERVERS, TYPE_OF_DATA) \
 bool add_observer_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS(struct subject_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS *const subject, struct TYPE_OF_DATA##_observer *const observer) { \
+    kprintf("add_observer\n"); \
     if(subject->num_of_active_observers == (uint32_t) MAX_NUM_OF_OBSERVERS) { \
         return false; /*can't add it since it is full*/ \
     } \
@@ -38,6 +39,7 @@ bool add_observer_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS(struct subject_##TYPE_
     return true; \
 } \
 bool remove_observer_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS(struct subject_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS *const subject, const struct TYPE_OF_DATA##_observer *const observer) { \
+    kprintf("remove_observer\n"); \
     for(uint32_t i = 0u; i < subject->num_of_active_observers; ++i) { \
         if(subject->observers[i] == observer) { \
             subject->observers[i] = subject->observers[--subject->num_of_active_observers]; \
@@ -48,6 +50,7 @@ bool remove_observer_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS(struct subject_##TY
     return false; /*`observer` wasn't in the `observers` array*/ \
 } \
 void notify_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS(struct subject_##TYPE_OF_DATA##_##MAX_NUM_OF_OBSERVERS *const subject, const struct TYPE_OF_DATA##_event event) { \
+    kprintf("notify\n"); \
     for(uint32_t i = 0; i < subject->num_of_active_observers; ++i) { \
         subject->observers[i]->on_notify(subject->observers[i]->context, event); \
     } \

@@ -33,4 +33,5 @@ inline void io_wait(void) {
 
 inline void flush_tlb_single_page(const uint32_t addr) {
     asm volatile("invlpg (%0)" : : "r" (addr) : "memory");
+    //asm volatile("invlpg (%0)" : : "m" (addr));
 }

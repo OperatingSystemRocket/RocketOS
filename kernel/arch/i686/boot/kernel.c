@@ -74,27 +74,27 @@ static const char* AcpiGbl_ExceptionNames_Env[] = {
     "AE_IO_ERROR"
 };
 
-static volatile uint32_t v;
+extern uint32_t boot_page_directory;
+extern uint32_t boot_page_table;
 
-static volatile uint32_t j;
+extern uint32_t upper_memory;
+
 
 void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     if(serial_init()) { //fails if serial is faulty
         serial_writestring("Serial driver works\n");
     }
 
-    kprintf("j: %X\n", j);
-    kprintf("&j: %p\n", &j);
+    for(uint32_t i = 0u; i < 1024u; ++i) {
+        kprintf("boot_page_directory[%u]: %p\n", i, (&boot_page_directory)[i]);
+    }
 
-    kprintf("&v: %p\n", &v);
+    for(uint32_t i = 0u; i < 1024u; ++i) {
+        kprintf("boot_page_table[%u]: %p\n", i, (&boot_page_table)[i]);
+    }
 
-    paging_init();
+    kprintf("upper_memory: %p\n", &upper_memory);
 
-    terminal_context_initialize();
-
-    default_keyboard_map_state_init();
-
-    set_default_functions();
 
     init_gdt();
     gdt_load();
@@ -102,23 +102,18 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     pic_init();
     isr_install();
 
-    serial_writestring("after interrupts installed\n");
-
-    v = 900;
-    kprintf("v: %u\n", v);
-
     initialize_kernel_memory();
-    serial_writestring("after initialize_kernel_memory\n");
-    
-    v = 250;
-    kprintf("v: %u\n", v);
     kdynamic_memory_init();
 
-    v = 700;
-    kprintf("v: %u\n", v);
+    terminal_context_initialize();
+    default_keyboard_map_state_init();
+    set_default_functions();
+
+    serial_writestring("after interrupts installed\n");
 
     serial_writestring("Kernel memory initialized\n");
 
+    kprintf("mboot_magic: %X\n", mboot_magic);
     if (mboot_magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
         kprintf("Invalid Multiboot Magic!\n");
     } else {
@@ -128,9 +123,12 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     struct multiboot_tag_module* module = NULL;
 
     struct multiboot_tag* tag = (struct multiboot_tag*)(mboot_header + 8);
+    identity_map_page_in_kernel_addr((uint32_t)mboot_header & PAGE_BITMASK, PT_PRESENT, PD_PRESENT);
+    identity_map_page_in_kernel_addr((uint32_t)tag & PAGE_BITMASK, PT_PRESENT, PD_PRESENT);
     kprintf("tag address: %p\n", tag);
     uint32_t size = *(uint32_t*)mboot_header;
     for(; tag->type != MULTIBOOT_TAG_TYPE_END; tag = (struct multiboot_tag*)((multiboot_uint8_t*)tag  + ((tag->size+7) & ~7))) {
+        identity_map_page_in_kernel_addr((uint32_t)tag & PAGE_BITMASK, PT_PRESENT, PD_PRESENT);
         if(tag->type == MULTIBOOT_TAG_TYPE_MODULE) {
             module = (struct multiboot_tag_module*)tag;
             kprintf("Module at 0x%X-0x%X. Command line [%s]\n",
@@ -141,6 +139,7 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     }
 
     const uint32_t addr = module->mod_start;
+    identity_map_page_in_kernel_addr(addr & PAGE_BITMASK, PT_PRESENT, PD_PRESENT);
 
     kprintf("first_module: %p\n", module);
     kprintf("addr: %p\n", addr);
@@ -162,20 +161,22 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     if(ACPI_FAILURE(status)) {
         kprintf("acpica: Impossible to initialize subsystem: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
     }
+    kprintf("before AcpiInitializeTables\n");
     status = AcpiInitializeTables(NULL, 16, true);
     if(ACPI_FAILURE(status)) {
         kprintf("acpica: Impossible to initialize tables: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
     }
+    kprintf("before AcpiLoadTables\n");
     status = AcpiLoadTables();
     if(ACPI_FAILURE(status)) {
         kprintf("acpica: Impossible to load tables: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
     }
-    kprintf("AcpiLoadTables passed\n");
+    kprintf("before AcpiEnableSubsystem\n");
     status = AcpiEnableSubsystem(ACPI_FULL_INITIALIZATION);
     if(ACPI_FAILURE(status)) {
         kprintf("acpica: Impossible to enable subsystem: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
     }
-    kprintf("AcpiEnableSubsystem passed\n");
+    kprintf("before AcpiInitializeObjects\n");
     status = AcpiInitializeObjects(ACPI_FULL_INITIALIZATION);
     if(ACPI_FAILURE(status)) {
         kprintf("acpica: Impossible to initialize objects: error: %s\n", AcpiGbl_ExceptionNames_Env[status]);
@@ -187,7 +188,6 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     disable_interrupts();
 
     write_tss();
-
 
 
     struct default_terminal_context *const data = get_default_terminal_context();
@@ -204,7 +204,6 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
     scheduler_exec(string_new("test_program"), NULL);
     enable_interrupts();
     scheduler_start();
-
 
     for(;;) {
         kprintf("in the main function\n");

@@ -42,6 +42,8 @@ enum page_fault_error_flags {
     PF_ID = (1<<4)           // Was the fault caused by an instruction fetch?
 };
 
+#define PAGE_BITMASK 0xFFFFF000
+
 
 extern uintptr_t get_current_cr3(void);
 
@@ -50,6 +52,7 @@ bool paging_init(void);
 
 void load_and_turn_on_paging(void);
 
+uint32_t get_physical_address_in_boot(uint32_t page_directory, const void* virtual_address);
 uint32_t get_physical_address(uint32_t page_directory, const void* virtual_address);
 uint32_t get_physical_address_in_kernel_addr(const void* virtual_address);
 
@@ -64,6 +67,12 @@ bool identity_map_pages(uint32_t page_directory, uint32_t address, uint32_t num_
 bool identity_map_page_in_kernel_addr(uint32_t address, uint32_t pt_flags, uint32_t pd_flags);
 bool identity_map_pages_in_kernel_addr(uint32_t address, uint32_t num_of_pages, uint32_t pt_flags, uint32_t pd_flags);
 
+void* map_to_arbitrary_kernel_virt_page(uint32_t phys_addr, uint32_t page_index_in_table);
+void* map_to_arbitrary_kernel_virt_pages(uint32_t phys_addr, uint32_t page_index_in_table, uint32_t size); // `size` is number of pages
+
+bool unmap_arbitrary_kernel_virt_page(uint32_t page_index_in_table);
+bool unmap_arbitrary_kernel_virt_pages(uint32_t page_index_in_table, uint32_t size); // `size` is number of pages
+
 bool map_page(uint32_t page_directory, void* virtual_address, uint32_t phys_frame, uint32_t pt_flags, uint32_t pd_flags);
 bool map_pages(uint32_t page_directory, void* virtual_address, uint32_t phys_frame, size_t num_of_pages, uint32_t pt_flags, uint32_t pd_flags);
 bool map_page_in_kernel_addr(void* virtual_address, uint32_t phys_frame, uint32_t pt_flags, uint32_t pd_flags);
@@ -74,6 +83,16 @@ uint32_t unmap_pages(uint32_t page_directory, const void* virtual_address, size_
 uint32_t unmap_page_in_kernel_addr(const void* virtual_address);
 uint32_t unmap_pages_in_kernel_addr(const void* virtual_address, size_t num_of_pages);
 
+
+inline uint32_t return_page_address(const uint32_t address) {
+    return address & 0xFFFFF000u;
+}
+inline uint32_t return_page_offset(const uint32_t address) {
+    return address & 0x00000FFFu;
+}
+inline uint32_t get_rounded_up_num_of_pages(const uint32_t address) {
+    return ((address / PAGE_SIZE) + ((address % PAGE_SIZE) > 0u));
+}
 
 void map_kernel_inside_user(struct process_t* process);
 void clear_physical_page(size_t physical);

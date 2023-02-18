@@ -34,26 +34,26 @@ bool binary_buddy_memory_allocator_reserve(uint32_t *const allocator, const uint
         const uint32_t current_allocation_index = start_index >> (i - level_in_allocator);
         for(uint32_t j = 0u; j < num_of_entries_to_set_higher; ++j) {
             bitset_set_at(current_allocation_level_start_index+current_allocation_index+j, allocator, true);
-            serial_writestring("iteration of inner for loop done\n");
+            //serial_writestring("iteration of inner for loop done\n");
         }
         num_of_entries_to_set_higher /= 2;
         if(num_of_entries_to_set_higher == 0u) {
             num_of_entries_to_set_higher = 1u;
         }
-        serial_writestring("iteration of outer for loop done\n");
+        //serial_writestring("iteration of outer for loop done\n");
     }
-    serial_writestring("after num_of_entries_to_set_higher\n");
-    kprintf("num_of_entries_to_set_in_level: %u\n", num_of_entries_to_set_in_level);
+    //serial_writestring("after num_of_entries_to_set_higher\n");
+    //kprintf("num_of_entries_to_set_in_level: %u\n", num_of_entries_to_set_in_level);
     uint32_t num_of_entries_to_set_lower = num_of_entries_to_set_in_level*2u;
     for(uint32_t i = 0u; i < level_in_allocator; ++i) {
         const uint32_t current_allocation_level_start_index = ((1u << (number_of_levels - i - 1u)) - 1u)*number_of_highest_mem_size_in_allocator;
         const uint32_t first_current_allocation_index = start_index << (level_in_allocator - i);
         for(uint32_t j = 0u; j < num_of_entries_to_set_lower; ++j) {
             bitset_set_at(current_allocation_level_start_index+first_current_allocation_index+j, allocator, true);
-            kprintf("second iteration of inner for loop done with j: %u, num_of_entries_to_set_lower: %u\n", j, num_of_entries_to_set_lower);
+            //kprintf("second iteration of inner for loop done with j: %u, num_of_entries_to_set_lower: %u\n", j, num_of_entries_to_set_lower);
         }
         num_of_entries_to_set_lower *= 2u;
-        serial_writestring("second iteration of outer for loop done\n");
+        //serial_writestring("second iteration of outer for loop done\n");
     }
 
     return true;

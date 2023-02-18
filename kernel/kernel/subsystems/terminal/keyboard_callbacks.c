@@ -4,6 +4,7 @@
 bool is_turned_on = false;
 
 void catch_keycode(void *const context, struct GET_EVENT_TYPENAME(key_message) event) {
+    kprintf("catch_keycode: %c\n", event.data.keycode);
     struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
 
     if(event.event_type == KEYBOARD_EVENT) {

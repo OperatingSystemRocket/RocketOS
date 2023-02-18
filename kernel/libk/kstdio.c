@@ -218,7 +218,11 @@ int32_t kprintf(const char *const format, ...) {
 
     va_start(pargs, format);
 
+    //serial_writestring("before kprintf_implementation\n");
+
     (void) kprintf_implementation(format, &pargs);
+
+    //serial_writestring("after kprintf_implementation\n");
 
     va_end(pargs);
 

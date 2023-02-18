@@ -184,6 +184,7 @@ ACPI_STATUS ACPI_INIT_FUNCTION
 AcpiInitializeSubsystem (
     void)
 {
+    serial_writestring("AcpiInitializeSubsystem\n");
     ACPI_STATUS             Status;
 
 
@@ -195,12 +196,14 @@ AcpiInitializeSubsystem (
 
     /* Initialize the OS-Dependent layer */
 
+    serial_writestring("osi\n");
     Status = AcpiOsInitialize ();
     if (ACPI_FAILURE (Status))
     {
         ACPI_EXCEPTION ((AE_INFO, Status, "During OSL initialization"));
         return_ACPI_STATUS (Status);
     }
+    serial_writestring("osi done\n");
 
     /* Initialize all globals used by the subsystem */
 

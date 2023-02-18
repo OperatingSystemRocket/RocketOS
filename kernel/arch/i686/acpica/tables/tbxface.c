@@ -235,6 +235,7 @@ AcpiInitializeTables (
         {
             return_ACPI_STATUS (Status);
         }
+        kprintf("AcpiAllocateRootTable OK\n");
     }
     else
     {
@@ -255,10 +256,12 @@ AcpiInitializeTables (
     /* Get the address of the RSDP */
 
     RsdpAddress = AcpiOsGetRootPointer ();
+    kprintf("get root pointer\n");
     if (!RsdpAddress)
     {
         return_ACPI_STATUS (AE_NOT_FOUND);
     }
+    kprintf("root pointer is not NULL\n");
 
     /*
      * Get the root table (RSDT or XSDT) and extract all entries to the local
@@ -266,6 +269,7 @@ AcpiInitializeTables (
      * in a common, more usable format.
      */
     Status = AcpiTbParseRootTable (RsdpAddress);
+    kprintf("parse root table\n");
     return_ACPI_STATUS (Status);
 }
 

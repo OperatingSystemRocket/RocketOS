@@ -24,6 +24,7 @@ void set_terminal_shift(void (*const new_terminal_shift)(void*)) {
 
 
 void run_terminal_start(void *const context) {
+    kprintf("run_terminal_start\n");
     terminal_start(context);
 }
 void run_terminal_end(void *const context) {

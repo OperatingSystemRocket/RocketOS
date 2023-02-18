@@ -72,16 +72,26 @@ void init_gdt(void) {
 }
 
 void write_tss(void) {
+    kprintf("Writing TSS\n");
     kmemset(&tss_entry, 0, sizeof(struct tss_entry_struct));
+
+    kprintf("kmemset tss_entry to 0\n");
 
     tss_entry.ss0 = 2*sizeof(struct gdt_entry);
 
+    kprintf("wrote to tss_entry.ss0\n");
+
     void *const physical_page = global_phys_allocator_allocate_page();
+    kprintf("Allocated physical page: %X\n", physical_page);
     void *const virtual_page = kernel_virt_allocator_allocate_page();
-    map_page_in_kernel_addr(virtual_page, (uint32_t)physical_page, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    kprintf("Allocated virtual page: %p\n", virtual_page);
+    map_page_in_kernel_addr(virtual_page, (uint32_t)physical_page, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    kprintf("Mapped page\n");
     tss_entry.esp0 = ((uint32_t) virtual_page) + PAGE_SIZE;
+    kprintf("wrote to tss_entry.esp0\n");
 
     flush_tss();
+    kprintf("Flushed TSS\n");
 }
 
 void set_kernel_stack(const uint32_t stack) { // Used when an interrupt occurs

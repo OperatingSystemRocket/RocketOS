@@ -25,15 +25,13 @@ bool global_phys_allocator_init(void) {
         return false;
     }
 
-#if 0
     const uint32_t val = ((V2P(get_endkernel())/PAGE_SIZE) + ((V2P(get_endkernel())%PAGE_SIZE)>0u));
     kprintf("((V2P(get_endkernel())/PAGE_SIZE) + ((V2P(get_endkernel()) PAGE_SIZE)>0u)): %u\n", val);
 
     const bool ret1 = binary_buddy_memory_allocator_reserve(&global_phys_allocator, 0, ((V2P(get_endkernel())/PAGE_SIZE) + ((V2P(get_endkernel())%PAGE_SIZE)>0u)), 32768, 0, 11);
     serial_writestring("after binary_buddy_memory_allocator_reserve\n");
-#endif
 
-    return true; //ret1;
+    return ret1;
 }
 
 void* global_phys_allocator_allocate_page(void) {
@@ -72,14 +70,23 @@ bool global_phys_allocator_free_pages(void *const page_phys_addr, const size_t n
 
 //The address of this variable is set in the linker script. It has the ending address of the kernel.
 //We just need it for the address, it stores no value.
-#if 0
+extern uint32_t immutable_data_start;
 extern uint32_t text_start;
 extern uint32_t text_end;
 extern uint32_t rodata_start;
 extern uint32_t rodata_end;
+extern uint32_t immutable_data_end;
 extern uint32_t mutable_data_start;
+extern uint32_t data_start;
+extern uint32_t data_end;
+extern uint32_t bss_start;
+extern uint32_t bss_end;
 extern uint32_t mutable_data_end;
+extern uint32_t endkernel;
 
+uint32_t get_immutable_data_start(void) {
+    return (uint32_t)&immutable_data_start;
+}
 uint32_t get_text_start(void) {
     return (uint32_t)&text_start;
 }
@@ -92,18 +99,27 @@ uint32_t get_rodata_start(void) {
 uint32_t get_rodata_end(void) {
     return (uint32_t)&rodata_end;
 }
+uint32_t get_immutable_data_end(void) {
+    return (uint32_t)&immutable_data_end;
+}
 uint32_t get_mutable_data_start(void) {
     return (uint32_t)&mutable_data_start;
+}
+uint32_t get_data_start(void) {
+    return (uint32_t)&data_start;
+}
+uint32_t get_data_end(void) {
+    return (uint32_t)&data_end;
+}
+uint32_t get_bss_start(void) {
+    return (uint32_t)&bss_start;
+}
+uint32_t get_bss_end(void) {
+    return (uint32_t)&bss_end;
 }
 uint32_t get_mutable_data_end(void) {
     return (uint32_t)&mutable_data_end;
 }
-#endif
-
-
-extern uint32_t endkernel;
-
 uint32_t get_endkernel(void) {
     return (uint32_t)&endkernel;
 }
-

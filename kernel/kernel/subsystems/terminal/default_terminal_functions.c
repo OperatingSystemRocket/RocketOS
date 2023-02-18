@@ -4,7 +4,8 @@
 #define DEFAULT_PROMPT "> "
 
 
-void default_init_context(struct default_terminal_context *const terminal_context_ptr) {    
+void default_init_context(struct default_terminal_context *const terminal_context_ptr) {  
+    kprintf("default_init_context\n");  
     terminal_context_ptr->vga_context = get_default_vga_context();
 
     terminal_context_ptr->start_of_command = terminal_context_ptr->vga_context->terminal_row * 80 + terminal_context_ptr->vga_context->terminal_column;
@@ -13,6 +14,7 @@ void default_init_context(struct default_terminal_context *const terminal_contex
 }
 
 void set_default_functions(void) {
+    kprintf("set_default_functions\n");
     set_terminal_start(default_terminal_start);
     set_terminal_end(default_terminal_end);
     set_terminal_process_command(default_terminal_process_command);
@@ -22,6 +24,7 @@ void set_default_functions(void) {
 
 //TODO: Refactor this wrapper function out of existance maybe. Though this might be useful to keep in the future possibly.
 void default_terminal_start(void *const context) {
+    kprintf("default_terminal_start\n");
     struct default_terminal_context *const terminal_context_ptr = (struct default_terminal_context*) context;
 
     default_init_context(terminal_context_ptr);

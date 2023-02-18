@@ -71,10 +71,8 @@ void* AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
         return NULL;
     }
     const uint32_t virtual_page_address = (uint32_t)virtual_range;
-    //for(uint32_t i = 0u; i < physical_memory_size; ++i) {
-    //    map_page_in_kernel_addr((void*)(virtual_page_address+(i*PAGE_SIZE)), (physical_page_address+(i*PAGE_SIZE)), PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
-    //}
-    map_pages_in_kernel_addr(virtual_page_address, physical_page_address, physical_memory_size, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+
+    map_pages_in_kernel_addr(virtual_page_address, physical_page_address, physical_memory_size, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     return (void*)(virtual_page_address+physical_page_offset);
 }
 

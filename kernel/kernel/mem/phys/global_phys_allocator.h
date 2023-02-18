@@ -21,13 +21,16 @@ bool global_phys_allocator_free_page(void* page_phys_addr);
 bool global_phys_allocator_free_pages(void* page_phys_addr, size_t num_of_pages);
 
 
-uint32_t get_endkernel(void);
-
-#if 0
+uint32_t get_immutable_data_start(void);
 uint32_t get_text_start(void);
 uint32_t get_text_end(void);
 uint32_t get_rodata_start(void);
 uint32_t get_rodata_end(void);
+uint32_t get_immutable_data_end(void);
 uint32_t get_mutable_data_start(void);
+uint32_t get_data_start(void);
+uint32_t get_data_end(void);
+uint32_t get_bss_start(void);
+uint32_t get_bss_end(void);
 uint32_t get_mutable_data_end(void);
-#endif
+uint32_t get_endkernel(void);

@@ -9,6 +9,9 @@ static struct file_header* file_headers[32] = {NULL};
 void parse_headers(const uint32_t address) {
     for(struct file_header* file_header = (struct file_header*)address; file_header->size != 0; file_header = (struct file_header*)((uint32_t)file_header + file_header->size)) {
         kprintf("%s, %u\n", file_header->filename, file_header->size);
+        for(uint32_t i = 0u; i < ((file_header->size/PAGE_SIZE)+(file_header->size%PAGE_SIZE)); ++i) {
+            identity_map_page_in_kernel_addr(((uint32_t)file_header&0xFFFFF000) + (i*PAGE_SIZE), PT_PRESENT, PD_PRESENT);
+        }
         for(uint32_t i = 0u; i < file_header->size-sizeof(struct file_header); ++i) {
             kprintf("%c", file_header->file[i]);
         }
