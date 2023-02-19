@@ -156,7 +156,7 @@ void test_kfree_two_kmalloced_four_byte_blocks(void) {
 void kernel_main(void) {
     serial_init();
 
-    init_gdt();
+    gdt_init();
     gdt_load();
 
     pic_init();

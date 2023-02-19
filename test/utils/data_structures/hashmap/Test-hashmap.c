@@ -13,7 +13,7 @@ void tearDown(void) {}
 void kernel_main(void) {
     serial_init();
 
-    init_gdt();
+    gdt_init();
     gdt_load();
 
     pic_init();

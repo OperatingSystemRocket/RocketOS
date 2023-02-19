@@ -337,10 +337,14 @@ AcpiTbGetRootTableEntry (
          * 32-bit platform, RSDT: Return 32-bit table entry
          * 64-bit platform, RSDT: Expand 32-bit to 64-bit and return
          */
-        identity_map_page_in_kernel_addr((UINT32)TableEntry & 0xFFFFF000, 1, 1);
-        identity_map_page_in_kernel_addr(((UINT32)TableEntry & 0xFFFFF000) + 4096, 1, 1);
-        return ((ACPI_PHYSICAL_ADDRESS) (*ACPI_CAST_PTR (
-            UINT32, TableEntry)));
+        //identity_map_page_in_kernel_addr((UINT32)TableEntry & 0xFFFFF000, 1, 1);
+        //identity_map_page_in_kernel_addr(((UINT32)TableEntry & 0xFFFFF000) + 4096, 1, 1);
+        UINT32 *p = (UINT32 *)AcpiOsMapMemory(TableEntry, sizeof(UINT32));
+        ACPI_PHYSICAL_ADDRESS phys = (ACPI_PHYSICAL_ADDRESS) (*p);
+        AcpiOsUnmapMemory(p, sizeof(UINT32));
+        //return ((ACPI_PHYSICAL_ADDRESS) (*ACPI_CAST_PTR (
+        //    UINT32, TableEntry)));
+        return phys;
     }
     else
     {

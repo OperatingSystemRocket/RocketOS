@@ -53,6 +53,6 @@ extern void gdt_load(void);
 extern void jump_usermode(void);
 extern void flush_tss(void);
 
-void init_gdt(void);
+void gdt_init(void);
 void write_tss(void);
 void set_kernel_stack(uint32_t stack);

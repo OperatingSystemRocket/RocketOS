@@ -59,7 +59,7 @@ struct gdt_ptr gdt_entries_ptr = {
 struct tss_entry_struct tss_entry;
 
 
-void init_gdt(void) {
+void gdt_init(void) {
     const uint32_t base = (uint32_t) &tss_entry;
     const uint32_t limit = sizeof(struct tss_entry_struct);
 
