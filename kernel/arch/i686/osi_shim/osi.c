@@ -52,27 +52,43 @@ ACPI_STATUS AcpiOsTableOverride(ACPI_TABLE_HEADER *ExistingTable, ACPI_TABLE_HEA
     return AE_OK;
 }
 
+
 void* AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length) {
-    if(Length == 0u) {
-        kprintf("Length is 0\n");
+    const uint32_t length = (uint32_t)Length;
+    const uint32_t physical_address = (uint32_t)PhysicalAddress;
+    kprintf("length: %X, physical_address: %X\n", length, physical_address);
+    kprintf("physical_address: %X, length: %X\n", physical_address, length);
+    if(length == 0u) {
+        kprintf("length is 0\n");
         return NULL;
     }
 
 
-    const uint32_t physical_page_address = PhysicalAddress & (~(PAGE_SIZE-1u));
-    const uint32_t physical_page_offset = PhysicalAddress - physical_page_address;
+    const uint32_t physical_page_address = physical_address & (~(PAGE_SIZE-1u));
+    const uint32_t physical_page_offset = physical_address - physical_page_address;
 
-    const uint32_t adjusted_length = physical_page_offset + Length; //takes into account the offset, which affects page boundary overlap
+    const uint32_t adjusted_length = physical_page_offset + length; //takes into account the offset, which affects page boundary overlap
 
     const uint32_t physical_memory_size = (adjusted_length/PAGE_SIZE) + ((adjusted_length%PAGE_SIZE)>0u); //in pages, round up
 
+    kprintf("physical_address: %X, length: %X\n", physical_address, length);
+    kprintf("length: %X\n", length);
+    kprintf("length: %X, physical_address: %X\n", length, physical_address);
+    kprintf("adjusted_length: %X\n", adjusted_length);
+    kprintf("physical_memory_size: %X\n", physical_memory_size);
+    kprintf("length: %X, adjusted_length: %X, physical_memory_size: %X\n", length, adjusted_length, physical_memory_size);
+
     void *const virtual_range = osi_virt_mem_allocator_allocate_pages(physical_memory_size);
+    kprintf("virtual_range: %X\n", virtual_range);
     if(virtual_range == NULL) {
         return NULL;
     }
     const uint32_t virtual_page_address = (uint32_t)virtual_range;
 
+    kprintf("physical_memory_size in AcpiOsMapMemory(): %X\n", physical_memory_size);
+    kprintf("virtual_page_address in AcpiOsMapMemory: %X\n", virtual_page_address);
     map_pages_in_kernel_addr(virtual_page_address, physical_page_address, physical_memory_size, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    kputs("finished map_pages_in_kernel_addr\n");
     return (void*)(virtual_page_address+physical_page_offset);
 }
 

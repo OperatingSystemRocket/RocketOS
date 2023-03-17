@@ -11,6 +11,7 @@ ret
 global get_current_cr3
 get_current_cr3:
 mov eax, cr3
+ret
 
 
 global enable_paging

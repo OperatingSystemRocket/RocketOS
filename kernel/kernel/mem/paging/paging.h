@@ -45,43 +45,49 @@ enum page_fault_error_flags {
 #define PAGE_BITMASK 0xFFFFF000
 
 
-extern uintptr_t get_current_cr3(void);
-
-
 bool paging_init(void);
 
 void load_and_turn_on_paging(void);
 
-uint32_t get_physical_address_in_boot(uint32_t page_directory, const void* virtual_address);
+uint32_t get_physical_address_in_boot(const void* virtual_address);
 uint32_t get_physical_address(uint32_t page_directory, const void* virtual_address);
 uint32_t get_physical_address_in_kernel_addr(const void* virtual_address);
+uint32_t get_physical_address_in_current_addr(const void* virtual_address);
 
 bool is_readable(uint32_t page_directory, const void* virtual_address); //checks if it is in the paging structure
 bool is_readable_in_kernel_addr(const void* virtual_address); //checks if it is in the kernel address space
+bool is_readable_in_current_addr(const void* virtual_address);
 bool is_writable(uint32_t page_directory, const void* virtual_address); //checks if it is in the paging structure and if the RW flag is set
 bool is_writable_in_kernel_addr(const void* virtual_address); //checks if it is in the kernel address space and if the RW flag is set
+bool is_writable_in_current_addr(const void* virtual_address);
 
 
 bool identity_map_page(uint32_t page_directory, uint32_t address, uint32_t pt_flags, uint32_t pd_flags);
 bool identity_map_pages(uint32_t page_directory, uint32_t address, uint32_t num_of_pages, uint32_t pt_flags, uint32_t pd_flags);
 bool identity_map_page_in_kernel_addr(uint32_t address, uint32_t pt_flags, uint32_t pd_flags);
 bool identity_map_pages_in_kernel_addr(uint32_t address, uint32_t num_of_pages, uint32_t pt_flags, uint32_t pd_flags);
+bool identity_map_page_in_current_addr(uint32_t address, uint32_t pt_flags, uint32_t pd_flags);
+bool identity_map_pages_in_current_addr(uint32_t address, uint32_t num_of_pages, uint32_t pt_flags, uint32_t pd_flags);
 
-void* map_to_arbitrary_kernel_virt_page(uint32_t phys_addr, uint32_t page_index_in_table);
-void* map_to_arbitrary_kernel_virt_pages(uint32_t phys_addr, uint32_t page_index_in_table, uint32_t size); // `size` is number of pages
+void* map_to_arbitrary_kernel_virt_page_in_current_addr(uint32_t phys_addr, uint32_t page_index_in_table);
+void* map_to_arbitrary_kernel_virt_pages_in_current_addr(uint32_t phys_addr, uint32_t page_index_in_table, uint32_t size); // `size` is number of pages
 
-bool unmap_arbitrary_kernel_virt_page(uint32_t page_index_in_table);
-bool unmap_arbitrary_kernel_virt_pages(uint32_t page_index_in_table, uint32_t size); // `size` is number of pages
+bool unmap_arbitrary_kernel_virt_page_in_current_addr(uint32_t page_index_in_table);
+bool unmap_arbitrary_kernel_virt_pages_in_current_addr(uint32_t page_index_in_table, uint32_t size); // `size` is number of pages
 
 bool map_page(uint32_t page_directory, void* virtual_address, uint32_t phys_frame, uint32_t pt_flags, uint32_t pd_flags);
 bool map_pages(uint32_t page_directory, void* virtual_address, uint32_t phys_frame, size_t num_of_pages, uint32_t pt_flags, uint32_t pd_flags);
 bool map_page_in_kernel_addr(void* virtual_address, uint32_t phys_frame, uint32_t pt_flags, uint32_t pd_flags);
 bool map_pages_in_kernel_addr(void* virtual_address, uint32_t phys_frame, size_t num_of_pages, uint32_t pt_flags, uint32_t pd_flags);
+bool map_page_in_current_addr(void* virtual_address, uint32_t phys_frame, uint32_t pt_flags, uint32_t pd_flags);
+bool map_pages_in_current_addr(void* virtual_address, uint32_t phys_frame, size_t num_of_pages, uint32_t pt_flags, uint32_t pd_flags);
 
 uint32_t unmap_page(uint32_t page_directory, const void* virtual_address);
 uint32_t unmap_pages(uint32_t page_directory, const void* virtual_address, size_t num_of_pages);
 uint32_t unmap_page_in_kernel_addr(const void* virtual_address);
 uint32_t unmap_pages_in_kernel_addr(const void* virtual_address, size_t num_of_pages);
+uint32_t unmap_page_in_current_addr(const void* virtual_address);
+uint32_t unmap_pages_in_current_addr(const void* virtual_address, size_t num_of_pages);
 
 
 inline uint32_t return_page_address(const uint32_t address) {
@@ -99,4 +105,10 @@ void clear_physical_page(size_t physical);
 bool user_map(struct process_t* process, size_t virt, size_t physical);
 bool user_map_pages(struct process_t* process, size_t virt, size_t physical, size_t pages);
 
+
+extern uintptr_t get_current_cr3(void); // returns currently loaded page directory phys addr
+extern void set_cr3(uint32_t* new_page_directory_phys_addr);
 uint32_t* get_kernel_page_directory(void);
+void set_current_page_directory(uint32_t* new_current_page_directory);
+uint32_t get_current_page_directory(void); // returns virtual address of current paging subsytem page directory (in kernel space)
+uint32_t get_current_page_directory_phys_addr(void); // returns physical address of current paging subsytem page directory

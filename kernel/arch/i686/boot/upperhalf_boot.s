@@ -5,6 +5,7 @@
 %define P2V(a) ((a) + KERNEL_OFFSET)
 
 section .bss
+global BootStack
 align PAGE_SIZE
 resb PAGE_SIZE
 BootStack:

@@ -11,6 +11,8 @@
 #include <paging.h>
 #include <optional.h>
 
+#include "acpi.h"
+
 
 struct file_header {
     uint32_t size; //includes both the file and header, a value of `0` indicates the end of the file list
@@ -236,3 +238,6 @@ struct file_header* get_file_header(const char* filename);
 void print_file(const char* filename);
 void print_elf_file(const char* filename);
 
+
+
+bool load_elf_file_in_process(struct process_t* process, const char* filename);

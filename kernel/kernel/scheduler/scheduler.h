@@ -32,6 +32,16 @@
 
 #define MAX_PROCESS 128
 
+#define USER_STACK_TOP_ADDR 0xB0000000
+
+#define STACK_SIZE 4096
+
+
+/*!
+ * \brief Indicates if the scheduler is started or not
+ */
+bool scheduler_is_started(void);
+
 /*!
  * \brief Return the id of the current process
  */
@@ -70,12 +80,7 @@ void scheduler_init(void);
 /*!
  * \brief Start the scheduler and starts the first process
  */
-void scheduler_start(void); //__attribute__((noreturn));
-
-/*!
- * \brief Indicates if the scheduler is started or not
- */
-bool scheduler_is_started(void);
+void scheduler_start(void) __attribute__((noreturn));
 
 /*!
  * \brief Execute the given file in a new process
@@ -86,7 +91,7 @@ struct OPTIONAL_NAME(pid_t) scheduler_exec(struct string file, const vector_type
 /*!
  * \brief Kill the current process
  */
-void scheduler_kill_current_process(void); //__attribute__((noreturn));
+void scheduler_kill_current_process(void) __attribute__((noreturn));
 
 /*!
  * \brief Wait for the given process to terminate
@@ -152,7 +157,7 @@ void scheduler_block_process_timeout_light(pid_t pid, size_t ms);
  * \param kernel_stack Pointer to the kernel stack
  * \param fun The function to execute
  */
-struct process_t* scheduler_create_kernel_task(const char* name, char* user_stack, char* kernel_stack, void (*fun)(void));
+struct process_t* scheduler_create_kernel_task(const char* name, void (*fun)(void));
 
 /*!
  * \brief Creat a kernel process with some data
@@ -162,7 +167,9 @@ struct process_t* scheduler_create_kernel_task(const char* name, char* user_stac
  * \param fun The function to execute
  * \param data The data to pass to the function
  */
-struct process_t* scheduler_create_kernel_task_args(const char* name, char* user_stack, char* kernel_stack, void (*fun)(void*), void* data);
+struct process_t* scheduler_create_kernel_task_args(const char* name, void (*fun)(void), void* data);
+
+struct process_t* scheduler_load_process_in_new_address_space(const char* program_filename); // `program_filename` is the name of the ramdisk file to run
 
 /*!
  * \brief Queue a created system process

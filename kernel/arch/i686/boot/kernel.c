@@ -137,8 +137,12 @@ void kernel_main(const uint32_t mboot_magic, const uint32_t mboot_header) {
 
     kprintf("before scheduler_init()\n");
     scheduler_init();
-    scheduler_exec(string_new("test_program"), NULL);
+    //scheduler_exec(string_new("test_program"), NULL);
+    kputs("before test_program");
     enable_interrupts();
+    //parse_elf_file("test_program");
+    scheduler_load_process_in_new_address_space("test_program");
+    kputs("after test_program");
     scheduler_start();
 
     for(;;) {

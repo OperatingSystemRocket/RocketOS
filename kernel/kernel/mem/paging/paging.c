@@ -1,6 +1,6 @@
 #include "paging.h"
 
-extern void load_page_directory(uint32_t *page_directory);
+extern void load_page_directory(uint32_t* page_directory);
 extern void enable_paging(void);
 
 extern void enable_ring0_write_protect(void);
@@ -13,15 +13,17 @@ https://web.archive.org/web/20151025081259if_/http://www.intel.com/content/dam/w
 extern uint32_t boot_page_directory;
 extern uint32_t boot_page_table;
 
-static uint32_t *kernel_address_space;
+static uint32_t* kernel_page_directory_ptr; // will be mapped in all address spaces
+static uint32_t* current_page_directory; // points to virtual memory mapping of page in kernel page directory
 
 static uint32_t kernel_page_directory[1024] __attribute__((aligned(PAGE_SIZE)));
 static uint32_t kernel_page_table[1024] __attribute__((aligned(PAGE_SIZE)));
 static uint32_t mapping_page_table[1024] __attribute__((aligned(PAGE_SIZE)));
-#define ARBITRARY_MAPPING_REGION_START (1023*1024*PAGE_SIZE)
+#define ARBITRARY_MAPPING_REGION_START (1023u*1024u*PAGE_SIZE)
 
 bool paging_init(void) {
-    kernel_address_space = kernel_page_directory;
+    kernel_page_directory_ptr = kernel_page_directory;
+    current_page_directory = kernel_page_directory_ptr;
 
     const uint32_t pages_in_kernel = (((get_endkernel() - get_immutable_data_start()) / PAGE_SIZE) + ((get_endkernel() % PAGE_SIZE) > 0u));
     kprintf("get_endkernel() - get_immutable_data_start(): %X\n", (get_endkernel() - get_immutable_data_start()));
@@ -31,7 +33,7 @@ bool paging_init(void) {
 
     const uint32_t immutable_pages_in_kernel = ((get_mutable_data_start()-get_immutable_data_start()) / PAGE_SIZE) + (((get_mutable_data_start()-get_immutable_data_start()) % PAGE_SIZE) > 0u);
     const uint32_t mutable_pages_in_kernel = ((get_endkernel()-get_mutable_data_start()) / PAGE_SIZE) + (((get_mutable_data_end()-get_mutable_data_start()) % PAGE_SIZE) > 0u);
-    kprintf("pages_in_kernel: %u, immutable_pages_in_kernel: %u, mutable_pages_in_kernel: %u", pages_in_kernel, immutable_pages_in_kernel, mutable_pages_in_kernel);
+    kprintf("pages_in_kernel: %u, immutable_pages_in_kernel: %u, mutable_pages_in_kernel: %u\n", pages_in_kernel, immutable_pages_in_kernel, mutable_pages_in_kernel);
     kassert((immutable_pages_in_kernel + mutable_pages_in_kernel) == pages_in_kernel, false);
 
     kmemset(kernel_page_table, 0, sizeof(kernel_page_table));
@@ -59,6 +61,9 @@ bool paging_init(void) {
 
 void load_and_turn_on_paging(void) {
     kprintf("kernel_page_directory: %p\n", &kernel_page_directory[0]);
+    for(uint32_t i = 0; i < 1024; ++i) {
+        kprintf("kernel_page_directory[%u]: %X\n", i, kernel_page_directory[i]);
+    }
 
     load_page_directory(V2P(&kernel_page_directory[0]));
 
@@ -73,23 +78,20 @@ void load_and_turn_on_paging(void) {
     kprintf("after enable_paging\n");
 }
 
-uint32_t get_physical_address_in_boot(const uint32_t page_directory, const void *const virtual_address) {
-    kprintf("get_physical_address_in_boot: page_directory: %p, virtual_address: %p\n", page_directory, virtual_address);
-    //kassert_message(is_readable(page_directory, virtual_address), "Virtual Address Not Present in Mapping Structure. Cannot Fetch Physical Address.", 0);
-    //kprintf("after is_readable\n");
+// TODO: double check this function's correctness
+uint32_t get_physical_address_in_boot(const void *const virtual_address) {
+    kassert_message(is_readable(&boot_page_directory, virtual_address), "Virtual Address Not Present in Mapping Structure. Cannot Fetch Physical Address.", 0);
 
     const uint32_t page_index = (uint32_t)virtual_address / PAGE_SIZE;
     const uint32_t table_index = page_index / 1024;
     const uint32_t page_index_in_table = page_index % 1024;
 
-    const uint32_t *const page_directory_ptr = (uint32_t*)page_directory;
+    const uint32_t *const page_directory_ptr = &boot_page_directory;
     const uint32_t page_table_phys = return_page_address(page_directory_ptr[table_index]);
     uint32_t *const page_table_virt = P2V(page_table_phys);
 
-    const uint32_t phys_ret = return_page_address(page_table_virt[page_index_in_table]);
-    return phys_ret;
+    return return_page_address(page_table_virt[page_index_in_table]);
 }
-
 uint32_t get_physical_address(const uint32_t page_directory, const void *const virtual_address) {
     kprintf("get_physical_address: page_directory: %p, virtual_address: %p\n", page_directory, virtual_address);
     kassert_message(is_readable(page_directory, virtual_address), "Virtual Address Not Present in Mapping Structure. Cannot Fetch Physical Address.", 0);
@@ -101,14 +103,17 @@ uint32_t get_physical_address(const uint32_t page_directory, const void *const v
 
     const uint32_t *const page_directory_ptr = (uint32_t*)page_directory;
     const uint32_t page_table_phys = return_page_address(page_directory_ptr[table_index]);
-    uint32_t *const page_table_virt = map_to_arbitrary_kernel_virt_page(page_table_phys, 514);
+    uint32_t *const page_table_virt = map_to_arbitrary_kernel_virt_page_in_current_addr(page_table_phys, 514);
 
     const uint32_t phys_ret = return_page_address(page_table_virt[page_index_in_table]);
-    unmap_arbitrary_kernel_virt_page(514);
+    unmap_arbitrary_kernel_virt_page_in_current_addr(514);
     return phys_ret;
 }
 uint32_t get_physical_address_in_kernel_addr(const void *const virtual_address) {
-    return get_physical_address((uint32_t)kernel_address_space, virtual_address);
+    return get_physical_address((uint32_t)kernel_page_directory_ptr, virtual_address);
+}
+uint32_t get_physical_address_in_current_addr(const void *const virtual_address) {
+    return get_physical_address((uint32_t)current_page_directory, virtual_address);
 }
 
 bool is_readable(uint32_t page_directory, const void *const virtual_address) {
@@ -127,20 +132,23 @@ bool is_readable(uint32_t page_directory, const void *const virtual_address) {
     kprintf("after virt_page_directory[table_index] & PD_PRESENT\n");
 
     const uint32_t page_table_phys_frame = return_page_address(virt_page_directory[table_index]);
-    const uint32_t *const virt_page_table = map_to_arbitrary_kernel_virt_page(page_table_phys_frame, 513);
+    const uint32_t *const virt_page_table = map_to_arbitrary_kernel_virt_page_in_current_addr(page_table_phys_frame, 513);
     kprintf("virt_page_table: %p\n", virt_page_table);
     if ((virt_page_table[page_index_in_table] & PT_PRESENT) != PT_PRESENT) {
         kprintf("virt_page_table[page_index_in_table] & PT_PRESENT: %p\n", virt_page_table[page_index_in_table] & PT_PRESENT);
-        unmap_arbitrary_kernel_virt_page(513);
+        unmap_arbitrary_kernel_virt_page_in_current_addr(513);
         return false;
     }
     kprintf("after virt_page_table[page_index_in_table] & PT_PRESENT\n");
-    unmap_arbitrary_kernel_virt_page(513);
+    unmap_arbitrary_kernel_virt_page_in_current_addr(513);
 
     return true;
 }
 bool is_readable_in_kernel_addr(const void *const virtual_address) {
-    return is_readable((uint32_t)kernel_address_space, virtual_address);
+    return is_readable((uint32_t)kernel_page_directory_ptr, virtual_address);
+}
+bool is_readable_in_current_addr(const void *const virtual_address) {
+    return is_readable((uint32_t)current_page_directory, virtual_address);
 }
 bool is_writable(const uint32_t page_directory, const void *const virtual_address) {
     if (!is_readable(page_directory, virtual_address)) {
@@ -157,17 +165,20 @@ bool is_writable(const uint32_t page_directory, const void *const virtual_addres
     }
 
     const uint32_t page_table_phys_frame = return_page_address(virt_page_directory[table_index]);
-    const uint32_t *const virt_page_table = map_to_arbitrary_kernel_virt_page(page_table_phys_frame, 512);
+    const uint32_t *const virt_page_table = map_to_arbitrary_kernel_virt_page_in_current_addr(page_table_phys_frame, 512);
     if ((virt_page_table[page_index_in_table] & PT_RW) != PT_RW) {
-        unmap_arbitrary_kernel_virt_page(512);
+        unmap_arbitrary_kernel_virt_page_in_current_addr(512);
         return false;
     }
-    unmap_arbitrary_kernel_virt_page(512);
+    unmap_arbitrary_kernel_virt_page_in_current_addr(512);
 
     return true;
 }
 bool is_writable_in_kernel_addr(const void *const virtual_address) {
-    return is_writable((uint32_t)kernel_address_space, virtual_address);
+    return is_writable((uint32_t)kernel_page_directory_ptr, virtual_address);
+}
+bool is_writable_in_current_addr(const void *const virtual_address) {
+    return is_writable((uint32_t)current_page_directory, virtual_address);
 }
 
 bool identity_map_page(const uint32_t page_directory, const uint32_t address, const uint32_t pt_flags, const uint32_t pd_flags) {
@@ -188,14 +199,14 @@ bool identity_map_page(const uint32_t page_directory, const uint32_t address, co
     // Get a virtual pointer to the parent page table
     const uint32_t pt_phys_frame = return_page_address(pd_virt[table_index]);
 
-    uint32_t *const pt_virt = map_to_arbitrary_kernel_virt_page(pt_phys_frame, 514);
+    uint32_t *const pt_virt = map_to_arbitrary_kernel_virt_page_in_current_addr(pt_phys_frame, 514);
     // Update page in page table
     pt_virt[page_index_in_table] = page;
-    unmap_arbitrary_kernel_virt_page(514);
+    unmap_arbitrary_kernel_virt_page_in_current_addr(514);
 
     return true;
 }
-bool identity_map_pages(const uint32_t page_directory, const uint32_t address, const uint32_t num_of_pages, const uint32_t const pt_flags, const uint32_t pd_flags) {
+bool identity_map_pages(const uint32_t page_directory, const uint32_t address, const uint32_t num_of_pages, const uint32_t pt_flags, const uint32_t pd_flags) {
     kassert(address % PAGE_SIZE == 0, false);
 
     for (uint32_t i = 0u; i < num_of_pages; ++i) {
@@ -210,10 +221,16 @@ bool identity_map_page_in_kernel_addr(const uint32_t address, const uint32_t pt_
     return identity_map_pages_in_kernel_addr(address, 1, pt_flags, pd_flags);
 }
 bool identity_map_pages_in_kernel_addr(const uint32_t address, const uint32_t num_of_pages, const uint32_t pt_flags, const uint32_t pd_flags) {
-    return identity_map_pages((uint32_t)kernel_address_space, address, num_of_pages, pt_flags, pd_flags);
+    return identity_map_pages((uint32_t)kernel_page_directory_ptr, address, num_of_pages, pt_flags, pd_flags);
+}
+bool identity_map_page_in_current_addr(const uint32_t address, const uint32_t pt_flags, const uint32_t pd_flags) {
+    return identity_map_pages_in_current_addr(address, 1, pt_flags, pd_flags);
+}
+bool identity_map_pages_in_current_addr(const uint32_t address, const uint32_t num_of_pages, const uint32_t pt_flags, const uint32_t pd_flags) {
+    return identity_map_pages((uint32_t)current_page_directory, address, num_of_pages, pt_flags, pd_flags);
 }
 
-void* map_to_arbitrary_kernel_virt_page(const uint32_t phys_addr, const uint32_t page_index_in_table) {
+void* map_to_arbitrary_kernel_virt_page_in_current_addr(const uint32_t phys_addr, const uint32_t page_index_in_table) {
     kassert(page_index_in_table <= 1023, NULL);
 
     mapping_page_table[page_index_in_table] = phys_addr | PT_PRESENT | PT_RW;
@@ -225,38 +242,34 @@ void* map_to_arbitrary_kernel_virt_page(const uint32_t phys_addr, const uint32_t
     //  and any code accessing the returned page address will page fault.
     //  I'm not sure why this is happening, but I'm going to leave it for now.
     //flush_tlb_single_page(ARBITRARY_MAPPING_REGION_START+(page_index_in_table*PAGE_SIZE));
-    load_page_directory(V2P(&kernel_page_directory[0]));
+    load_page_directory(V2P(&current_page_directory[0]));
 
 
 
     return (void*)(ARBITRARY_MAPPING_REGION_START+(page_index_in_table*PAGE_SIZE));
 }
-
-// `size` is number of pages
-void* map_to_arbitrary_kernel_virt_pages(const uint32_t phys_addr, const uint32_t page_index_in_table, const uint32_t size) {
+void* map_to_arbitrary_kernel_virt_pages_in_current_addr(const uint32_t phys_addr, const uint32_t page_index_in_table, const uint32_t size) {
     for(uint32_t i = 0; i < size; ++i) {
-        if(map_to_arbitrary_kernel_virt_page(phys_addr + (i * PAGE_SIZE),  i+page_index_in_table) == NULL) {
+        if(map_to_arbitrary_kernel_virt_page_in_current_addr(phys_addr + (i * PAGE_SIZE),  i+page_index_in_table) == NULL) {
             return NULL;
         }
     }
     return (void*)(ARBITRARY_MAPPING_REGION_START+(page_index_in_table*PAGE_SIZE));
 }
 
-bool unmap_arbitrary_kernel_virt_page(const uint32_t page_index_in_table) {
+bool unmap_arbitrary_kernel_virt_page_in_current_addr(const uint32_t page_index_in_table) {
     kassert(page_index_in_table <= 1023, false);
 
     mapping_page_table[page_index_in_table] = 0;
 
     //flush_tlb_single_page(ARBITRARY_MAPPING_REGION_START+(page_index_in_table*PAGE_SIZE));
-    load_page_directory(V2P(&kernel_page_directory[0]));
+    load_page_directory(V2P(&current_page_directory[0]));
 
     return true;
 }
-
-// `size` is number of pages
-bool unmap_arbitrary_kernel_virt_pages(const uint32_t page_index_in_table, const uint32_t size) {
+bool unmap_arbitrary_kernel_virt_pages_in_current_addr(const uint32_t page_index_in_table, const uint32_t size) {
     for(uint32_t i = 0; i < size; ++i) {
-        if(!unmap_arbitrary_kernel_virt_page(i+page_index_in_table)) {
+        if(!unmap_arbitrary_kernel_virt_page_in_current_addr(i+page_index_in_table)) {
             return false;
         }
     }
@@ -287,7 +300,7 @@ bool map_page(const uint32_t page_directory, void *const virtual_address, const 
 
     const uint32_t page_table_phys_addr = return_page_address(virt_page_directory[table_index]);
     kprintf("page_table_phys_addr: %X\n", page_table_phys_addr);
-    uint32_t *const virt_page_table = map_to_arbitrary_kernel_virt_page(page_table_phys_addr, 512);
+    uint32_t *const virt_page_table = map_to_arbitrary_kernel_virt_page_in_current_addr(page_table_phys_addr, 512);
     kprintf("virt_page_table: %p\n", virt_page_table);
     if ((virt_page_table[page_index_in_table] & PT_PRESENT) == PT_PRESENT) {
         kprintf("Woah, mapping an already mapped page. You should fix this.\n");
@@ -296,7 +309,7 @@ bool map_page(const uint32_t page_directory, void *const virtual_address, const 
     kprintf("after if statement\n");
     virt_page_table[page_index_in_table] = phys_frame | pt_flags;
     kprintf("virt_page_table[page_index_in_table]: %X\n", virt_page_table[page_index_in_table]);
-    unmap_arbitrary_kernel_virt_page(512);
+    unmap_arbitrary_kernel_virt_page_in_current_addr(512);
 
     //flush_tlb_single_page((uint32_t)virtual_address);
     load_page_directory(V2P(&kernel_page_directory[0]));
@@ -325,7 +338,13 @@ bool map_page_in_kernel_addr(void *const virtual_address, const uint32_t phys_fr
 }
 bool map_pages_in_kernel_addr(void *const virtual_address, const uint32_t phys_frame, const size_t num_of_pages, const uint32_t pt_flags, const uint32_t pd_flags) {
     kprintf("map_pages_in_kernel_addr with virtual_address: %p, phys_frame: %X, num_of_pages: %u\n", virtual_address, phys_frame, num_of_pages);
-    return map_pages((uint32_t)kernel_address_space, virtual_address, phys_frame, num_of_pages, pt_flags, pd_flags);
+    return map_pages((uint32_t)kernel_page_directory_ptr, virtual_address, phys_frame, num_of_pages, pt_flags, pd_flags);
+}
+bool map_page_in_current_addr(void *const virtual_address, const uint32_t phys_frame, const uint32_t pt_flags, const uint32_t pd_flags) {
+    return map_pages_in_current_addr(virtual_address, phys_frame, 1, pt_flags, pd_flags);
+}
+bool map_pages_in_current_addr(void *const virtual_address, const uint32_t phys_frame, const size_t num_of_pages, const uint32_t pt_flags, const uint32_t pd_flags) {
+    return map_pages((uint32_t)current_page_directory, virtual_address, phys_frame, num_of_pages, pt_flags, pd_flags);
 }
 
 uint32_t unmap_page(const uint32_t page_directory, const void *const virtual_address) {
@@ -338,14 +357,15 @@ uint32_t unmap_page(const uint32_t page_directory, const void *const virtual_add
     uint32_t *const virt_page_directory = (uint32_t*)page_directory;
 
     const uint32_t page_table_phys_addr = return_page_address(virt_page_directory[table_index]);
-    uint32_t *const virt_page_table = map_to_arbitrary_kernel_virt_page(page_table_phys_addr, 512);
+    uint32_t *const virt_page_table = map_to_arbitrary_kernel_virt_page_in_current_addr(page_table_phys_addr, 512);
 
     const uint32_t phys_frame = return_page_address(virt_page_table[page_index_in_table]);
 
     // TODO: consider iterating through page table to decide whether it can be freed and unmapped
     virt_page_table[page_index_in_table] = 0x0;
-    unmap_arbitrary_kernel_virt_page(512);
+    unmap_arbitrary_kernel_virt_page_in_current_addr(512);
 
+    // TODO: use the page directory passed in instead of `kernel_page_directory`
     //flush_tlb_single_page((uint32_t)virtual_address);
     load_page_directory(V2P(&kernel_page_directory[0]));
 
@@ -369,7 +389,13 @@ uint32_t unmap_page_in_kernel_addr(const void *const virtual_address) {
     return unmap_pages_in_kernel_addr(virtual_address, 1);
 }
 uint32_t unmap_pages_in_kernel_addr(const void *const virtual_address, const size_t num_of_pages) {
-    return unmap_pages((uint32_t)kernel_address_space, virtual_address, num_of_pages);
+    return unmap_pages((uint32_t)kernel_page_directory_ptr, virtual_address, num_of_pages);
+}
+uint32_t unmap_page_in_current_addr(const void *const virtual_address) {
+    return unmap_pages_in_current_addr(virtual_address, 1);
+}
+uint32_t unmap_pages_in_current_addr(const void *const virtual_address, const size_t num_of_pages) {
+    return unmap_pages((uint32_t)current_page_directory, virtual_address, num_of_pages);
 }
 
 uint32_t return_page_address(uint32_t address);
@@ -377,33 +403,35 @@ uint32_t return_page_offset(uint32_t address);
 uint32_t get_rounded_up_num_of_pages(uint32_t address);
 
 void map_kernel_inside_user(struct process_t *const process) {
-    uint32_t *const cr3_ptr = map_to_arbitrary_kernel_virt_page(process->physical_cr3, 511);
+    uint32_t *const cr3_ptr = map_to_arbitrary_kernel_virt_page_in_current_addr(process->physical_cr3, 511);
 
     // As we are ensuring that the first page table entries are reserved to the
     // kernel, it is enough to link these ones to the kernel ones
 
     uint32_t *const virt_page_directory = cr3_ptr;
-    for (size_t i = 0; i < 1024; ++i) {
-        virt_page_directory[i] = return_page_address(kernel_address_space[i]) | PD_PRESENT;
+    for (uint32_t i = 768; i < 1024; ++i) {
+        virt_page_directory[i] = kernel_page_directory[i]; //return_page_address(kernel_page_directory_ptr[i]) | PD_PRESENT;
     }
 
-    unmap_arbitrary_kernel_virt_page(511);
+    unmap_arbitrary_kernel_virt_page_in_current_addr(511);
 }
 void clear_physical_page(const size_t physical) {
-    uint32_t *const ptr = map_to_arbitrary_kernel_virt_page(physical, 510);
+    uint32_t *const ptr = map_to_arbitrary_kernel_virt_page_in_current_addr(physical, 510);
 
     kmemset((void*)ptr, 0, PAGE_SIZE);
 
-    unmap_arbitrary_kernel_virt_page(510);
+    unmap_arbitrary_kernel_virt_page_in_current_addr(510);
 }
 bool user_map(struct process_t *const process, const size_t virt, const size_t physical) {
-    uint32_t *const cr3_ptr = map_to_arbitrary_kernel_virt_page(process->physical_cr3, 509);
+    uint32_t *const cr3_ptr = map_to_arbitrary_kernel_virt_page_in_current_addr(process->physical_cr3, 509);
     if (cr3_ptr == NULL) {
         return false;
     }
 
-    const uint32_t page_index = ((uint32_t)cr3_ptr) / PAGE_SIZE;
+    const uint32_t page_index = virt / PAGE_SIZE;
     const uint32_t table_index = page_index / 1024;
+    kprintf("virt: %X\n", virt);
+    kprintf("table_index: %u\n", table_index);
     const uint32_t page_index_in_table = page_index % 1024;
 
     uint32_t *const virt_page_directory = cr3_ptr;
@@ -414,19 +442,19 @@ bool user_map(struct process_t *const process, const size_t virt, const size_t p
 
         clear_physical_page(physical_pd);
 
-        process->paging_size += PAGE_SIZE;
-        const struct segment_t segment = {physical_pd, 1u};
-        push_back(process->segments, &segment);
+        //process->paging_size += PAGE_SIZE;
+        //const struct segment_t segment = {physical_pd, 1u};
+        //push_back(process->segments, &segment);
     }
 
     const uint32_t page_table_phys_addr = return_page_address(virt_page_directory[table_index]);
-    uint32_t *const virt_page_table = map_to_arbitrary_kernel_virt_page(page_table_phys_addr, 508);
+    uint32_t *const virt_page_table = map_to_arbitrary_kernel_virt_page_in_current_addr(page_table_phys_addr, 508);
 
     virt_page_table[page_index_in_table] = physical | PT_RW | PT_USER | PT_PRESENT;
 
-    unmap_arbitrary_kernel_virt_page(508);
+    unmap_arbitrary_kernel_virt_page_in_current_addr(508);
 
-    unmap_arbitrary_kernel_virt_page(509);
+    unmap_arbitrary_kernel_virt_page_in_current_addr(509);
 
     return true;
 }
@@ -445,5 +473,16 @@ bool user_map_pages(struct process_t *const process, const size_t virt, const si
 }
 
 uint32_t* get_kernel_page_directory(void) {
-    return kernel_address_space;
+    return kernel_page_directory_ptr;
 }
+void set_current_page_directory(uint32_t *const new_current_page_directory) {
+    current_page_directory = new_current_page_directory;
+}
+uint32_t get_current_page_directory(void) {
+    return current_page_directory;
+}
+uint32_t get_current_page_directory_phys_addr(void) {
+    return get_physical_address_in_current_addr((uint32_t)current_page_directory);
+}
+
+

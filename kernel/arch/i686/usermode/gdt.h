@@ -55,4 +55,6 @@ extern void flush_tss(void);
 
 void gdt_init(void);
 void write_tss(void);
+uint32_t* get_kernel_stack_phys_page(void);
+uint32_t* get_kernel_stack_virt_page(void);
 void set_kernel_stack(uint32_t stack);

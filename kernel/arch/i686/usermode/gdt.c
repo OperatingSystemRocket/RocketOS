@@ -71,6 +71,19 @@ void gdt_init(void) {
     gdt_entries[5].base_high = (uint8_t) ((base & 0xFF000000) >> 24);
 }
 
+
+static uint32_t* kernel_stack_phys_page;
+static uint32_t* kernel_stack_virt_page;
+
+uint32_t* get_kernel_stack_phys_page(void) {
+    return kernel_stack_phys_page;
+}
+uint32_t* get_kernel_stack_virt_page(void) {
+    return kernel_stack_virt_page;
+}
+
+extern uint32_t BootStack;
+
 void write_tss(void) {
     kprintf("Writing TSS\n");
     kmemset(&tss_entry, 0, sizeof(struct tss_entry_struct));
@@ -81,13 +94,13 @@ void write_tss(void) {
 
     kprintf("wrote to tss_entry.ss0\n");
 
-    void *const physical_page = global_phys_allocator_allocate_page();
-    kprintf("Allocated physical page: %X\n", physical_page);
-    void *const virtual_page = kernel_virt_allocator_allocate_page();
-    kprintf("Allocated virtual page: %p\n", virtual_page);
-    map_page_in_kernel_addr(virtual_page, (uint32_t)physical_page, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+    kernel_stack_phys_page = global_phys_allocator_allocate_page();
+    kprintf("Allocated physical page: %X\n", kernel_stack_phys_page);
+    kernel_stack_virt_page = kernel_virt_allocator_allocate_page();
+    kprintf("Allocated virtual page: %p\n", kernel_stack_virt_page);
+    map_page_in_kernel_addr(kernel_stack_virt_page, (uint32_t)kernel_stack_phys_page, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
     kprintf("Mapped page\n");
-    tss_entry.esp0 = ((uint32_t) virtual_page) + PAGE_SIZE;
+    tss_entry.esp0 = ((uint32_t) kernel_stack_virt_page) + PAGE_SIZE;
     kprintf("wrote to tss_entry.esp0\n");
 
     flush_tss();

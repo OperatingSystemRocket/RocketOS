@@ -213,7 +213,167 @@ struct OPTIONAL_NAME(uint32_t) parse_elf_file(const char *const filename) {
     kprintf("before call\n");
 
     void (*entry_start)(void) = (void (*)(void))(entry_point);
-    //entry_start();
+    entry_start();
 
     return (struct OPTIONAL_NAME(uint32_t)){entry_point, true};
 }
+
+
+
+
+
+void* AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysicalAddress, ACPI_SIZE Length);
+
+void kmemcpy_physical_addresses(void *const dest, const void *const src, const uint32_t size) {
+    kprintf("kmemcpy_physical_addresses: %X %X %X\n", dest, src, size);
+    kprintf("size: %X\n", size);
+    void* dest_virtual = AcpiOsMapMemory((uint32_t)dest, size);
+    void* src_virtual = AcpiOsMapMemory((uint32_t)src, size);
+    kmemcpy(dest_virtual, src_virtual, size);
+    AcpiOsUnmapMemory(dest_virtual, size);
+    AcpiOsUnmapMemory(src_virtual, size);
+}
+
+bool load_elf_file_in_process(struct process_t *const process, const char *const filename) {
+    struct file_header *const file_header = get_file_header_from_list(filename, file_headers, num_of_files);
+    struct Elf32_Ehdr *const elf_header = (struct Elf32_Ehdr*)file_header->file;
+    if(!is_valid_elf_sig(elf_header)) {
+        kprintf("Not an elf file!\n");
+        return false;
+    }
+    if(elf_header->e_ident[EI_CLASS] != ELFCLASS32) {
+        kprintf("Not a 32-bit elf file!\n");
+        return false;
+    }
+    if(elf_header->e_ident[EI_DATA] != ELFDATA2LSB) {
+        kprintf("Not a little-endian elf file!\n");
+        return false;
+    }
+    if(elf_header->e_ident[EI_VERSION] != EV_CURRENT) {
+        kprintf("Not a current elf file!\n");
+        return false;
+    }
+
+    if(elf_header->e_type != ET_REL && elf_header->e_type != ET_EXEC) {
+        kprintf("Not a REL or EXEC elf file!\n");
+        return false;
+    }
+    if(elf_header->e_machine != EM_386) {
+        kprintf("Not a x86 elf file!\n");
+    }
+    if(elf_header->e_version != EV_CURRENT) {
+        kprintf("Not a current elf file!\n");
+        return false;
+    }
+
+    const uint32_t entry_point = elf_header->e_entry;
+    const uint32_t program_header_offset = elf_header->e_phoff;
+    const uint32_t program_header_size = elf_header->e_phentsize;
+    const uint32_t program_header_count = elf_header->e_phnum;
+    const uint32_t section_header_offset = elf_header->e_shoff;
+    const uint32_t section_header_size = elf_header->e_shentsize;
+    const uint32_t section_header_count = elf_header->e_shnum;
+    const uint32_t section_header_strtab_offset = elf_header->e_shstrndx;
+    kassert(elf_header->e_ehsize == sizeof(struct Elf32_Ehdr), false);
+
+
+    kprintf("Entry point: %X\n", entry_point);
+    kprintf("Program header offset: %u\n", program_header_offset);
+    kprintf("Program header size: %u\n", program_header_size);
+    kprintf("Program header count: %u\n", program_header_count);
+    kprintf("Section header offset: %u\n", section_header_offset);
+    kprintf("Section header size: %u\n", section_header_size);
+    kprintf("Section header count: %u\n", section_header_count);
+    kprintf("Section header strtab offset: %u, SHN_UNDEF: %u\n", section_header_strtab_offset, (uint32_t)SHN_UNDEF);
+
+    //assume for now that that `program_header_offset` is non-zero and that it is a valid offset
+    struct Elf32_Phdr *const program_headers = (struct Elf32_Phdr*)(file_header->file + program_header_offset);
+    //assume for now that that `section_header_offset` is non-zero and that it is a valid offset
+    struct Elf32_Shdr *const section_header = (struct Elf32_Shdr*)(file_header->file + section_header_offset);
+    //assume for now that that `section_header_strtab_offset` is non-zero and that it is a valid offset
+    struct Elf32_Shdr *const section_header_strtab = (struct Elf32_Shdr*)(&section_header[section_header_strtab_offset]);
+    kassert(section_header_strtab->sh_type == SHT_STRTAB, false);
+    char *const section_header_strtab_data = (char*)(file_header->file + section_header_strtab->sh_offset);
+    kprintf("Section header strtab data: %s\n", section_header_strtab_data);
+    for(uint32_t i = 0u; i < section_header_count; ++i) {
+        kprintf("Section header %u:%s: %s\n", i, get_section_type_name(section_header[i].sh_type), section_header_strtab_data + section_header[i].sh_name);
+    }
+
+    kprintf("Section headers:\n");
+    struct Elf32_Shdr* symbol_table = NULL;
+    struct Elf32_Shdr* string_table = NULL; //for symbols
+    for(uint32_t i = 0u; i < section_header_count; ++i) {
+        struct Elf32_Shdr *const shdr = &section_header[i];
+        char *const section_data = (char*)(file_header->file + shdr->sh_offset);
+        const uint32_t section_size = shdr->sh_size;
+        if(shdr->sh_type == SHT_SYMTAB) {
+            symbol_table = shdr;
+            kprintf("Symbol table: %s\n", section_header_strtab_data + symbol_table->sh_name);
+        }
+        else if(shdr->sh_type == SHT_STRTAB && i != section_header_strtab_offset) {
+            string_table = shdr;
+            kprintf("String table: %s\n", section_header_strtab_data + string_table->sh_name);
+        }
+    }
+    char *const string_table_data = (char*)(file_header->file + string_table->sh_offset);
+
+    struct Elf32_Sym *const symbol_table_data = (struct Elf32_Sym*)(file_header->file + symbol_table->sh_offset);
+    const uint32_t num_of_symbols = symbol_table->sh_size / sizeof(struct Elf32_Sym);
+    kprintf("num_of_symbols: %u:\n", num_of_symbols);
+    for(uint32_t i = 0u; i < num_of_symbols; ++i) {
+        struct Elf32_Sym *const sym = &symbol_table_data[i];
+        kprintf("Symbol %u: %s\n", i, string_table_data + sym->st_name);
+    }
+
+    uint32_t memsz = 0u;
+    uint32_t align = 1u;
+    uint32_t physical_base_addr = 0u;
+    uint32_t virtual_base_addr = 0u;
+    struct Elf32_Phdr* phdr = NULL;
+    for(uint32_t i = 0u; i < program_header_count; ++i) {
+        phdr = &program_headers[i];
+        if(phdr->p_type == PT_LOAD) {
+            kprintf("PT_LOAD: %u\n", i);
+            kprintf("p_offset: %X\n", phdr->p_offset);
+            kprintf("p_vaddr: %X\n", phdr->p_vaddr);
+            kprintf("p_paddr: %X\n", phdr->p_paddr);
+            kprintf("p_filesz: %X\n", phdr->p_filesz);
+            kprintf("p_memsz: %X\n", phdr->p_memsz);
+            kprintf("p_flags: %X\n", phdr->p_flags);
+            kprintf("p_align: %X\n", phdr->p_align);
+            memsz = max(memsz, phdr->p_memsz);
+            align = max(align, phdr->p_align);
+            kprintf("memsz: %X\n", memsz);
+            kprintf("align: %X\n", align);
+            physical_base_addr = phdr->p_paddr;
+            virtual_base_addr = phdr->p_vaddr;
+        }
+    }
+
+    const uint32_t num_of_pages = memsz/PAGE_SIZE + (memsz%PAGE_SIZE > 0u);
+    char *const process_memory = (char*)virtual_base_addr;
+    kprintf("process_memory: %p\n", process_memory);
+    void *const physical_memory = global_phys_allocator_allocate_pages(num_of_pages);
+    void *const write_map_virt = AcpiOsMapMemory(physical_memory, memsz);
+    //map_pages_in_kernel_addr(process_memory, physical_memory, num_of_pages, PT_PRESENT | PT_RW | PT_USER, PD_PRESENT | PD_RW | PD_USER);
+    //kmemcpy(process_memory, file_header->file + phdr->p_offset, memsz);
+    //unmap_pages_in_kernel_addr(process_memory, num_of_pages);
+    kmemcpy(write_map_virt, file_header->file + phdr->p_offset, memsz);
+    AcpiOsUnmapMemory(write_map_virt, memsz);
+    map_pages(process->virtual_cr3, process_memory, physical_memory, num_of_pages, PT_PRESENT | PT_RW, PD_PRESENT | PD_RW);
+
+    const uint32_t stack_phys_addr = global_phys_allocator_allocate_page();
+    clear_physical_page(stack_phys_addr);
+    kprintf("stack_phys_addr cleared\n");
+    kprintf("USER_STACK_TOP_ADDR-PAGE_SIZE: %X\n", (USER_STACK_TOP_ADDR-PAGE_SIZE));
+    user_map(process, USER_STACK_TOP_ADDR-PAGE_SIZE, stack_phys_addr);
+    kprintf("user_map called\n");
+
+    // set the ip to the entry point
+    process->context.eip = entry_point;
+
+    kprintf("process->context->eip: %X\n", process->context.eip);
+
+    return true;
+}
+

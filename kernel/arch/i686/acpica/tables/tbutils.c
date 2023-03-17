@@ -332,7 +332,6 @@ AcpiTbGetRootTableEntry (
      */
     if (TableEntrySize == ACPI_RSDT_ENTRY_SIZE)
     {
-        kprintf("TableEntrySize == ACPI_RSDT_ENTRY_SIZE\n");
         /*
          * 32-bit platform, RSDT: Return 32-bit table entry
          * 64-bit platform, RSDT: Expand 32-bit to 64-bit and return
@@ -348,7 +347,6 @@ AcpiTbGetRootTableEntry (
     }
     else
     {
-        kprintf("else branch\n");
         /*
          * 32-bit platform, XSDT: Truncate 64-bit to 32-bit and return
          * 64-bit platform, XSDT: Move (unaligned) 64-bit to local,
@@ -415,11 +413,9 @@ AcpiTbParseRootTable (
     {
         return_ACPI_STATUS (AE_NO_MEMORY);
     }
-    kprintf("Rsdp was mapped to %p\n", Rsdp);
 
     AcpiTbPrintTableHeader (RsdpAddress,
         ACPI_CAST_PTR (ACPI_TABLE_HEADER, Rsdp));
-    kprintf("Rsdp->Revision = %d\n", Rsdp->Revision);
 
     /* Use XSDT if present and not overridden. Otherwise, use RSDT */
 
@@ -441,7 +437,6 @@ AcpiTbParseRootTable (
 
         Address = (ACPI_PHYSICAL_ADDRESS) Rsdp->RsdtPhysicalAddress;
         TableEntrySize = ACPI_RSDT_ENTRY_SIZE;
-        kprintf("32 bit ACPI\n");
     }
 
     /*
@@ -457,7 +452,6 @@ AcpiTbParseRootTable (
     {
         return_ACPI_STATUS (AE_NO_MEMORY);
     }
-    kprintf("Table was mapped to %p\n", Table);
 
     AcpiTbPrintTableHeader (Address, Table);
 
@@ -474,14 +468,12 @@ AcpiTbParseRootTable (
             "Invalid table length 0x%X in RSDT/XSDT", Length));
         return_ACPI_STATUS (AE_INVALID_TABLE_LENGTH);
     }
-    kprintf("Length is not too small!\n");
 
     Table = AcpiOsMapMemory (Address, Length);
     if (!Table)
     {
         return_ACPI_STATUS (AE_NO_MEMORY);
     }
-    kprintf("Table was mapped to %p\n", Table);
 
     /* Validate the root table checksum */
 
@@ -491,7 +483,6 @@ AcpiTbParseRootTable (
         AcpiOsUnmapMemory (Table, Length);
         return_ACPI_STATUS (Status);
     }
-    kprintf("Checksum is valid!\n");
 
     /* Get the number of entries and pointer to first entry */
 
@@ -501,29 +492,21 @@ AcpiTbParseRootTable (
 
     /* Initialize the root table array from the RSDT/XSDT */
 
-    kprintf("TableCount: %u\n", TableCount);
-
     for (i = 0; i < TableCount; i++)
     {
         /* Get the table physical address (32-bit for RSDT, 64-bit for XSDT) */
 
-        kprintf("before AcpiTbGetRootTableEntry\n");
         Address = AcpiTbGetRootTableEntry (TableEntry, TableEntrySize);
-        kprintf("after AcpiTbGetRootTableEntry\n");
 
         /* Skip NULL entries in RSDT/XSDT */
 
         if (!Address)
         {
-            kprintf("Address is NULL for iteration i: %u\n", i);
             goto NextTable;
         }
-        kprintf("Address is not NULL for iteration i: %u\n", i);
 
         Status = AcpiTbInstallStandardTable (Address,
             ACPI_TABLE_ORIGIN_INTERNAL_PHYSICAL, FALSE, TRUE, &TableIndex);
-
-        kprintf("after AcpiTbInstallStandardTable\n");
 
         if (ACPI_SUCCESS (Status) &&
             ACPI_COMPARE_NAMESEG (
@@ -531,10 +514,8 @@ AcpiTbParseRootTable (
                 ACPI_SIG_FADT))
         {
             AcpiGbl_FadtIndex = TableIndex;
-            kprintf("before AcpiTbParseFadt\n");
             AcpiTbParseFadt ();
         }
-        kprintf("after AcpiTbParseFadt\n");
 
 NextTable:
 

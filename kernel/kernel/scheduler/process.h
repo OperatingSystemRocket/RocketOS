@@ -33,65 +33,35 @@ enum process_state {
     PROCESS_ERROR = 9 /// < used for error return codes involving processes
 };
 
-/*!
- * \brief A physical segment of memory used by the process
- */
-struct segment_t {
-    size_t physical; ///< The physical start
-    size_t size; ///< The size of allocated memory
-};
 
-struct wait_node {
-    size_t pid;
-    struct wait_node* next;
+struct process_context {
+    uint32_t ebx;
+    uint32_t edx;
+    uint32_t esi;
+    uint32_t edi;
+    uint32_t ebp;
+    uint32_t eip;
+    uint32_t esp;
 };
 
 struct process_t {
     pid_t pid;  ///< The process id
-    pid_t ppid; ///< The parent's process id
+    //pid_t ppid; ///< The parent's process id
 
     bool system; ///< Indicates if the process is a system process
 
     size_t priority; ///< The priority of the process
 
-    size_t physical_cr3; ///< The physical address of the CR3
-    size_t paging_size; ///< The  size of the paging structure
+    uint32_t physical_cr3; ///< The physical address of the CR3
+    uint32_t virtual_cr3; ///< The virtual address of the CR3 in the kernel section of the address space
 
-    size_t physical_user_stack; ///< The physical address of the user stack
-    size_t physical_kernel_stack; ///< The physical address of the kernel stack
-    size_t virtual_kernel_stack; ///< The virtual address of the kernel stack
+    uint32_t physical_stack; ///< The physical address of the kernel stack
 
-    size_t kernel_esp; ///< The kernel stack pointer
-
-    size_t brk_start; ///< The start of the brk section
-    size_t brk_end; ///< The end of the brk section
-
-    // Only for system kernels
-    char* user_stack; ///< Pointer to the user stack
-    char* kernel_stack; ///< Pointer to the kernel stack
-
-    volatile struct syscall_regs* context; ///< A pointer to the context
-
-    struct wait_node wait; ///< The process's wait node
-
-    vector_type(struct segment_t) segments; ///< The physical segments
+    volatile struct process_context context; ///< A pointer to the context
 
     struct string name; ///< The name of the process
 };
 
-#define program_base 0x8000000000 ///< The virtual address of a program start
-#define program_break 0x9000000000 ///< The virtual address of a program break start
-
-#define user_stack_size (2 * PAGE_SIZE) ///< The size of the user stack
-#define kernel_stack_size (2 * PAGE_SIZE) ///< The size of the kernel stack
-
-#define user_stack_start (program_base + 0x700000) ///< The virtual address of a program user stack
-// TODO: check if it should be `-4` because it's 32 bit
-#define user_esp (user_stack_start + (user_stack_size - 8)) ///< The initial program stack pointer
-
-/*!
- * \brief An entry in the Process Control Block
- */
 struct process_control_t {
     struct process_t process; ///< The process itself
     enum process_state state; ///< The state of the process
